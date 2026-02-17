@@ -25,7 +25,7 @@ async def api_create_room(body: dict | None = None):
     difficulty = body.get("difficulty")
     rounds = body.get("rounds", 1)
 
-    time_limit = max(60, min(600, int(time_limit)))
+    time_limit = int(time_limit)
     rounds = max(1, min(10, int(rounds)))
 
     room = create_room(host_name=host, time_limit=time_limit, difficulty=difficulty, rounds=rounds)
