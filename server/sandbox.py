@@ -9,12 +9,15 @@ import time
 
 
 RUNNER_SCRIPT = textwrap.dedent("""\
-    import json, sys, time
+    import json, sys, time, re
+
+    def strip_kwargs(tc):
+        return re.sub(r'(?<=[\\(,])\\s*\\w+\\s*=\\s*(?!=)', ' ', tc)
 
     data = json.loads(sys.stdin.read())
     code = data["code"]
     entry_point = data["entry_point"]
-    test_cases = data["test_cases"]
+    test_cases = [strip_kwargs(tc) for tc in data["test_cases"]]
     preamble = data.get("preamble", "")
 
     # Execute preamble (imports needed by starter code like List, Optional, etc.)
