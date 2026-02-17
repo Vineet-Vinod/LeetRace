@@ -24,7 +24,8 @@ const ws = new WebSocket(`${wsProto}://${location.host}/ws/${roomId}`);
 
 let isHost = false;
 let gameActive = false;
-let submitted = false;
+let solved = false;
+let submitCooldown = false;
 let timerInterval = null;
 let remainingSeconds = 0;
 
@@ -38,7 +39,7 @@ ws.onmessage = (event) => {
 };
 
 ws.onclose = () => {
-    if (!submitted) {
+    if (!solved) {
         showFeedback('Disconnected from server', 'fail');
     }
 };
@@ -72,7 +73,8 @@ const handlers = {
 
     game_start(msg) {
         gameActive = true;
-        submitted = false;
+        solved = false;
+        submitCooldown = false;
         showScreen(playingScreen);
 
         const p = msg.problem;
@@ -107,11 +109,10 @@ const handlers = {
     },
 
     submit_result(msg) {
-        submitted = true;
-        setEditorReadOnly(true);
-        document.getElementById('submit-btn').disabled = true;
-
         if (msg.solved) {
+            solved = true;
+            setEditorReadOnly(true);
+            document.getElementById('submit-btn').disabled = true;
             showFeedback(`Solved! ${msg.char_count} chars in ${msg.submit_time}s`, 'success');
         } else {
             const text = msg.error
@@ -213,15 +214,29 @@ document.getElementById('start-btn').addEventListener('click', () => {
     ws.send(JSON.stringify({ type: 'start' }));
 });
 
-document.getElementById('submit-btn').addEventListener('click', () => {
-    if (submitted) return;
+function submitCode() {
+    if (solved || submitCooldown || !gameActive) return;
     const code = getCode();
     if (!code.trim()) {
         showFeedback('Write some code first!', 'fail');
         return;
     }
     ws.send(JSON.stringify({ type: 'submit', code }));
+    submitCooldown = true;
     document.getElementById('submit-btn').disabled = true;
+    setTimeout(() => {
+        submitCooldown = false;
+        if (!solved) document.getElementById('submit-btn').disabled = false;
+    }, 1000);
+}
+
+document.getElementById('submit-btn').addEventListener('click', submitCode);
+
+document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.key === 'Enter') {
+        e.preventDefault();
+        submitCode();
+    }
 });
 
 document.getElementById('play-again-btn').addEventListener('click', () => {

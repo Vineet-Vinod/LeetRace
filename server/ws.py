@@ -159,8 +159,8 @@ async def handle_submit(room: Room, player_name: str, data: dict) -> None:
         return
 
     player = room.players.get(player_name)
-    if not player or player.submission is not None:
-        return  # Already submitted
+    if not player:
+        return
 
     code = data.get("code", "")
     if not code.strip():
