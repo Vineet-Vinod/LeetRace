@@ -255,21 +255,23 @@ input:focus, select:focus { border-color: var(--accent); }
 
 /* === Game Layout === */
 .game-header {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
+    position: relative;
+    display: flex;
     align-items: center;
+    justify-content: space-between;
     padding: 10px var(--padding);
     background: var(--bg-card);
     border-bottom: 1px solid var(--border);
     flex-shrink: 0;
-    gap: 1rem;
 }
 
 .game-info {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
     gap: 1.5rem;
     align-items: center;
-    justify-content: center;
 }
 
 .header-actions {
