@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import time
 
 from fastapi import WebSocket, WebSocketDisconnect
@@ -11,6 +12,8 @@ from server.rooms import Player, Room, RoomState, get_room, remove_room
 from server.problems import pick_random
 from server.sandbox import run_code
 from server.scoring import rank_players
+
+logger = logging.getLogger(__name__)
 
 
 async def broadcast(room: Room, message: dict) -> None:
@@ -111,13 +114,16 @@ async def handle_join(ws: WebSocket, room: Room, data: dict) -> str | None:
     return name
 
 
-async def handle_start(room: Room, player_name: str) -> None:
+async def handle_start(ws: WebSocket, room: Room, player_name: str) -> None:
     """Handle the host starting the game."""
     if player_name != room.host:
+        await send_error(ws, "Only the host can start the game")
         return
     if room.state != RoomState.LOBBY:
+        await send_error(ws, "Game has already started")
         return
-    if len(room.players) < 1:
+    if len(room.players) < 2:
+        await send_error(ws, "Need at least 2 players to start")
         return
 
     problem = pick_random(room.difficulty)
@@ -226,7 +232,7 @@ async def websocket_handler(ws: WebSocket, room_id: str) -> None:
                 player_name = await handle_join(ws, room, data)
 
             elif msg_type == "start" and player_name:
-                await handle_start(room, player_name)
+                await handle_start(ws, room, player_name)
 
             elif msg_type == "submit" and player_name:
                 await handle_submit(room, player_name, data)
@@ -234,7 +240,11 @@ async def websocket_handler(ws: WebSocket, room_id: str) -> None:
     except WebSocketDisconnect:
         pass
     except Exception:
-        pass
+        logger.exception("WebSocket error in room %s for player %s", room_id, player_name)
+        try:
+            await send_error(ws, "Something went wrong. Please rejoin.")
+        except Exception:
+            pass
     finally:
         # Clean up player
         if player_name and player_name in room.players:

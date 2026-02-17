@@ -36,7 +36,7 @@ ws.onmessage = (event) => {
 };
 
 ws.onclose = () => {
-    if (!submitted && gameActive) {
+    if (!submitted) {
         showFeedback('Disconnected from server', 'fail');
     }
 };
