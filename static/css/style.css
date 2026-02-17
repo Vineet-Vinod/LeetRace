@@ -26,6 +26,35 @@ html, body {
     line-height: 1.6;
 }
 
+/* === Custom Scrollbar === */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
+/* Firefox scrollbar */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
 /* === Landing === */
 .landing {
     display: flex;
@@ -210,7 +239,7 @@ input:focus, select:focus { border-color: var(--accent); }
     justify-content: space-between;
     padding: 0.5rem 1rem;
     background: var(--bg-card);
-    border-bottom: 1px solid var(--border);
+    gap: 0.75rem;
 }
 
 .game-info { display: flex; gap: 1.5rem; align-items: center; }
@@ -251,6 +280,7 @@ input:focus, select:focus { border-color: var(--accent); }
     display: flex;
     height: calc(100vh - 50px - 40px);
     overflow: hidden;
+    border-top: 1px solid var(--border);
 }
 
 .problem-panel {
@@ -258,9 +288,15 @@ input:focus, select:focus { border-color: var(--accent); }
     min-width: 200px;
     padding: 1.5rem;
     overflow-y: auto;
+    background: var(--bg-card);
+    border-right: 1px solid var(--border);
+    border-radius: 6px 0 0 6px;
 }
 
-.problem-panel h2 { margin-bottom: 0.25rem; }
+.problem-panel h2 {
+    margin-bottom: 0.25rem;
+    font-size: 1.15rem;
+}
 
 .difficulty-badge {
     display: inline-block;
@@ -277,11 +313,12 @@ input:focus, select:focus { border-color: var(--accent); }
 .difficulty-badge.hard { background: #ff555533; color: var(--red); }
 
 .problem-desc {
-    font-size: 0.95rem;
-    line-height: 1.7;
+    font-size: 0.9rem;
+    line-height: 1.8;
     white-space: pre-wrap;
     font-family: var(--mono);
     color: var(--text-dim);
+    padding: 0.5rem 0;
 }
 
 .editor-panel {
@@ -290,6 +327,8 @@ input:focus, select:focus { border-color: var(--accent); }
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    background: #1e1e1e;
+    border-radius: 0 6px 6px 0;
 }
 
 #editor-container {
@@ -303,7 +342,7 @@ input:focus, select:focus { border-color: var(--accent); }
     cursor: col-resize;
     background: var(--border);
     flex-shrink: 0;
-    transition: background 0.15s;
+    transition: background 0.2s;
 }
 
 .resize-handle-v:hover, .resize-handle-v.active {
@@ -320,7 +359,7 @@ input:focus, select:focus { border-color: var(--accent); }
     display: flex;
     align-items: center;
     padding: 0 0.8rem;
-    transition: background 0.15s;
+    transition: background 0.2s;
 }
 
 .resize-handle-h:hover, .resize-handle-h.active {
@@ -341,16 +380,18 @@ input:focus, select:focus { border-color: var(--accent); }
     background: #1e1e1e;
     overflow-y: auto;
     flex-shrink: 0;
+    border-radius: 0 0 6px 0;
 }
 
 .output-content {
     margin: 0;
-    padding: 0.5rem 0.8rem;
+    padding: 0.75rem 1rem;
     font-family: var(--mono);
     font-size: 0.85rem;
     color: var(--text);
     white-space: pre-wrap;
     word-break: break-all;
+    line-height: 1.6;
 }
 
 /* === Scoreboard === */
