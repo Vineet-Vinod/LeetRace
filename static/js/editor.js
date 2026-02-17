@@ -2,6 +2,7 @@
 
 let editor = null;
 let onChangeCallback = null;
+let onSubmitCallback = null;
 
 function initEditor(containerId, starterCode, onChange) {
     onChangeCallback = onChange;
@@ -32,6 +33,13 @@ function initEditor(containerId, starterCode, onChange) {
             }
         });
 
+        editor.addAction({
+            id: 'submit-code',
+            label: 'Submit Code',
+            keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
+            run: () => { if (onSubmitCallback) onSubmitCallback(); },
+        });
+
         // Trigger initial count
         if (onChangeCallback) onChangeCallback(getCode());
     });
@@ -43,6 +51,10 @@ function getCode() {
 
 function setEditorReadOnly(readOnly) {
     if (editor) editor.updateOptions({ readOnly });
+}
+
+function setEditorSubmitCallback(callback) {
+    onSubmitCallback = callback;
 }
 
 function charCount(code) {

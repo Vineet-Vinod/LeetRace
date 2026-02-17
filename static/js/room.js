@@ -90,6 +90,7 @@ const handlers = {
         initEditor('editor-container', p.starter_code, (code) => {
             document.getElementById('char-count').textContent = `Chars: ${charCount(code)}`;
         });
+        setEditorSubmitCallback(submitCode);
 
         // Timer - start client-side countdown
         startTimer(msg.time_limit);
