@@ -25,6 +25,8 @@ const ws = new WebSocket(`${wsProto}://${location.host}/ws/${roomId}`);
 let isHost = false;
 let gameActive = false;
 let submitted = false;
+let timerInterval = null;
+let remainingSeconds = 0;
 
 ws.onopen = () => {
     ws.send(JSON.stringify({ type: 'join', name: playerName }));
@@ -87,8 +89,8 @@ const handlers = {
             document.getElementById('char-count').textContent = `Chars: ${charCount(code)}`;
         });
 
-        // Timer
-        updateTimer(msg.time_limit);
+        // Timer - start client-side countdown
+        startTimer(msg.time_limit);
 
         // Reset scoreboard
         document.getElementById('live-scoreboard').hidden = true;
@@ -100,7 +102,8 @@ const handlers = {
     },
 
     tick(msg) {
-        updateTimer(msg.remaining);
+        // Sync with server time
+        remainingSeconds = msg.remaining;
     },
 
     submit_result(msg) {
@@ -124,6 +127,7 @@ const handlers = {
 
     game_over(msg) {
         gameActive = false;
+        clearInterval(timerInterval);
         showScreen(finishedScreen);
         renderFinalRankings(msg.rankings);
     },
@@ -134,6 +138,16 @@ const handlers = {
 };
 
 // UI helpers
+
+function startTimer(seconds) {
+    clearInterval(timerInterval);
+    remainingSeconds = seconds;
+    updateTimer(remainingSeconds);
+    timerInterval = setInterval(() => {
+        remainingSeconds = Math.max(0, remainingSeconds - 1);
+        updateTimer(remainingSeconds);
+    }, 1000);
+}
 
 function updateTimer(remaining) {
     const el = document.getElementById('timer');

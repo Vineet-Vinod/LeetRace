@@ -11,20 +11,10 @@ function initEditor(containerId, starterCode, onChange) {
     });
 
     require(['vs/editor/editor.main'], function () {
-        monaco.editor.defineTheme('leetrace', {
-            base: 'vs-dark',
-            inherit: true,
-            rules: [],
-            colors: {
-                'editor.background': '#0f3460',
-                'editor.foreground': '#eeeeee',
-            }
-        });
-
         editor = monaco.editor.create(document.getElementById(containerId), {
             value: starterCode || '',
             language: 'python',
-            theme: 'leetrace',
+            theme: 'vs-dark',
             fontSize: 14,
             fontFamily: "'Cascadia Code', 'Fira Code', Consolas, monospace",
             minimap: { enabled: false },

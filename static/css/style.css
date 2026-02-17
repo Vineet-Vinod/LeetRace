@@ -162,7 +162,6 @@ input:focus, select:focus { border-color: var(--accent); }
 
 /* === Lobby === */
 #lobby {
-    display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
@@ -299,7 +298,6 @@ input:focus, select:focus { border-color: var(--accent); }
 
 /* === Finished === */
 #finished {
-    display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
