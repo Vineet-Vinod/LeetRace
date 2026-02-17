@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import re
 import time
 
 from fastapi import WebSocket, WebSocketDisconnect
@@ -14,6 +15,49 @@ from server.sandbox import run_code
 from server.scoring import rank_players
 
 logger = logging.getLogger(__name__)
+
+# Superscript digit mapping
+_SUP_DIGITS = str.maketrans("0123456789", "\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079")
+
+
+def fix_exponents(text: str) -> str:
+    """Fix exponent display in problem descriptions.
+
+    Handles two forms:
+    - Explicit caret: '10^5' → '10⁵'
+    - Collapsed (from HTML scraping): '105' → '10⁵' after <= or >= in constraints
+    """
+    # Explicit carets: 10^5 → 10⁵, 2^31 → 2³¹
+    text = re.sub(
+        r"(\d+)\^(\d+)",
+        lambda m: m.group(1) + m.group(2).translate(_SUP_DIGITS),
+        text,
+    )
+    # Collapsed base-10 exponents in constraints: <= 105 → <= 10⁵
+    # Only 10[4-9] — lower digits (100, 101..103) are likely real numbers
+    # Match after <= / >= (right bound) or before <= / >= (left bound)
+    text = re.sub(
+        r"(?<=[<>=] )(-?)10([4-9])\b",
+        lambda m: m.group(1) + "10" + m.group(2).translate(_SUP_DIGITS),
+        text,
+    )
+    text = re.sub(
+        r"\b(-?)10([4-9])(?= [<>=])",
+        lambda m: m.group(1) + "10" + m.group(2).translate(_SUP_DIGITS),
+        text,
+    )
+    # Collapsed 2^31 / 2^32: <= 231 → <= 2³¹
+    text = re.sub(
+        r"(?<=[<>=] )(-?)2(3[12])\b",
+        lambda m: m.group(1) + "2" + m.group(2).translate(_SUP_DIGITS),
+        text,
+    )
+    text = re.sub(
+        r"\b(-?)2(3[12])(?= [<>=])",
+        lambda m: m.group(1) + "2" + m.group(2).translate(_SUP_DIGITS),
+        text,
+    )
+    return text
 
 
 async def broadcast(room: Room, message: dict) -> None:
@@ -143,7 +187,7 @@ async def start_next_round(room: Room) -> None:
             "id": problem["id"],
             "title": problem["title"],
             "difficulty": problem["difficulty"],
-            "description": problem["description"],
+            "description": fix_exponents(problem["description"]),
             "entry_point": problem["entry_point"],
             "starter_code": problem["starter_code"],
         },
@@ -232,7 +276,7 @@ async def handle_start(ws: WebSocket, room: Room, player_name: str) -> None:
             "id": problem["id"],
             "title": problem["title"],
             "difficulty": problem["difficulty"],
-            "description": problem["description"],
+            "description": fix_exponents(problem["description"]),
             "entry_point": problem["entry_point"],
             "starter_code": problem["starter_code"],
         },
