@@ -14,6 +14,11 @@ RUNNER_SCRIPT = textwrap.dedent("""\
     def strip_kwargs(tc):
         return re.sub(r'(?<=[\\(,])\\s*\\w+\\s*=\\s*(?!=)', ' ', tc)
 
+    def _normalize(x):
+        if isinstance(x, (list, tuple)):
+            return [_normalize(i) for i in x]
+        return x
+
     def _sort_key(x):
         if isinstance(x, list):
             return (1, str(_deep_sort(x)))
@@ -28,11 +33,15 @@ RUNNER_SCRIPT = textwrap.dedent("""\
         return x
 
     def flex_eq(a, b):
+        a, b = _normalize(a), _normalize(b)
         if a == b:
             return True
         if isinstance(a, list) and isinstance(b, list):
             return _deep_sort(a) == _deep_sort(b)
         return False
+
+    def normalize_eq(a, b):
+        return _normalize(a) == _normalize(b)
 
     def use_flex_eq(tc):
         m = re.match(r'assert\\s+(.+?)\\s*==\\s*(.+)$', tc)
@@ -40,11 +49,18 @@ RUNNER_SCRIPT = textwrap.dedent("""\
             return f"assert flex_eq({m.group(1)}, {m.group(2)})"
         return tc
 
+    def use_normalize_eq(tc):
+        m = re.match(r'assert\\s+(.+?)\\s*==\\s*(.+)$', tc)
+        if m:
+            return f"assert normalize_eq({m.group(1)}, {m.group(2)})"
+        return tc
+
     data = json.loads(sys.stdin.read())
     code = data["code"]
     entry_point = data["entry_point"]
     any_order = data.get("any_order", False)
-    test_cases = [use_flex_eq(strip_kwargs(tc)) if any_order else strip_kwargs(tc) for tc in data["test_cases"]]
+    transform = use_flex_eq if any_order else use_normalize_eq
+    test_cases = [transform(strip_kwargs(tc)) for tc in data["test_cases"]]
     preamble = data.get("preamble", "")
 
     import io
@@ -86,6 +102,7 @@ RUNNER_SCRIPT = textwrap.dedent("""\
     test_ns = dict(namespace)
     test_ns["candidate"] = candidate
     test_ns["flex_eq"] = flex_eq
+    test_ns["normalize_eq"] = normalize_eq
 
     passed = 0
     total = len(test_cases)

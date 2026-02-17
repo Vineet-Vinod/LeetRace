@@ -168,7 +168,7 @@ async def handle_submit(room: Room, player_name: str, data: dict) -> None:
             await send_error(player.websocket, "Empty submission")
         return
 
-    char_count = len(code.replace(" ", "").replace("\n", "").replace("\t", ""))
+    char_count = len(code)
     submit_time = time.time() - room.start_time
 
     # Run in sandbox
