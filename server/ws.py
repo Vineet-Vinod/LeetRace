@@ -25,7 +25,7 @@ def fix_exponents(text: str) -> str:
 
     Handles two forms:
     - Explicit caret: '10^5' → '10⁵'
-    - Collapsed (from HTML scraping): '105' → '10⁵' after <= or >= in constraints
+    - Collapsed (from HTML scraping): '105' → '10⁵' anywhere as standalone number
     """
     # Explicit carets: 10^5 → 10⁵, 2^31 → 2³¹
     text = re.sub(
@@ -33,27 +33,15 @@ def fix_exponents(text: str) -> str:
         lambda m: m.group(1) + m.group(2).translate(_SUP_DIGITS),
         text,
     )
-    # Collapsed base-10 exponents in constraints: <= 105 → <= 10⁵
-    # Only 10[4-9] — lower digits (100, 101..103) are likely real numbers
-    # Match after <= / >= (right bound) or before <= / >= (left bound)
+    # Collapsed base-10 exponents: standalone 10[4-9] → 10⁴..10⁹
     text = re.sub(
-        r"(?<=[<>=] )(-?)10([4-9])\b",
+        r"(?<!\d)(-?)10([4-9])(?!\d)",
         lambda m: m.group(1) + "10" + m.group(2).translate(_SUP_DIGITS),
         text,
     )
+    # Collapsed 2^31 / 2^32: standalone 231 or 232 → 2³¹ or 2³²
     text = re.sub(
-        r"\b(-?)10([4-9])(?= [<>=])",
-        lambda m: m.group(1) + "10" + m.group(2).translate(_SUP_DIGITS),
-        text,
-    )
-    # Collapsed 2^31 / 2^32: <= 231 → <= 2³¹
-    text = re.sub(
-        r"(?<=[<>=] )(-?)2(3[12])\b",
-        lambda m: m.group(1) + "2" + m.group(2).translate(_SUP_DIGITS),
-        text,
-    )
-    text = re.sub(
-        r"\b(-?)2(3[12])(?= [<>=])",
+        r"(?<!\d)(-?)2(3[12])(?!\d)",
         lambda m: m.group(1) + "2" + m.group(2).translate(_SUP_DIGITS),
         text,
     )
