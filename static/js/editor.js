@@ -7,6 +7,13 @@ let onSubmitCallback = null;
 function initEditor(containerId, starterCode, onChange) {
     onChangeCallback = onChange;
 
+    if (editor) {
+        editor.setValue(starterCode || '');
+        editor.updateOptions({ readOnly: false });
+        if (onChangeCallback) onChangeCallback(getCode());
+        return;
+    }
+
     require.config({
         paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs' }
     });
