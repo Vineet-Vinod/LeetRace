@@ -88,8 +88,8 @@ async def end_game(room: Room) -> None:
 
 
 async def check_all_submitted(room: Room) -> None:
-    """If all players have submitted, end the game."""
-    if all(p.submission is not None for p in room.players.values()):
+    """If all players have solved the problem, end the game."""
+    if all(p.submission is not None and p.submission.get("solved") for p in room.players.values()):
         await end_game(room)
 
 
