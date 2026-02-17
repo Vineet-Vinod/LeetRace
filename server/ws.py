@@ -204,6 +204,8 @@ async def handle_submit(room: Room, player_name: str, data: dict) -> None:
             "solved": solved,
             "char_count": char_count,
             "submit_time": round(submit_time, 2),
+            "stdout": result.get("stdout", ""),
+            "stderr": result.get("stderr", ""),
         })
 
     # Broadcast updated scoreboard

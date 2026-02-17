@@ -47,6 +47,15 @@ RUNNER_SCRIPT = textwrap.dedent("""\
     test_cases = [use_flex_eq(strip_kwargs(tc)) if any_order else strip_kwargs(tc) for tc in data["test_cases"]]
     preamble = data.get("preamble", "")
 
+    import io
+
+    # Redirect stdout/stderr to capture user output
+    real_stdout = sys.stdout
+    captured_out = io.StringIO()
+    captured_err = io.StringIO()
+    sys.stdout = captured_out
+    sys.stderr = captured_err
+
     # Execute preamble (imports needed by starter code like List, Optional, etc.)
     namespace = {}
     if preamble:
@@ -59,14 +68,18 @@ RUNNER_SCRIPT = textwrap.dedent("""\
     try:
         exec(code, namespace)
     except Exception as e:
-        print(json.dumps({"passed": 0, "total": len(test_cases), "error": f"Compilation error: {e}"}))
+        sys.stdout = real_stdout
+        print(json.dumps({"passed": 0, "total": len(test_cases), "error": f"Compilation error: {e}",
+                           "stdout": captured_out.getvalue()[:5000], "stderr": captured_err.getvalue()[:5000]}))
         sys.exit(0)
 
     # Resolve entry_point — supports both bare names and expressions like Solution().twoSum
     try:
         candidate = eval(entry_point, namespace)
     except Exception as e:
-        print(json.dumps({"passed": 0, "total": len(test_cases), "error": f"Cannot resolve '{entry_point}': {e}"}))
+        sys.stdout = real_stdout
+        print(json.dumps({"passed": 0, "total": len(test_cases), "error": f"Cannot resolve '{entry_point}': {e}",
+                           "stdout": captured_out.getvalue()[:5000], "stderr": captured_err.getvalue()[:5000]}))
         sys.exit(0)
 
     # Inject as 'candidate' into test namespace (test cases call candidate(...))
@@ -89,7 +102,9 @@ RUNNER_SCRIPT = textwrap.dedent("""\
             if first_error is None:
                 first_error = f"Runtime error: {type(e).__name__}: {e}"
 
-    result = {"passed": passed, "total": total, "error": first_error}
+    sys.stdout = real_stdout
+    result = {"passed": passed, "total": total, "error": first_error,
+              "stdout": captured_out.getvalue()[:5000], "stderr": captured_err.getvalue()[:5000]}
     print(json.dumps(result))
 """)
 

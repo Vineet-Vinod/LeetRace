@@ -91,9 +91,10 @@ const handlers = {
         // Timer - start client-side countdown
         startTimer(msg.time_limit);
 
-        // Reset scoreboard
+        // Reset scoreboard and output
         document.getElementById('live-scoreboard').hidden = true;
         document.getElementById('live-scoreboard').innerHTML = '';
+        document.getElementById('output-panel').hidden = true;
 
         // Submit button
         const submitBtn = document.getElementById('submit-btn');
@@ -113,6 +114,17 @@ const handlers = {
                 ? `${msg.passed}/${msg.total} tests passed - ${msg.error}`
                 : `${msg.passed}/${msg.total} tests passed`;
             showFeedback(text, 'fail');
+        }
+
+        const output = [msg.stdout, msg.stderr].filter(Boolean).join('\n');
+        const panel = document.getElementById('output-panel');
+        const content = document.getElementById('output-content');
+        if (output) {
+            content.textContent = output;
+            panel.hidden = false;
+            panel.open = true;
+        } else {
+            panel.hidden = true;
         }
     },
 
