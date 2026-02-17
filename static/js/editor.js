@@ -58,5 +58,5 @@ function setEditorSubmitCallback(callback) {
 }
 
 function charCount(code) {
-    return code.replace(/\s/g, '').length;
+    return code.length;
 }
