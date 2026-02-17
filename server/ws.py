@@ -170,6 +170,7 @@ async def handle_submit(room: Room, player_name: str, data: dict) -> None:
         code=code,
         entry_point=room.problem["entry_point"],
         test_cases=room.problem["test_cases"],
+        preamble=room.problem.get("preamble", ""),
     )
 
     solved = result["passed"] == result["total"] and result["total"] > 0

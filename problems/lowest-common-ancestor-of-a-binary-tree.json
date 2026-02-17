@@ -1,0 +1,37 @@
+{
+  "id": "lowest-common-ancestor-of-a-binary-tree",
+  "title": "Lowest Common Ancestor Of A Binary Tree",
+  "difficulty": "Medium",
+  "tags": [
+    "Tree",
+    "Depth-First Search",
+    "Binary Tree"
+  ],
+  "description": "Given a binary tree, find the lowest common ancestor (LCA) of two given nodes in the tree.\nAccording to the definition of LCA on Wikipedia: \u201cThe lowest common ancestor is defined between two nodes p and q as the lowest node in T that has both p and q as descendants (where we allow a node to be a descendant of itself).\u201d\n\u00a0\nExample 1:\n\n\nInput: root = [3,5,1,6,2,0,8,null,null,7,4], p = 5, q = 1\nOutput: 3\nExplanation: The LCA of nodes 5 and 1 is 3.\n\nExample 2:\n\n\nInput: root = [3,5,1,6,2,0,8,null,null,7,4], p = 5, q = 4\nOutput: 5\nExplanation: The LCA of nodes 5 and 4 is 5, since a node can be a descendant of itself according to the LCA definition.\n\nExample 3:\n\nInput: root = [1,2], p = 1, q = 2\nOutput: 1\n\n\u00a0\nConstraints:\n\nThe number of nodes in the tree is in the range [2, 105].\n-109 <= Node.val <= 109\nAll Node.val are unique.\np != q\np and q will exist in the tree.\n\n",
+  "entry_point": "Solution().lowestCommonAncestor",
+  "starter_code": "# Definition for a binary tree node.\n# class TreeNode:\n#     def __init__(self, x):\n#         self.val = x\n#         self.left = None\n#         self.right = None\n\nclass Solution:\n    def lowestCommonAncestor(self, root: 'TreeNode', p: 'TreeNode', q: 'TreeNode') -> 'TreeNode':\n        ",
+  "preamble": "from typing import *\nfrom collections import *\nfrom functools import *\nfrom itertools import *\nfrom heapq import *\nfrom bisect import *\nfrom math import *\nimport math, collections, functools, itertools, bisect, heapq, string, re\n",
+  "check_function": "def check(candidate):\n    assert candidate(root = tree_node([3, 5, 1, 6, 2, 0, 8, None, None, 7, 4]),p = 5,q = 1) == None\n    assert candidate(root = tree_node([3, 5, 1, 6, 2, 0, 8, None, None, 7, 4]),p = 2,q = 7) == None\n    assert candidate(root = tree_node([3, 5, 1, 6, 2, 0, 8, None, None, 7, 4]),p = 6,q = 8) == None\n    assert candidate(root = tree_node([37, -34, -48, None, -100, -101, 48, None, None, None, None, -54, None, -71, -22, None, None, None, 8]),p = -100,q = -101) == None\n    assert candidate(root = tree_node([3, 5, 1, 6, 2, 0, 8, None, None, 7, 4]),p = 5,q = 4) == None\n    assert candidate(root = tree_node([3, 1, 4, None, 2]),p = 2,q = 1) == None\n    assert candidate(root = tree_node([3, 5, 1, 6, 2, 0, 8, None, None, 7, 4]),p = 6,q = 4) == None\n    assert candidate(root = tree_node([6, 2, 8, 0, 4, 7, 9, None, None, 3, 5]),p = 0,q = 5) == None\n    assert candidate(root = tree_node([3, 5, 1, 6, 2, 0, 8, None, None, 7, 4]),p = 3,q = 0) == None\n    assert candidate(root = tree_node([30, 15, 18, 3, 17, 19, 20, 1, 16, None, None, None, 14, 15, None, None, 9, 11]),p = 3,q = 17) == None\n    assert candidate(root = tree_node([3, 5, 1, 6, 2, 0, 8, None, None, 7, 4]),p = 6,q = 2) == None\n    assert candidate(root = tree_node([3, 1, 4, None, 2]),p = 2,q = 3) == None\n    assert candidate(root = tree_node([3, 5, 1, 6, 2, 0, 8, None, None, 7, 4]),p = 0,q = 8) == None\n    assert candidate(root = tree_node([6, 2, 8, 0, 4, 7, 9, None, None, 3, 5]),p = 3,q = 5) == None\n    assert candidate(root = tree_node([2, 1]),p = 2,q = 1) == None\n    assert candidate(root = tree_node([1, 2]),p = 1,q = 2) == None\n    assert candidate(root = tree_node([3, 5, 1, 6, 2, 0, 8, None, None, 7, 4]),p = 7,q = 4) == None\n    assert candidate(root = tree_node([6, 2, 8, 0, 4, 7, 9, None, None, 3, 5]),p = 2,q = 4) == None\n    assert candidate(root = tree_node([6, 2, 8, 0, 4, 7, 9, None, None, 3, 5]),p = 2,q = 8) == None\n    assert candidate(root = tree_node([37, -34, -48, None, -100, -100, 48, None, None, None, None, -54, None, -71, -22, None, None, None, 8]),p = -100,q = 48) == None\n",
+  "test_cases": [
+    "assert candidate(root = tree_node([3, 5, 1, 6, 2, 0, 8, None, None, 7, 4]),p = 5,q = 1) == None",
+    "assert candidate(root = tree_node([3, 5, 1, 6, 2, 0, 8, None, None, 7, 4]),p = 2,q = 7) == None",
+    "assert candidate(root = tree_node([3, 5, 1, 6, 2, 0, 8, None, None, 7, 4]),p = 6,q = 8) == None",
+    "assert candidate(root = tree_node([37, -34, -48, None, -100, -101, 48, None, None, None, None, -54, None, -71, -22, None, None, None, 8]),p = -100,q = -101) == None",
+    "assert candidate(root = tree_node([3, 5, 1, 6, 2, 0, 8, None, None, 7, 4]),p = 5,q = 4) == None",
+    "assert candidate(root = tree_node([3, 1, 4, None, 2]),p = 2,q = 1) == None",
+    "assert candidate(root = tree_node([3, 5, 1, 6, 2, 0, 8, None, None, 7, 4]),p = 6,q = 4) == None",
+    "assert candidate(root = tree_node([6, 2, 8, 0, 4, 7, 9, None, None, 3, 5]),p = 0,q = 5) == None",
+    "assert candidate(root = tree_node([3, 5, 1, 6, 2, 0, 8, None, None, 7, 4]),p = 3,q = 0) == None",
+    "assert candidate(root = tree_node([30, 15, 18, 3, 17, 19, 20, 1, 16, None, None, None, 14, 15, None, None, 9, 11]),p = 3,q = 17) == None",
+    "assert candidate(root = tree_node([3, 5, 1, 6, 2, 0, 8, None, None, 7, 4]),p = 6,q = 2) == None",
+    "assert candidate(root = tree_node([3, 1, 4, None, 2]),p = 2,q = 3) == None",
+    "assert candidate(root = tree_node([3, 5, 1, 6, 2, 0, 8, None, None, 7, 4]),p = 0,q = 8) == None",
+    "assert candidate(root = tree_node([6, 2, 8, 0, 4, 7, 9, None, None, 3, 5]),p = 3,q = 5) == None",
+    "assert candidate(root = tree_node([2, 1]),p = 2,q = 1) == None",
+    "assert candidate(root = tree_node([1, 2]),p = 1,q = 2) == None",
+    "assert candidate(root = tree_node([3, 5, 1, 6, 2, 0, 8, None, None, 7, 4]),p = 7,q = 4) == None",
+    "assert candidate(root = tree_node([6, 2, 8, 0, 4, 7, 9, None, None, 3, 5]),p = 2,q = 4) == None",
+    "assert candidate(root = tree_node([6, 2, 8, 0, 4, 7, 9, None, None, 3, 5]),p = 2,q = 8) == None",
+    "assert candidate(root = tree_node([37, -34, -48, None, -100, -100, 48, None, None, None, None, -54, None, -71, -22, None, None, None, 8]),p = -100,q = 48) == None"
+  ]
+}

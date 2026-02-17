@@ -5,19 +5,47 @@ split test cases, and write per-problem JSON files to problems/.
 
 import json
 import re
-import textwrap
 from pathlib import Path
 
 PROBLEMS_DIR = Path(__file__).resolve().parent.parent / "problems"
 
+# Common imports needed by LeetCode starter code (class Solution with type hints)
+PREAMBLE = """\
+from typing import *
+from collections import *
+from functools import *
+from itertools import *
+from heapq import *
+from bisect import *
+from math import *
+import math, collections, functools, itertools, bisect, heapq, string, re
+"""
 
-def extract_test_cases(check_fn: str, entry_point: str) -> list[str]:
-    """Split a check() function body into individual assert statements."""
+
+def extract_test_cases(check_fn: str) -> list[str]:
+    """Split a check() function body into individual assert statements.
+
+    Handles multi-line asserts by joining continuation lines.
+    """
     cases = []
+    current = None
+
     for line in check_fn.splitlines():
         stripped = line.strip()
         if stripped.startswith("assert"):
-            cases.append(stripped)
+            if current is not None:
+                cases.append(current)
+            current = stripped
+        elif current is not None and stripped and not stripped.startswith("def "):
+            # Continuation of previous assert
+            current += " " + stripped
+        elif stripped.startswith("def ") and current is not None:
+            cases.append(current)
+            current = None
+
+    if current is not None:
+        cases.append(current)
+
     return cases
 
 
@@ -28,16 +56,11 @@ def slugify(title: str) -> str:
     return slug.strip("-")
 
 
-def parse_starter_code(prompt: str, entry_point: str) -> str:
-    """Extract a minimal starter code template from the prompt."""
-    return f"def {entry_point}():\n    pass\n"
-
-
 def build():
     try:
         from datasets import load_dataset
     except ImportError:
-        print("Install build dependencies: pip install 'leetrace[build]'")
+        print("Install build dependencies: uv pip install datasets")
         raise SystemExit(1)
 
     print("Downloading LeetCodeDataset from HuggingFace...")
@@ -46,35 +69,49 @@ def build():
     PROBLEMS_DIR.mkdir(parents=True, exist_ok=True)
     index = []
     written = 0
+    skipped = 0
+    slug_counts: dict[str, int] = {}
 
     for row in ds:
         entry_point = row.get("entry_point", "")
         check_fn = row.get("test", "")
-        prompt = row.get("prompt", "")
-        title = row.get("title", "") or row.get("task_id", f"problem-{written}")
+        task_id = row.get("task_id", "")
+        title = task_id or f"problem-{written}"
         difficulty = row.get("difficulty", "Medium")
         tags = row.get("tags", [])
+        description = row.get("problem_description", "")
+        starter_code = row.get("starter_code", "")
 
         if not entry_point or not check_fn:
+            skipped += 1
             continue
 
-        test_cases = extract_test_cases(check_fn, entry_point)
+        test_cases = extract_test_cases(check_fn)
         if len(test_cases) < 2:
+            skipped += 1
             continue
 
         slug = slugify(title)
         if not slug:
             slug = f"problem-{written}"
 
+        # Handle duplicate slugs
+        if slug in slug_counts:
+            slug_counts[slug] += 1
+            slug = f"{slug}-{slug_counts[slug]}"
+        else:
+            slug_counts[slug] = 0
+
         # Build the problem JSON
         problem_data = {
             "id": slug,
-            "title": title,
+            "title": title.replace("-", " ").title(),
             "difficulty": difficulty,
             "tags": tags if isinstance(tags, list) else [],
-            "description": prompt,
+            "description": description,
             "entry_point": entry_point,
-            "starter_code": f"def {entry_point}():\n    pass\n",
+            "starter_code": starter_code,
+            "preamble": PREAMBLE,
             "check_function": check_fn,
             "test_cases": test_cases,
         }
@@ -84,7 +121,7 @@ def build():
 
         index.append({
             "id": slug,
-            "title": title,
+            "title": problem_data["title"],
             "difficulty": difficulty,
             "tags": problem_data["tags"],
             "test_count": len(test_cases),
@@ -96,6 +133,7 @@ def build():
     index_path.write_text(json.dumps(index, indent=2))
 
     print(f"Wrote {written} problems to {PROBLEMS_DIR}")
+    print(f"Skipped {skipped} problems (missing data or <2 test cases)")
     print(f"Index: {index_path}")
 
 

@@ -1,0 +1,20 @@
+{
+  "id": "maximize-number-of-nice-divisors",
+  "title": "Maximize Number Of Nice Divisors",
+  "difficulty": "Hard",
+  "tags": [
+    "Recursion",
+    "Math",
+    "Number Theory"
+  ],
+  "description": "You are given a positive integer primeFactors. You are asked to construct a positive integer n that satisfies the following conditions:\\r\n\\r\n\\r\n  The number of prime factors of n (not necessarily distinct) is at most primeFactors.\\r\n  The number of nice divisors of n is maximized. Note that a divisor of n is nice if it is divisible by every prime factor of n. For example, if n = 12, then its prime factors are [2,2,3], then 6 and 12 are nice divisors, while 3 and 4 are not.\\r\n\\r\n\\r\nReturn the number of nice divisors of n. Since that number can be too large, return it modulo 109 + 7.\\r\n\\r\nNote that a prime number is a natural number greater than 1 that is not a product of two smaller natural numbers. The prime factors of a number n is a list of prime numbers such that their product equals n.\\r\n\\r\n\u00a0\\r\nExample 1:\\r\n\\r\n\\r\nInput: primeFactors = 5\\r\nOutput: 6\\r\nExplanation: 200 is a valid value of n.\\r\nIt has 5 prime factors: [2,2,2,5,5], and it has 6 nice divisors: [10,20,40,50,100,200].\\r\nThere is not other value of n that has at most 5 prime factors and more nice divisors.\\r\n\\r\n\\r\nExample 2:\\r\n\\r\n\\r\nInput: primeFactors = 8\\r\nOutput: 18\\r\n\\r\n\\r\n\u00a0\\r\nConstraints:\\r\n\\r\n\\r\n\t1 <= primeFactors <= 109\\r\n",
+  "entry_point": "Solution().maxNiceDivisors",
+  "starter_code": "class Solution:\n    def maxNiceDivisors(self, primeFactors: int) -> int:\n        ",
+  "preamble": "from typing import *\nfrom collections import *\nfrom functools import *\nfrom itertools import *\nfrom heapq import *\nfrom bisect import *\nfrom math import *\nimport math, collections, functools, itertools, bisect, heapq, string, re\n",
+  "check_function": "def check(candidate):\n    assert candidate(primeFactors = 1) == 1\n    assert candidate(primeFactors = 3) == 3\n    assert candidate(primeFactors = 2) == 2\n",
+  "test_cases": [
+    "assert candidate(primeFactors = 1) == 1",
+    "assert candidate(primeFactors = 3) == 3",
+    "assert candidate(primeFactors = 2) == 2"
+  ]
+}

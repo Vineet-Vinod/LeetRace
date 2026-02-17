@@ -1,0 +1,26 @@
+{
+  "id": "student-attendance-record-ii",
+  "title": "Student Attendance Record Ii",
+  "difficulty": "Hard",
+  "tags": [
+    "Dynamic Programming"
+  ],
+  "description": "An attendance record for a student can be represented as a string where each character signifies whether the student was absent, late, or present on that day. The record only contains the following three characters:\n\n'A': Absent.\n'L': Late.\n'P': Present.\n\nAny student is eligible for an attendance award if they meet both of the following criteria:\n\nThe student was absent ('A') for strictly fewer than 2 days total.\nThe student was never late ('L') for 3 or more consecutive days.\n\nGiven an integer n, return the number of possible attendance records of length n that make a student eligible for an attendance award. The answer may be very large, so return it modulo 109 + 7.\n\u00a0\nExample 1:\n\nInput: n = 2\nOutput: 8\nExplanation: There are 8 records with length 2 that are eligible for an award:\n\"PP\", \"AP\", \"PA\", \"LP\", \"PL\", \"AL\", \"LA\", \"LL\"\nOnly \"AA\" is not eligible because there are 2 absences (there need to be fewer than 2).\n\nExample 2:\n\nInput: n = 1\nOutput: 3\n\nExample 3:\n\nInput: n = 10101\nOutput: 183236316\n\n\u00a0\nConstraints:\n\n1 <= n <= 105\n\n",
+  "entry_point": "Solution().checkRecord",
+  "starter_code": "class Solution:\n    def checkRecord(self, n: int) -> int:\n        ",
+  "preamble": "from typing import *\nfrom collections import *\nfrom functools import *\nfrom itertools import *\nfrom heapq import *\nfrom bisect import *\nfrom math import *\nimport math, collections, functools, itertools, bisect, heapq, string, re\n",
+  "check_function": "def check(candidate):\n    assert candidate(n = 3) == 19\n    assert candidate(n = 100) == 985598218\n    assert candidate(n = 2) == 8\n    assert candidate(n = 1) == 3\n    assert candidate(n = 10) == 3536\n    assert candidate(n = 5) == 94\n    assert candidate(n = 50) == 100469819\n    assert candidate(n = 300) == 921822362\n    assert candidate(n = 4) == 43\n    assert candidate(n = 20) == 2947811\n    assert candidate(n = 200) == 110821862\n",
+  "test_cases": [
+    "assert candidate(n = 3) == 19",
+    "assert candidate(n = 100) == 985598218",
+    "assert candidate(n = 2) == 8",
+    "assert candidate(n = 1) == 3",
+    "assert candidate(n = 10) == 3536",
+    "assert candidate(n = 5) == 94",
+    "assert candidate(n = 50) == 100469819",
+    "assert candidate(n = 300) == 921822362",
+    "assert candidate(n = 4) == 43",
+    "assert candidate(n = 20) == 2947811",
+    "assert candidate(n = 200) == 110821862"
+  ]
+}

@@ -15,23 +15,33 @@ RUNNER_SCRIPT = textwrap.dedent("""\
     code = data["code"]
     entry_point = data["entry_point"]
     test_cases = data["test_cases"]
+    preamble = data.get("preamble", "")
+
+    # Execute preamble (imports needed by starter code like List, Optional, etc.)
+    namespace = {}
+    if preamble:
+        try:
+            exec(preamble, namespace)
+        except Exception:
+            pass
 
     # Execute user code
-    namespace = {}
     try:
         exec(code, namespace)
     except Exception as e:
         print(json.dumps({"passed": 0, "total": len(test_cases), "error": f"Compilation error: {e}"}))
         sys.exit(0)
 
-    if entry_point not in namespace:
-        print(json.dumps({"passed": 0, "total": len(test_cases), "error": f"Function '{entry_point}' not defined"}))
+    # Resolve entry_point — supports both bare names and expressions like Solution().twoSum
+    try:
+        candidate = eval(entry_point, namespace)
+    except Exception as e:
+        print(json.dumps({"passed": 0, "total": len(test_cases), "error": f"Cannot resolve '{entry_point}': {e}"}))
         sys.exit(0)
 
-    # Inject the solution function as 'candidate' into test namespace
-    # (dataset test cases call candidate(...))
+    # Inject as 'candidate' into test namespace (test cases call candidate(...))
     test_ns = dict(namespace)
-    test_ns["candidate"] = namespace[entry_point]
+    test_ns["candidate"] = candidate
 
     passed = 0
     total = len(test_cases)
@@ -39,7 +49,6 @@ RUNNER_SCRIPT = textwrap.dedent("""\
 
     for tc in test_cases:
         try:
-            # Each test case is an assert statement referencing entry_point
             exec(tc, test_ns)
             passed += 1
         except AssertionError as e:
@@ -66,12 +75,13 @@ def _set_limits():
         pass
 
 
-def _run_sync(code: str, entry_point: str, test_cases: list[str]) -> dict:
+def _run_sync(code: str, entry_point: str, test_cases: list[str], preamble: str = "") -> dict:
     """Synchronous sandbox execution."""
     payload = json.dumps({
         "code": code,
         "entry_point": entry_point,
         "test_cases": test_cases,
+        "preamble": preamble,
     })
 
     start = time.monotonic()
@@ -102,6 +112,6 @@ def _run_sync(code: str, entry_point: str, test_cases: list[str]) -> dict:
         return {"passed": 0, "total": len(test_cases), "error": str(e)[:200], "time_ms": elapsed_ms}
 
 
-async def run_code(code: str, entry_point: str, test_cases: list[str]) -> dict:
+async def run_code(code: str, entry_point: str, test_cases: list[str], preamble: str = "") -> dict:
     """Run user code in a sandbox. Returns {passed, total, error, time_ms}."""
-    return await asyncio.to_thread(_run_sync, code, entry_point, test_cases)
+    return await asyncio.to_thread(_run_sync, code, entry_point, test_cases, preamble)

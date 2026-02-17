@@ -1,0 +1,41 @@
+{
+  "id": "stone-game-iv",
+  "title": "Stone Game Iv",
+  "difficulty": "Hard",
+  "tags": [
+    "Math",
+    "Dynamic Programming",
+    "Game Theory"
+  ],
+  "description": "Alice and Bob take turns playing a game, with Alice starting first.\nInitially, there are n stones in a pile. On each player's turn, that player makes a move consisting of removing any non-zero square number of stones in the pile.\nAlso, if a player cannot make a move, he/she loses the game.\nGiven a positive integer n, return true if and only if Alice wins the game otherwise return false, assuming both players play optimally.\n\u00a0\nExample 1:\n\nInput: n = 1\nOutput: true\nExplanation: Alice can remove 1 stone winning the game because Bob doesn't have any moves.\nExample 2:\n\nInput: n = 2\nOutput: false\nExplanation: Alice can only remove 1 stone, after that Bob removes the last one winning the game (2 -> 1 -> 0).\n\nExample 3:\n\nInput: n = 4\nOutput: true\nExplanation: n is already a perfect square, Alice can win with one move, removing 4 stones (4 -> 0).\n\n\u00a0\nConstraints:\n\n1 <= n <= 105\n\n",
+  "entry_point": "Solution().winnerSquareGame",
+  "starter_code": "class Solution:\n    def winnerSquareGame(self, n: int) -> bool:\n        ",
+  "preamble": "from typing import *\nfrom collections import *\nfrom functools import *\nfrom itertools import *\nfrom heapq import *\nfrom bisect import *\nfrom math import *\nimport math, collections, functools, itertools, bisect, heapq, string, re\n",
+  "check_function": "def check(candidate):\n    assert candidate(n = 101) == True\n    assert candidate(n = 3) == True\n    assert candidate(n = 100) == True\n    assert candidate(n = 30) == True\n    assert candidate(n = 5) == False\n    assert candidate(n = 4) == True\n    assert candidate(n = 200) == True\n    assert candidate(n = 17) == False\n    assert candidate(n = 2) == False\n    assert candidate(n = 20) == False\n    assert candidate(n = 1) == True\n    assert candidate(n = 7) == False\n    assert candidate(n = 10) == False\n    assert candidate(n = 25) == True\n    assert candidate(n = 50) == True\n    assert candidate(n = 300) == True\n    assert candidate(n = 123) == True\n    assert candidate(n = 64) == True\n    assert candidate(n = 16) == True\n    assert candidate(n = 169) == True\n    assert candidate(n = 81) == True\n    assert candidate(n = 150) == False\n    assert candidate(n = 55) == True\n    assert candidate(n = 180) == False\n",
+  "test_cases": [
+    "assert candidate(n = 101) == True",
+    "assert candidate(n = 3) == True",
+    "assert candidate(n = 100) == True",
+    "assert candidate(n = 30) == True",
+    "assert candidate(n = 5) == False",
+    "assert candidate(n = 4) == True",
+    "assert candidate(n = 200) == True",
+    "assert candidate(n = 17) == False",
+    "assert candidate(n = 2) == False",
+    "assert candidate(n = 20) == False",
+    "assert candidate(n = 1) == True",
+    "assert candidate(n = 7) == False",
+    "assert candidate(n = 10) == False",
+    "assert candidate(n = 25) == True",
+    "assert candidate(n = 50) == True",
+    "assert candidate(n = 300) == True",
+    "assert candidate(n = 123) == True",
+    "assert candidate(n = 64) == True",
+    "assert candidate(n = 16) == True",
+    "assert candidate(n = 169) == True",
+    "assert candidate(n = 81) == True",
+    "assert candidate(n = 150) == False",
+    "assert candidate(n = 55) == True",
+    "assert candidate(n = 180) == False"
+  ]
+}

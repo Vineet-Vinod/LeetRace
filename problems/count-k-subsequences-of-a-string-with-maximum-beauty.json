@@ -1,0 +1,21 @@
+{
+  "id": "count-k-subsequences-of-a-string-with-maximum-beauty",
+  "title": "Count K Subsequences Of A String With Maximum Beauty",
+  "difficulty": "Hard",
+  "tags": [
+    "Greedy",
+    "Hash Table",
+    "Math",
+    "String",
+    "Combinatorics"
+  ],
+  "description": "You are given a string s and an integer k.\nA k-subsequence is a subsequence of s, having length k, and all its characters are unique, i.e., every character occurs once.\nLet f(c) denote the number of times the character c occurs in s.\nThe beauty of a k-subsequence is the sum of f(c) for every character c in the k-subsequence.\nFor example, consider s = \"abbbdd\" and k = 2:\n\nf('a') = 1, f('b') = 3, f('d') = 2\nSome k-subsequences of s are:\n\t\n\"abbbdd\" -> \"ab\" having a beauty of f('a') + f('b') = 4\n\"abbbdd\" -> \"ad\" having a beauty of f('a') + f('d') = 3\n\"abbbdd\" -> \"bd\" having a beauty of f('b') + f('d') = 5\n\n\n\nReturn an integer denoting the number of k-subsequences whose beauty is the maximum among all k-subsequences. Since the answer may be too large, return it modulo 109 + 7.\nA subsequence of a string is a new string formed from the original string by deleting some (possibly none) of the characters without disturbing the relative positions of the remaining characters.\nNotes\n\nf(c) is the number of times a character c occurs in s, not a k-subsequence.\nTwo k-subsequences are considered different if one is formed by an index that is not present in the other. So, two k-subsequences may form the same string.\n\n\u00a0\nExample 1:\n\nInput: s = \"bcca\", k = 2\nOutput: 4\nExplanation: From s we have f('a') = 1, f('b') = 1, and f('c') = 2.\nThe k-subsequences of s are: \nbcca having a beauty of f('b') + f('c') = 3 \nbcca having a beauty of f('b') + f('c') = 3 \nbcca having a beauty of f('b') + f('a') = 2 \nbcca having a beauty of f('c') + f('a') = 3\nbcca having a beauty of f('c') + f('a') = 3 \nThere are 4 k-subsequences that have the maximum beauty, 3. \nHence, the answer is 4. \n\nExample 2:\n\nInput: s = \"abbcd\", k = 4\nOutput: 2\nExplanation: From s we have f('a') = 1, f('b') = 2, f('c') = 1, and f('d') = 1. \nThe k-subsequences of s are: \nabbcd having a beauty of f('a') + f('b') + f('c') + f('d') = 5\nabbcd having a beauty of f('a') + f('b') + f('c') + f('d') = 5 \nThere are 2 k-subsequences that have the maximum beauty, 5. \nHence, the answer is 2. \n\n\u00a0\nConstraints:\n\n1 <= s.length <= 2 * 105\n1 <= k <= s.length\ns consists only of lowercase English letters.\n\n",
+  "entry_point": "Solution().countKSubsequencesWithMaxBeauty",
+  "starter_code": "class Solution:\n    def countKSubsequencesWithMaxBeauty(self, s: str, k: int) -> int:\n        ",
+  "preamble": "from typing import *\nfrom collections import *\nfrom functools import *\nfrom itertools import *\nfrom heapq import *\nfrom bisect import *\nfrom math import *\nimport math, collections, functools, itertools, bisect, heapq, string, re\n",
+  "check_function": "def check(candidate):\n    assert candidate(s = \"zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz\",k = 26) == 0\n    assert candidate(s = \"zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz\",k = 2) == 0\n",
+  "test_cases": [
+    "assert candidate(s = \"zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz\",k = 26) == 0",
+    "assert candidate(s = \"zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz\",k = 2) == 0"
+  ]
+}

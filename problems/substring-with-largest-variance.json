@@ -1,0 +1,41 @@
+{
+  "id": "substring-with-largest-variance",
+  "title": "Substring With Largest Variance",
+  "difficulty": "Hard",
+  "tags": [
+    "Array",
+    "Dynamic Programming"
+  ],
+  "description": "The variance of a string is defined as the largest difference between the number of occurrences of any 2 characters present in the string. Note the two characters may or may not be the same.\nGiven a string s consisting of lowercase English letters only, return the largest variance possible among all substrings of s.\nA substring is a contiguous sequence of characters within a string.\n\u00a0\nExample 1:\n\nInput: s = \"aababbb\"\nOutput: 3\nExplanation:\nAll possible variances along with their respective substrings are listed below:\n- Variance 0 for substrings \"a\", \"aa\", \"ab\", \"abab\", \"aababb\", \"ba\", \"b\", \"bb\", and \"bbb\".\n- Variance 1 for substrings \"aab\", \"aba\", \"abb\", \"aabab\", \"ababb\", \"aababbb\", and \"bab\".\n- Variance 2 for substrings \"aaba\", \"ababbb\", \"abbb\", and \"babb\".\n- Variance 3 for substring \"babbb\".\nSince the largest possible variance is 3, we return it.\n\nExample 2:\n\nInput: s = \"abcde\"\nOutput: 0\nExplanation:\nNo letter occurs more than once in s, so the variance of every substring is 0.\n\n\u00a0\nConstraints:\n\n1 <= s.length <= 104\ns consists of lowercase English letters.\n\n",
+  "entry_point": "Solution().largestVariance",
+  "starter_code": "class Solution:\n    def largestVariance(self, s: str) -> int:\n        ",
+  "preamble": "from typing import *\nfrom collections import *\nfrom functools import *\nfrom itertools import *\nfrom heapq import *\nfrom bisect import *\nfrom math import *\nimport math, collections, functools, itertools, bisect, heapq, string, re\n",
+  "check_function": "def check(candidate):\n    assert candidate(s = \"zzzzzzy\") == 5\n    assert candidate(s = \"zyzzyzyzy\") == 2\n    assert candidate(s = \"abcdefghijklmnopqrstuvwxyz\") == 0\n    assert candidate(s = \"abbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz\") == 1\n    assert candidate(s = \"abbaabbaabba\") == 2\n    assert candidate(s = \"abababab\") == 1\n    assert candidate(s = \"aaaaa\") == 0\n    assert candidate(s = \"a\") == 0\n    assert candidate(s = \"abcabcabc\") == 1\n    assert candidate(s = \"zzyzxzyzyzxzyzxzyzxzyzxzyzxzyzxzyz\") == 11\n    assert candidate(s = \"abcabcabcabc\") == 1\n    assert candidate(s = \"abcde\") == 0\n    assert candidate(s = \"leetcode\") == 2\n    assert candidate(s = \"xyzxyzxyz\") == 1\n    assert candidate(s = \"abccccccc\") == 6\n    assert candidate(s = \"zzzzzzzzzz\") == 0\n    assert candidate(s = \"zzzzzyyyyxxxxwwwwvvvvuuuuttttssssrrrrqqqqppppllllkkkkjjjjiiiihhhhggggffffffeee ddcccbbbbaaaa\") == 5\n    assert candidate(s = \"aabbcc\") == 1\n    assert candidate(s = \"mississippi\") == 3\n    assert candidate(s = \"abcdefghij\") == 0\n    assert candidate(s = \"aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz\") == 1\n    assert candidate(s = \"aabbccddeeffgghhiijj\") == 1\n    assert candidate(s = \"aabbaaabb\") == 3\n    assert candidate(s = \"abacaba\") == 3\n    assert candidate(s = \"aababbb\") == 3\n",
+  "test_cases": [
+    "assert candidate(s = \"zzzzzzy\") == 5",
+    "assert candidate(s = \"zyzzyzyzy\") == 2",
+    "assert candidate(s = \"abcdefghijklmnopqrstuvwxyz\") == 0",
+    "assert candidate(s = \"abbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz\") == 1",
+    "assert candidate(s = \"abbaabbaabba\") == 2",
+    "assert candidate(s = \"abababab\") == 1",
+    "assert candidate(s = \"aaaaa\") == 0",
+    "assert candidate(s = \"a\") == 0",
+    "assert candidate(s = \"abcabcabc\") == 1",
+    "assert candidate(s = \"zzyzxzyzyzxzyzxzyzxzyzxzyzxzyzxzyz\") == 11",
+    "assert candidate(s = \"abcabcabcabc\") == 1",
+    "assert candidate(s = \"abcde\") == 0",
+    "assert candidate(s = \"leetcode\") == 2",
+    "assert candidate(s = \"xyzxyzxyz\") == 1",
+    "assert candidate(s = \"abccccccc\") == 6",
+    "assert candidate(s = \"zzzzzzzzzz\") == 0",
+    "assert candidate(s = \"zzzzzyyyyxxxxwwwwvvvvuuuuttttssssrrrrqqqqppppllllkkkkjjjjiiiihhhhggggffffffeee ddcccbbbbaaaa\") == 5",
+    "assert candidate(s = \"aabbcc\") == 1",
+    "assert candidate(s = \"mississippi\") == 3",
+    "assert candidate(s = \"abcdefghij\") == 0",
+    "assert candidate(s = \"aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz\") == 1",
+    "assert candidate(s = \"aabbccddeeffgghhiijj\") == 1",
+    "assert candidate(s = \"aabbaaabb\") == 3",
+    "assert candidate(s = \"abacaba\") == 3",
+    "assert candidate(s = \"aababbb\") == 3"
+  ]
+}

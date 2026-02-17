@@ -1,0 +1,24 @@
+{
+  "id": "largest-palindrome-product",
+  "title": "Largest Palindrome Product",
+  "difficulty": "Hard",
+  "tags": [
+    "Math",
+    "Enumeration"
+  ],
+  "description": "Given an integer n, return the largest palindromic integer that can be represented as the product of two n-digits integers. Since the answer can be very large, return it modulo 1337.\n\u00a0\nExample 1:\n\nInput: n = 2\nOutput: 987\nExplanation: 99 x 91 = 9009, 9009 % 1337 = 987\n\nExample 2:\n\nInput: n = 1\nOutput: 9\n\n\u00a0\nConstraints:\n\n1 <= n <= 8\n\n",
+  "entry_point": "Solution().largestPalindrome",
+  "starter_code": "class Solution:\n    def largestPalindrome(self, n: int) -> int:\n        ",
+  "preamble": "from typing import *\nfrom collections import *\nfrom functools import *\nfrom itertools import *\nfrom heapq import *\nfrom bisect import *\nfrom math import *\nimport math, collections, functools, itertools, bisect, heapq, string, re\n",
+  "check_function": "def check(candidate):\n    assert candidate(n = 8) == 475\n    assert candidate(n = 3) == 123\n    assert candidate(n = 4) == 597\n    assert candidate(n = 6) == 1218\n    assert candidate(n = 2) == 987\n    assert candidate(n = 1) == 9\n    assert candidate(n = 7) == 877\n    assert candidate(n = 5) == 677\n",
+  "test_cases": [
+    "assert candidate(n = 8) == 475",
+    "assert candidate(n = 3) == 123",
+    "assert candidate(n = 4) == 597",
+    "assert candidate(n = 6) == 1218",
+    "assert candidate(n = 2) == 987",
+    "assert candidate(n = 1) == 9",
+    "assert candidate(n = 7) == 877",
+    "assert candidate(n = 5) == 677"
+  ]
+}

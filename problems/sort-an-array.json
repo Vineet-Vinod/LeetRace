@@ -1,0 +1,27 @@
+{
+  "id": "sort-an-array",
+  "title": "Sort An Array",
+  "difficulty": "Medium",
+  "tags": [
+    "Array",
+    "Divide and Conquer",
+    "Bucket Sort",
+    "Counting Sort",
+    "Radix Sort",
+    "Sorting",
+    "Heap (Priority Queue)",
+    "Merge Sort"
+  ],
+  "description": "Given an array of integers nums, sort the array in ascending order and return it.\nYou must solve the problem without using any built-in functions in O(nlog(n)) time complexity and with the smallest space complexity possible.\n\u00a0\nExample 1:\n\nInput: nums = [5,2,3,1]\nOutput: [1,2,3,5]\nExplanation: After sorting the array, the positions of some numbers are not changed (for example, 2 and 3), while the positions of other numbers are changed (for example, 1 and 5).\n\nExample 2:\n\nInput: nums = [5,1,1,2,0,0]\nOutput: [0,0,1,1,2,5]\nExplanation: Note that the values of nums are not necessairly unique.\n\n\u00a0\nConstraints:\n\n1 <= nums.length <= 5 * 104\n-5 * 104 <= nums[i] <= 5 * 104\n\n",
+  "entry_point": "Solution().sortArray",
+  "starter_code": "class Solution:\n    def sortArray(self, nums: List[int]) -> List[int]:\n        ",
+  "preamble": "from typing import *\nfrom collections import *\nfrom functools import *\nfrom itertools import *\nfrom heapq import *\nfrom bisect import *\nfrom math import *\nimport math, collections, functools, itertools, bisect, heapq, string, re\n",
+  "check_function": "def check(candidate):\n    assert candidate(nums = [0]) == [0]\n    assert candidate(nums = [-1]) == [-1]\n    assert candidate(nums = [50000]) == [50000]\n    assert candidate(nums = [-50000]) == [-50000]\n    assert candidate(nums = [1]) == [1]\n",
+  "test_cases": [
+    "assert candidate(nums = [0]) == [0]",
+    "assert candidate(nums = [-1]) == [-1]",
+    "assert candidate(nums = [50000]) == [50000]",
+    "assert candidate(nums = [-50000]) == [-50000]",
+    "assert candidate(nums = [1]) == [1]"
+  ]
+}
