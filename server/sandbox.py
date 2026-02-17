@@ -10,6 +10,80 @@ import time
 
 RUNNER_SCRIPT = textwrap.dedent("""\
     import json, sys, time, re
+    from collections import deque
+
+    # --- TreeNode helpers ---
+    class TreeNode:
+        def __init__(self, val=0, left=None, right=None):
+            self.val = val
+            self.left = left
+            self.right = right
+        def __repr__(self):
+            vals = []
+            q = deque([self])
+            while q:
+                node = q.popleft()
+                if node:
+                    vals.append(node.val)
+                    q.append(node.left)
+                    q.append(node.right)
+                else:
+                    vals.append(None)
+            while vals and vals[-1] is None:
+                vals.pop()
+            return f"tree_node({vals})"
+
+    def tree_node(vals):
+        if not vals:
+            return None
+        root = TreeNode(vals[0])
+        q = deque([root])
+        i = 1
+        while q and i < len(vals):
+            node = q.popleft()
+            if i < len(vals) and vals[i] is not None:
+                node.left = TreeNode(vals[i])
+                q.append(node.left)
+            i += 1
+            if i < len(vals) and vals[i] is not None:
+                node.right = TreeNode(vals[i])
+                q.append(node.right)
+            i += 1
+        return root
+
+    def is_same_tree(a, b):
+        if a is None and b is None:
+            return True
+        if a is None or b is None:
+            return False
+        return a.val == b.val and is_same_tree(a.left, b.left) and is_same_tree(a.right, b.right)
+
+    # --- ListNode helpers ---
+    class ListNode:
+        def __init__(self, val=0, next=None):
+            self.val = val
+            self.next = next
+        def __repr__(self):
+            vals, node = [], self
+            while node:
+                vals.append(node.val)
+                node = node.next
+            return f"list_node({vals})"
+
+    def list_node(vals):
+        head = ListNode(0)
+        cur = head
+        for v in vals:
+            cur.next = ListNode(v)
+            cur = cur.next
+        return head.next
+
+    def is_same_list(a, b):
+        while a and b:
+            if a.val != b.val:
+                return False
+            a, b = a.next, b.next
+        return a is None and b is None
 
     def strip_kwargs(tc):
         return re.sub(r'(?<=[\\(,])\\s*\\w+\\s*=\\s*(?!=)', ' ', tc)
@@ -77,7 +151,10 @@ RUNNER_SCRIPT = textwrap.dedent("""\
     sys.stderr = captured_err
 
     # Execute preamble (imports needed by starter code like List, Optional, etc.)
-    namespace = {}
+    namespace = {
+        "TreeNode": TreeNode,
+        "ListNode": ListNode,
+    }
     if preamble:
         try:
             exec(preamble, namespace)
@@ -107,6 +184,10 @@ RUNNER_SCRIPT = textwrap.dedent("""\
     test_ns["candidate"] = candidate
     test_ns["flex_eq"] = flex_eq
     test_ns["normalize_eq"] = normalize_eq
+    test_ns["tree_node"] = tree_node
+    test_ns["list_node"] = list_node
+    test_ns["is_same_tree"] = is_same_tree
+    test_ns["is_same_list"] = is_same_list
 
     passed = 0
     total = len(test_cases)

@@ -28,19 +28,16 @@ def load_problem(problem_id: str) -> dict | None:
     return json.loads(path.read_text())
 
 
-EXCLUDED_TAGS = {"Tree", "Binary Tree", "Binary Search Tree", "Linked List"}
-
-
 def pick_random(difficulty: str | None = None) -> dict | None:
     """Pick a random problem, optionally filtered by difficulty."""
     index = load_index()
     if not index:
         return None
 
-    filtered = [p for p in index if not EXCLUDED_TAGS & set(p.get("tags", []))]
-
     if difficulty:
-        filtered = [p for p in filtered if p["difficulty"].lower() == difficulty.lower()]
+        filtered = [p for p in index if p["difficulty"].lower() == difficulty.lower()]
+    else:
+        filtered = index
 
     if not filtered:
         return None
