@@ -46,13 +46,17 @@ RUNNER_SCRIPT = textwrap.dedent("""\
     def use_flex_eq(tc):
         m = re.match(r'assert\\s+(.+?)\\s*==\\s*(.+)$', tc)
         if m:
-            return f"assert flex_eq({m.group(1)}, {m.group(2)})"
+            call = m.group(1)
+            expected = m.group(2)
+            return f"_actual_ = {call}; _expected_ = {expected}; assert flex_eq(_actual_, _expected_), 'Expected ' + repr(_expected_) + ' but got ' + repr(_actual_)"
         return tc
 
     def use_normalize_eq(tc):
         m = re.match(r'assert\\s+(.+?)\\s*==\\s*(.+)$', tc)
         if m:
-            return f"assert normalize_eq({m.group(1)}, {m.group(2)})"
+            call = m.group(1)
+            expected = m.group(2)
+            return f"_actual_ = {call}; _expected_ = {expected}; assert normalize_eq(_actual_, _expected_), 'Expected ' + repr(_expected_) + ' but got ' + repr(_actual_)"
         return tc
 
     data = json.loads(sys.stdin.read())
@@ -114,7 +118,7 @@ RUNNER_SCRIPT = textwrap.dedent("""\
             passed += 1
         except AssertionError as e:
             if first_error is None:
-                first_error = f"Assertion failed: {tc[:100]}"
+                first_error = str(e)[:200] if str(e) else f"Assertion failed: {tc[:100]}"
         except Exception as e:
             if first_error is None:
                 first_error = f"Runtime error: {type(e).__name__}: {e}"
