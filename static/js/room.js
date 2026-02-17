@@ -116,16 +116,17 @@ const handlers = {
             showFeedback(text, 'fail');
         }
 
-        const output = [msg.stdout, msg.stderr].filter(Boolean).join('\n');
+        const lines = [];
+        lines.push(`Tests: ${msg.passed}/${msg.total} passed`);
+        if (msg.error) lines.push(`Error: ${msg.error}`);
+        if (msg.stdout) lines.push(`\nStdout:\n${msg.stdout}`);
+        if (msg.stderr) lines.push(`\nStderr:\n${msg.stderr}`);
+
         const panel = document.getElementById('output-panel');
         const content = document.getElementById('output-content');
-        if (output) {
-            content.textContent = output;
-            panel.hidden = false;
-            panel.open = true;
-        } else {
-            panel.hidden = true;
-        }
+        content.textContent = lines.join('\n');
+        panel.hidden = false;
+        panel.open = true;
     },
 
     scoreboard(msg) {
