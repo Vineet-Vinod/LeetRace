@@ -129,6 +129,7 @@ async def start_next_round(room: Room) -> None:
     # Reset player state for new round
     for player in room.players.values():
         player.submission = None
+        player.best_submission = None
         player.locked_at = None
 
     room.problem = problem
@@ -165,8 +166,8 @@ async def handle_lock(ws: WebSocket, room: Room, player_name: str) -> None:
     if player.locked_at is not None:
         await send_error(ws, "Already locked in")
         return
-    if player.submission is None:
-        await send_error(ws, "Submit a solution before locking in")
+    if player.best_submission is None or not player.best_submission.get("solved"):
+        await send_error(ws, "Solve the problem before locking in")
         return
 
     player.locked_at = time.time() - room.start_time
@@ -244,6 +245,18 @@ async def handle_start(ws: WebSocket, room: Room, player_name: str) -> None:
     asyncio.create_task(timer_task(room))
 
 
+def _is_better(new: dict, old: dict) -> bool:
+    """Return True if the new submission is better than the old one for scoring."""
+    if new["solved"] and not old["solved"]:
+        return True
+    if not new["solved"] and old["solved"]:
+        return False
+    if new["solved"] and old["solved"]:
+        return new["char_count"] < old["char_count"]
+    # Both unsolved: more tests passed is better
+    return new["passed"] > old["passed"]
+
+
 async def handle_submit(room: Room, player_name: str, data: dict) -> None:
     """Handle a code submission."""
     if room.state != RoomState.PLAYING:
@@ -278,7 +291,7 @@ async def handle_submit(room: Room, player_name: str, data: dict) -> None:
 
     solved = result["passed"] == result["total"] and result["total"] > 0
 
-    player.submission = {
+    submission = {
         "code": code,
         "passed": result["passed"],
         "total": result["total"],
@@ -288,6 +301,14 @@ async def handle_submit(room: Room, player_name: str, data: dict) -> None:
         "solved": solved,
         "submit_time": round(submit_time, 2),
     }
+
+    # Always store latest result
+    player.submission = submission
+
+    # Update best submission if this one is better
+    best = player.best_submission
+    if best is None or _is_better(submission, best):
+        player.best_submission = submission
 
     # Notify the submitter of their result
     if player.websocket:
@@ -323,6 +344,7 @@ async def handle_restart(ws: WebSocket, room: Room, player_name: str) -> None:
     room.current_round = 0
     for player in room.players.values():
         player.submission = None
+        player.best_submission = None
         player.locked_at = None
 
     await broadcast(room, room_state_msg(room))

@@ -20,7 +20,8 @@ class RoomState(str, Enum):
 class Player:
     name: str
     websocket: WebSocket | None = None
-    submission: dict | None = None  # {code, passed, total, error, time_ms, char_count, solved, submit_time}
+    submission: dict | None = None  # latest: {code, passed, total, error, time_ms, char_count, solved, submit_time}
+    best_submission: dict | None = None  # best so far (used for scoring)
     locked_at: float | None = None  # timestamp when player locked in
 
 

@@ -17,7 +17,7 @@ def rank_players(players: dict[str, Player]) -> list[dict]:
     """
     entries = []
     for name, player in players.items():
-        sub = player.submission
+        sub = player.best_submission
         if sub:
             entries.append({
                 "name": name,
