@@ -211,6 +211,25 @@ async def handle_submit(room: Room, player_name: str, data: dict) -> None:
     await check_all_submitted(room)
 
 
+async def handle_restart(ws: WebSocket, room: Room, player_name: str) -> None:
+    """Handle the host restarting the game with a new problem."""
+    if player_name != room.host:
+        await send_error(ws, "Only the host can restart the game")
+        return
+    if room.state != RoomState.FINISHED:
+        await send_error(ws, "Game is not finished yet")
+        return
+
+    # Reset room state
+    room.state = RoomState.LOBBY
+    room.problem = None
+    room.start_time = None
+    for player in room.players.values():
+        player.submission = None
+
+    await broadcast(room, room_state_msg(room))
+
+
 async def websocket_handler(ws: WebSocket, room_id: str) -> None:
     """Main WebSocket handler for a room."""
     await ws.accept()
@@ -236,6 +255,9 @@ async def websocket_handler(ws: WebSocket, room_id: str) -> None:
 
             elif msg_type == "submit" and player_name:
                 await handle_submit(room, player_name, data)
+
+            elif msg_type == "restart" and player_name:
+                await handle_restart(ws, room, player_name)
 
     except WebSocketDisconnect:
         pass

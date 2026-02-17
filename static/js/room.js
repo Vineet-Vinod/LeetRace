@@ -131,6 +131,9 @@ const handlers = {
         clearInterval(timerInterval);
         showScreen(finishedScreen);
         renderFinalRankings(msg.rankings);
+
+        document.getElementById('play-again-btn').hidden = !isHost;
+        document.getElementById('finished-waiting').hidden = isHost;
     },
 
     error(msg) {
@@ -240,5 +243,5 @@ document.addEventListener('keydown', (e) => {
 });
 
 document.getElementById('play-again-btn').addEventListener('click', () => {
-    window.location.href = '/';
+    ws.send(JSON.stringify({ type: 'restart' }));
 });
