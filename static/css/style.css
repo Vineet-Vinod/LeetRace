@@ -1,0 +1,383 @@
+/* === Reset & Base === */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --bg: #1a1a2e;
+    --bg-card: #16213e;
+    --bg-input: #0f3460;
+    --accent: #e94560;
+    --accent-hover: #ff6b81;
+    --text: #eee;
+    --text-dim: #8892b0;
+    --green: #50fa7b;
+    --yellow: #f1fa8c;
+    --red: #ff5555;
+    --border: #233554;
+    --radius: 8px;
+    --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --mono: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+}
+
+html, body {
+    height: 100%;
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+}
+
+/* === Landing === */
+.landing {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem;
+}
+
+.logo { font-size: 3rem; font-weight: 800; letter-spacing: -2px; }
+.logo span, .logo { color: var(--accent); }
+.logo-sm { font-size: 2rem; }
+.logo-xs { font-size: 1.2rem; }
+.tagline { color: var(--text-dim); margin-bottom: 2rem; font-size: 1.1rem; }
+
+/* === Card === */
+.card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2rem;
+    width: 100%;
+    max-width: 480px;
+}
+
+.card h2 { font-size: 1.1rem; margin-bottom: 0.5rem; }
+
+.section { margin-top: 1.5rem; }
+
+/* === Forms === */
+label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    margin-bottom: 0.3rem;
+}
+
+input, select {
+    width: 100%;
+    padding: 0.6rem 0.8rem;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-size: 1rem;
+    font-family: var(--font);
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+input:focus, select:focus { border-color: var(--accent); }
+
+.form-row {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-end;
+}
+
+.form-group { flex: 1; }
+
+/* === Buttons === */
+.btn {
+    display: inline-block;
+    padding: 0.65rem 1.5rem;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    font-family: var(--font);
+}
+
+.btn:active { transform: scale(0.97); }
+
+.btn-primary {
+    background: var(--accent);
+    color: #fff;
+    width: 100%;
+    margin-top: 1rem;
+}
+
+.btn-primary:hover { background: var(--accent-hover); }
+
+.btn-secondary {
+    background: var(--bg-input);
+    color: var(--text);
+    border: 1px solid var(--border);
+    white-space: nowrap;
+}
+
+.btn-secondary:hover { border-color: var(--accent); }
+
+.btn-submit {
+    background: var(--green);
+    color: #1a1a2e;
+    font-weight: 700;
+}
+
+.btn-submit:hover { background: #6dff96; }
+.btn-submit:disabled { background: var(--text-dim); cursor: not-allowed; }
+
+/* === Divider === */
+.divider {
+    display: flex;
+    align-items: center;
+    margin: 1.5rem 0;
+    color: var(--text-dim);
+    font-size: 0.85rem;
+}
+
+.divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid var(--border);
+}
+
+.divider span { padding: 0 0.75rem; }
+
+/* === Error === */
+.error {
+    color: var(--red);
+    font-size: 0.9rem;
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.hint {
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+}
+
+/* === Lobby === */
+#lobby {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem;
+}
+
+.player-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 1rem 0;
+}
+
+.player-chip {
+    background: var(--bg-input);
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    border: 1px solid var(--border);
+}
+
+.player-chip.host { border-color: var(--accent); }
+
+.lobby-info {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    margin-bottom: 0.5rem;
+}
+
+/* === Game Layout === */
+.game-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+}
+
+.game-info { display: flex; gap: 1.5rem; align-items: center; }
+
+.timer {
+    font-family: var(--mono);
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--green);
+}
+
+.timer.warning { color: var(--yellow); }
+.timer.danger { color: var(--red); }
+
+.char-count {
+    font-family: var(--mono);
+    font-size: 0.95rem;
+    color: var(--text-dim);
+}
+
+.game-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    height: calc(100vh - 50px - 40px);
+}
+
+.problem-panel {
+    padding: 1.5rem;
+    overflow-y: auto;
+    border-right: 1px solid var(--border);
+}
+
+.problem-panel h2 { margin-bottom: 0.25rem; }
+
+.difficulty-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+}
+
+.difficulty-badge.easy { background: #50fa7b33; color: var(--green); }
+.difficulty-badge.medium { background: #f1fa8c33; color: var(--yellow); }
+.difficulty-badge.hard { background: #ff555533; color: var(--red); }
+
+.problem-desc {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    font-family: var(--mono);
+    color: var(--text-dim);
+}
+
+.editor-panel {
+    display: flex;
+    flex-direction: column;
+}
+
+#editor-container {
+    flex: 1;
+    min-height: 0;
+}
+
+/* === Scoreboard === */
+.scoreboard-bar {
+    padding: 0.5rem 1rem;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    font-size: 0.85rem;
+}
+
+.score-entry {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    padding: 0.3rem 0.7rem;
+    border-radius: 4px;
+    background: var(--bg-input);
+    white-space: nowrap;
+}
+
+.score-entry .rank {
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.score-entry.solved { border: 1px solid var(--green); }
+
+/* === Finished === */
+#finished {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem;
+}
+
+.rankings { margin: 1.5rem 0; width: 100%; }
+
+.rank-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.rank-row:first-child { border-top: 1px solid var(--border); }
+
+.rank-position {
+    font-size: 1.2rem;
+    font-weight: 800;
+    width: 2rem;
+    color: var(--accent);
+}
+
+.rank-row:first-child .rank-position { color: var(--yellow); font-size: 1.4rem; }
+
+.rank-name { flex: 1; font-weight: 600; }
+
+.rank-stats {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.85rem;
+    font-family: var(--mono);
+    color: var(--text-dim);
+}
+
+.rank-solved { color: var(--green); font-weight: 700; }
+.rank-failed { color: var(--red); }
+
+/* === Feedback toast === */
+.feedback {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius);
+    font-weight: 600;
+    z-index: 100;
+    animation: fadeIn 0.3s ease;
+}
+
+.feedback.success { background: var(--green); color: #1a1a2e; }
+.feedback.fail { background: var(--red); color: #fff; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* === Screen visibility === */
+.screen { display: none; }
+.screen.active { display: flex; }
+
+#playing.active {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* === Responsive === */
+@media (max-width: 768px) {
+    .game-layout {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr 1fr;
+    }
+
+    .problem-panel { border-right: none; border-bottom: 1px solid var(--border); }
+}

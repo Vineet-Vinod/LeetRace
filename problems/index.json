@@ -1,0 +1,79 @@
+[
+  {
+    "id": "two-sum",
+    "title": "Two Sum",
+    "difficulty": "Easy",
+    "tags": ["Array", "Hash Table"],
+    "test_count": 10
+  },
+  {
+    "id": "palindrome-number",
+    "title": "Palindrome Number",
+    "difficulty": "Easy",
+    "tags": ["Math"],
+    "test_count": 12
+  },
+  {
+    "id": "fizz-buzz",
+    "title": "Fizz Buzz",
+    "difficulty": "Easy",
+    "tags": ["Math", "String"],
+    "test_count": 9
+  },
+  {
+    "id": "valid-parentheses",
+    "title": "Valid Parentheses",
+    "difficulty": "Easy",
+    "tags": ["String", "Stack"],
+    "test_count": 12
+  },
+  {
+    "id": "reverse-string",
+    "title": "Reverse String",
+    "difficulty": "Easy",
+    "tags": ["String", "Two Pointers"],
+    "test_count": 7
+  },
+  {
+    "id": "longest-common-prefix",
+    "title": "Longest Common Prefix",
+    "difficulty": "Easy",
+    "tags": ["String"],
+    "test_count": 10
+  },
+  {
+    "id": "maximum-subarray",
+    "title": "Maximum Subarray",
+    "difficulty": "Medium",
+    "tags": ["Array", "Dynamic Programming"],
+    "test_count": 10
+  },
+  {
+    "id": "container-with-most-water",
+    "title": "Container With Most Water",
+    "difficulty": "Medium",
+    "tags": ["Array", "Two Pointers"],
+    "test_count": 9
+  },
+  {
+    "id": "merge-intervals",
+    "title": "Merge Intervals",
+    "difficulty": "Medium",
+    "tags": ["Array", "Sorting"],
+    "test_count": 9
+  },
+  {
+    "id": "trapping-rain-water",
+    "title": "Trapping Rain Water",
+    "difficulty": "Hard",
+    "tags": ["Array", "Two Pointers", "Dynamic Programming", "Stack"],
+    "test_count": 10
+  },
+  {
+    "id": "median-of-two-sorted-arrays",
+    "title": "Median of Two Sorted Arrays",
+    "difficulty": "Hard",
+    "tags": ["Array", "Binary Search"],
+    "test_count": 10
+  }
+]

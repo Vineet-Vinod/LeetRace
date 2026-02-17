@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LeetRace - Room</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <!-- LOBBY -->
+    <div id="lobby" class="screen" hidden>
+        <h1 class="logo logo-sm">LeetRace</h1>
+        <div class="card">
+            <h2>Room: <span id="lobby-room-id"></span></h2>
+            <p class="hint">Share this code with friends to join</p>
+            <div id="lobby-players" class="player-list"></div>
+            <div class="lobby-info">
+                <span id="lobby-difficulty"></span>
+                <span id="lobby-time"></span>
+            </div>
+            <button id="start-btn" class="btn btn-primary" hidden>Start Game</button>
+            <p id="lobby-waiting" class="hint">Waiting for host to start...</p>
+        </div>
+    </div>
+
+    <!-- PLAYING -->
+    <div id="playing" class="screen" hidden>
+        <div class="game-header">
+            <span class="logo logo-xs">LeetRace</span>
+            <div class="game-info">
+                <span id="timer" class="timer">5:00</span>
+                <span id="char-count" class="char-count">Chars: 0</span>
+            </div>
+            <button id="submit-btn" class="btn btn-submit">Submit</button>
+        </div>
+        <div class="game-layout">
+            <div class="problem-panel">
+                <h2 id="problem-title"></h2>
+                <span id="problem-difficulty" class="difficulty-badge"></span>
+                <div id="problem-description" class="problem-desc"></div>
+            </div>
+            <div class="editor-panel">
+                <div id="editor-container"></div>
+            </div>
+        </div>
+        <div id="live-scoreboard" class="scoreboard-bar" hidden></div>
+    </div>
+
+    <!-- FINISHED -->
+    <div id="finished" class="screen" hidden>
+        <h1 class="logo logo-sm">LeetRace</h1>
+        <div class="card">
+            <h2>Game Over!</h2>
+            <div id="final-rankings" class="rankings"></div>
+            <button id="play-again-btn" class="btn btn-primary">Play Again</button>
+        </div>
+    </div>
+
+    <!-- SUBMIT FEEDBACK -->
+    <div id="submit-feedback" class="feedback" hidden></div>
+
+    <!-- Monaco Editor CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
+    <script src="/static/js/editor.js"></script>
+    <script src="/static/js/room.js"></script>
+</body>
+</html>

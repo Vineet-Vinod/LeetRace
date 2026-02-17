@@ -1,0 +1,24 @@
+{
+  "id": "valid-parentheses",
+  "title": "Valid Parentheses",
+  "difficulty": "Easy",
+  "tags": ["String", "Stack"],
+  "description": "Given a string s containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid.\n\nAn input string is valid if:\n  1. Open brackets must be closed by the same type of brackets.\n  2. Open brackets must be closed in the correct order.\n  3. Every close bracket has a corresponding open bracket of the same type.\n\nExample 1:\n  Input: s = \"()\"\n  Output: True\n\nExample 2:\n  Input: s = \"()[]{}\"\n  Output: True\n\nExample 3:\n  Input: s = \"(]\"\n  Output: False",
+  "entry_point": "isValid",
+  "starter_code": "def isValid(s):\n    pass\n",
+  "check_function": "def check(candidate):\n    assert candidate(\"()\") == True\n    assert candidate(\"()[]{}\") == True\n    assert candidate(\"(]\") == False\n    assert candidate(\"\") == True\n    assert candidate(\"((()))\") == True\n    assert candidate(\"({[]})\") == True\n    assert candidate(\"({[}])\") == False\n    assert candidate(\"(\") == False\n    assert candidate(\")\") == False\n    assert candidate(\"{[]}\") == True\n    assert candidate(\"(((\") == False\n    assert candidate(\")))\") == False",
+  "test_cases": [
+    "assert candidate(\"()\") == True",
+    "assert candidate(\"()[]{}\") == True",
+    "assert candidate(\"(]\") == False",
+    "assert candidate(\"\") == True",
+    "assert candidate(\"((()))\") == True",
+    "assert candidate(\"({[]})\") == True",
+    "assert candidate(\"({[}])\") == False",
+    "assert candidate(\"(\") == False",
+    "assert candidate(\")\") == False",
+    "assert candidate(\"{[]}\") == True",
+    "assert candidate(\"(((\") == False",
+    "assert candidate(\")))\") == False"
+  ]
+}

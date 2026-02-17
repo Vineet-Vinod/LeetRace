@@ -1,0 +1,19 @@
+{
+  "id": "reverse-string",
+  "title": "Reverse String",
+  "difficulty": "Easy",
+  "tags": ["String", "Two Pointers"],
+  "description": "Write a function that reverses a string. The input string is given as a list of characters s.\n\nYou must do this by modifying the input list in-place with O(1) extra memory.\n\nReturn the reversed list.\n\nExample 1:\n  Input: s = [\"h\",\"e\",\"l\",\"l\",\"o\"]\n  Output: [\"o\",\"l\",\"l\",\"e\",\"h\"]\n\nExample 2:\n  Input: s = [\"H\",\"a\",\"n\",\"n\",\"a\",\"h\"]\n  Output: [\"h\",\"a\",\"n\",\"n\",\"a\",\"H\"]",
+  "entry_point": "reverseString",
+  "starter_code": "def reverseString(s):\n    pass\n",
+  "check_function": "def check(candidate):\n    assert candidate([\"h\",\"e\",\"l\",\"l\",\"o\"]) == [\"o\",\"l\",\"l\",\"e\",\"h\"]\n    assert candidate([\"H\",\"a\",\"n\",\"n\",\"a\",\"h\"]) == [\"h\",\"a\",\"n\",\"n\",\"a\",\"H\"]\n    assert candidate([\"a\"]) == [\"a\"]\n    assert candidate([\"a\",\"b\"]) == [\"b\",\"a\"]\n    assert candidate([]) == []\n    assert candidate([\"x\",\"y\",\"z\"]) == [\"z\",\"y\",\"x\"]\n    assert candidate([\"1\",\"2\",\"3\",\"4\",\"5\"]) == [\"5\",\"4\",\"3\",\"2\",\"1\"]",
+  "test_cases": [
+    "assert candidate([\"h\",\"e\",\"l\",\"l\",\"o\"]) == [\"o\",\"l\",\"l\",\"e\",\"h\"]",
+    "assert candidate([\"H\",\"a\",\"n\",\"n\",\"a\",\"h\"]) == [\"h\",\"a\",\"n\",\"n\",\"a\",\"H\"]",
+    "assert candidate([\"a\"]) == [\"a\"]",
+    "assert candidate([\"a\",\"b\"]) == [\"b\",\"a\"]",
+    "assert candidate([]) == []",
+    "assert candidate([\"x\",\"y\",\"z\"]) == [\"z\",\"y\",\"x\"]",
+    "assert candidate([\"1\",\"2\",\"3\",\"4\",\"5\"]) == [\"5\",\"4\",\"3\",\"2\",\"1\"]"
+  ]
+}

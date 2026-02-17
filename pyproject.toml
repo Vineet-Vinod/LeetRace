@@ -1,0 +1,15 @@
+[project]
+name = "leetrace"
+version = "0.1.0"
+description = "Multiplayer LeetCode racing webapp"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.34.0",
+]
+
+[project.optional-dependencies]
+build = [
+    "datasets>=3.0.0",
+]
