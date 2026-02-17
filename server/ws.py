@@ -176,6 +176,10 @@ async def handle_lock(ws: WebSocket, room: Room, player_name: str) -> None:
 
     await broadcast(room, scoreboard_msg(room))
 
+    # If all players are locked in, end the round early
+    if all(p.locked_at is not None for p in room.players.values()):
+        await end_game(room)
+
 
 async def handle_join(ws: WebSocket, room: Room, data: dict) -> str | None:
     """Handle a player joining a room. Returns player name or None."""
