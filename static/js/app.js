@@ -6,6 +6,7 @@ const joinBtn = document.getElementById('join-btn');
 const roomCodeInput = document.getElementById('room-code');
 const difficultySelect = document.getElementById('difficulty');
 const timeLimitInput = document.getElementById('time-limit');
+const roundsInput = document.getElementById('rounds');
 const errorMsg = document.getElementById('error-msg');
 
 function showError(msg) {
@@ -36,6 +37,7 @@ createBtn.addEventListener('click', async () => {
                 host: name,
                 difficulty: difficultySelect.value || null,
                 time_limit: parseInt(timeLimitInput.value) || 300,
+                rounds: parseInt(roundsInput.value) || 1,
             }),
         });
         const data = await res.json();

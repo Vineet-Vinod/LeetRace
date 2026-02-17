@@ -57,6 +57,7 @@ const handlers = {
         const diff = msg.difficulty || 'Any';
         document.getElementById('lobby-difficulty').textContent = `Difficulty: ${diff}`;
         document.getElementById('lobby-time').textContent = `Time: ${msg.time_limit}s`;
+        document.getElementById('lobby-rounds').textContent = `Rounds: ${msg.total_rounds}`;
 
         const startBtn = document.getElementById('start-btn');
         const waitingMsg = document.getElementById('lobby-waiting');
@@ -84,6 +85,15 @@ const handlers = {
 
         document.getElementById('problem-description').textContent = p.description;
 
+        // Round info
+        const roundEl = document.getElementById('round-info');
+        if (msg.total_rounds > 1) {
+            roundEl.textContent = `Round ${msg.current_round}/${msg.total_rounds}`;
+            roundEl.hidden = false;
+        } else {
+            roundEl.hidden = true;
+        }
+
         // Init editor
         initEditor('editor-container', p.starter_code, (code) => {
             document.getElementById('char-count').textContent = `Chars: ${charCount(code)}`;
@@ -103,6 +113,7 @@ const handlers = {
         document.getElementById('submit-btn').disabled = false;
         document.getElementById('lock-btn').hidden = true;
         document.getElementById('lock-btn').disabled = false;
+        document.getElementById('lock-btn').textContent = 'Lock In';
     },
 
     tick(msg) {
@@ -148,12 +159,34 @@ const handlers = {
         updateLiveScoreboard(msg.rankings);
     },
 
+    round_over(msg) {
+        gameActive = false;
+        clearInterval(timerInterval);
+        showScreen(finishedScreen);
+        renderFinalRankings(msg.rankings);
+
+        document.getElementById('finished-title').textContent =
+            `Round ${msg.current_round}/${msg.total_rounds} Complete`;
+        document.getElementById('break-countdown').hidden = false;
+        document.getElementById('break-countdown').textContent =
+            `Next round in ${msg.break_seconds}s...`;
+        document.getElementById('play-again-btn').hidden = true;
+        document.getElementById('finished-waiting').hidden = true;
+    },
+
+    break_tick(msg) {
+        document.getElementById('break-countdown').textContent =
+            `Next round in ${msg.remaining}s...`;
+    },
+
     game_over(msg) {
         gameActive = false;
         clearInterval(timerInterval);
         showScreen(finishedScreen);
         renderFinalRankings(msg.rankings);
 
+        document.getElementById('finished-title').textContent = 'Game Over!';
+        document.getElementById('break-countdown').hidden = true;
         document.getElementById('play-again-btn').hidden = !isHost;
         document.getElementById('finished-waiting').hidden = isHost;
     },

@@ -34,6 +34,8 @@ class Room:
     start_time: float | None = None
     time_limit: int = 300  # seconds
     difficulty: str | None = None
+    total_rounds: int = 1
+    current_round: int = 0
 
 
 rooms: dict[str, Room] = {}
@@ -44,7 +46,7 @@ def _generate_id() -> str:
     return secrets.token_hex(3).upper()
 
 
-def create_room(host_name: str, time_limit: int = 300, difficulty: str | None = None) -> Room:
+def create_room(host_name: str, time_limit: int = 300, difficulty: str | None = None, rounds: int = 1) -> Room:
     room_id = _generate_id()
     while room_id in rooms:
         room_id = _generate_id()
@@ -54,6 +56,7 @@ def create_room(host_name: str, time_limit: int = 300, difficulty: str | None = 
         host=host_name,
         time_limit=time_limit,
         difficulty=difficulty,
+        total_rounds=rounds,
     )
     rooms[room_id] = room
     return room

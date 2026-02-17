@@ -215,6 +215,22 @@ input:focus, select:focus { border-color: var(--accent); }
 
 .game-info { display: flex; gap: 1.5rem; align-items: center; }
 
+.round-info {
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--accent);
+}
+
+.break-countdown {
+    font-family: var(--mono);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--yellow);
+    text-align: center;
+    margin-top: 1rem;
+}
+
 .timer {
     font-family: var(--mono);
     font-size: 1.3rem;

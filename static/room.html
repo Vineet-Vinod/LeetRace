@@ -17,6 +17,7 @@
             <div class="lobby-info">
                 <span id="lobby-difficulty"></span>
                 <span id="lobby-time"></span>
+                <span id="lobby-rounds"></span>
             </div>
             <button id="start-btn" class="btn btn-primary" hidden>Start Game</button>
             <p id="lobby-waiting" class="hint">Waiting for host to start...</p>
@@ -28,6 +29,7 @@
         <div class="game-header">
             <span class="logo logo-xs">LeetRace</span>
             <div class="game-info">
+                <span id="round-info" class="round-info" hidden></span>
                 <span id="timer" class="timer">5:00</span>
                 <span id="char-count" class="char-count">Chars: 0</span>
             </div>
@@ -55,8 +57,9 @@
     <div id="finished" class="screen" hidden>
         <h1 class="logo logo-sm">LeetRace</h1>
         <div class="card">
-            <h2>Game Over!</h2>
+            <h2 id="finished-title">Game Over!</h2>
             <div id="final-rankings" class="rankings"></div>
+            <p id="break-countdown" class="break-countdown" hidden></p>
             <button id="play-again-btn" class="btn btn-primary" hidden>Play Again</button>
             <p id="finished-waiting" class="hint">Waiting for host to restart...</p>
         </div>
