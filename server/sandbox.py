@@ -14,10 +14,37 @@ RUNNER_SCRIPT = textwrap.dedent("""\
     def strip_kwargs(tc):
         return re.sub(r'(?<=[\\(,])\\s*\\w+\\s*=\\s*(?!=)', ' ', tc)
 
+    def _sort_key(x):
+        if isinstance(x, list):
+            return (1, str(_deep_sort(x)))
+        try:
+            return (0, x)
+        except TypeError:
+            return (0, str(x))
+
+    def _deep_sort(x):
+        if isinstance(x, list):
+            return sorted([_deep_sort(i) for i in x], key=_sort_key)
+        return x
+
+    def flex_eq(a, b):
+        if a == b:
+            return True
+        if isinstance(a, list) and isinstance(b, list):
+            return _deep_sort(a) == _deep_sort(b)
+        return False
+
+    def use_flex_eq(tc):
+        m = re.match(r'assert\\s+(.+?)\\s*==\\s*(.+)$', tc)
+        if m:
+            return f"assert flex_eq({m.group(1)}, {m.group(2)})"
+        return tc
+
     data = json.loads(sys.stdin.read())
     code = data["code"]
     entry_point = data["entry_point"]
-    test_cases = [strip_kwargs(tc) for tc in data["test_cases"]]
+    any_order = data.get("any_order", False)
+    test_cases = [use_flex_eq(strip_kwargs(tc)) if any_order else strip_kwargs(tc) for tc in data["test_cases"]]
     preamble = data.get("preamble", "")
 
     # Execute preamble (imports needed by starter code like List, Optional, etc.)
@@ -45,6 +72,7 @@ RUNNER_SCRIPT = textwrap.dedent("""\
     # Inject as 'candidate' into test namespace (test cases call candidate(...))
     test_ns = dict(namespace)
     test_ns["candidate"] = candidate
+    test_ns["flex_eq"] = flex_eq
 
     passed = 0
     total = len(test_cases)
@@ -78,13 +106,14 @@ def _set_limits():
         pass
 
 
-def _run_sync(code: str, entry_point: str, test_cases: list[str], preamble: str = "") -> dict:
+def _run_sync(code: str, entry_point: str, test_cases: list[str], preamble: str = "", any_order: bool = False) -> dict:
     """Synchronous sandbox execution."""
     payload = json.dumps({
         "code": code,
         "entry_point": entry_point,
         "test_cases": test_cases,
         "preamble": preamble,
+        "any_order": any_order,
     })
 
     start = time.monotonic()
@@ -115,6 +144,6 @@ def _run_sync(code: str, entry_point: str, test_cases: list[str], preamble: str 
         return {"passed": 0, "total": len(test_cases), "error": str(e)[:200], "time_ms": elapsed_ms}
 
 
-async def run_code(code: str, entry_point: str, test_cases: list[str], preamble: str = "") -> dict:
+async def run_code(code: str, entry_point: str, test_cases: list[str], preamble: str = "", any_order: bool = False) -> dict:
     """Run user code in a sandbox. Returns {passed, total, error, time_ms}."""
-    return await asyncio.to_thread(_run_sync, code, entry_point, test_cases, preamble)
+    return await asyncio.to_thread(_run_sync, code, entry_point, test_cases, preamble, any_order)

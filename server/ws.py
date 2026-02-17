@@ -172,11 +172,13 @@ async def handle_submit(room: Room, player_name: str, data: dict) -> None:
     submit_time = time.time() - room.start_time
 
     # Run in sandbox
+    any_order = "any order" in room.problem.get("description", "").lower()
     result = await run_code(
         code=code,
         entry_point=room.problem["entry_point"],
         test_cases=room.problem["test_cases"],
         preamble=room.problem.get("preamble", ""),
+        any_order=any_order,
     )
 
     solved = result["passed"] == result["total"] and result["total"] > 0
