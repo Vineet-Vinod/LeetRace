@@ -248,15 +248,16 @@ input:focus, select:focus { border-color: var(--accent); }
 }
 
 .game-layout {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
     height: calc(100vh - 50px - 40px);
+    overflow: hidden;
 }
 
 .problem-panel {
+    width: 50%;
+    min-width: 200px;
     padding: 1.5rem;
     overflow-y: auto;
-    border-right: 1px solid var(--border);
 }
 
 .problem-panel h2 { margin-bottom: 0.25rem; }
@@ -284,8 +285,11 @@ input:focus, select:focus { border-color: var(--accent); }
 }
 
 .editor-panel {
+    flex: 1;
+    min-width: 200px;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 }
 
 #editor-container {
@@ -293,26 +297,50 @@ input:focus, select:focus { border-color: var(--accent); }
     min-height: 0;
 }
 
-/* === Output Panel === */
-.output-panel {
-    border-top: 1px solid var(--border);
-    background: #1e1e1e;
-    max-height: 200px;
-    overflow-y: auto;
+/* === Resize Handles === */
+.resize-handle-v {
+    width: 5px;
+    cursor: col-resize;
+    background: var(--border);
+    flex-shrink: 0;
+    transition: background 0.15s;
 }
 
-.output-panel summary {
-    padding: 0.4rem 0.8rem;
-    font-size: 0.85rem;
+.resize-handle-v:hover, .resize-handle-v.active {
+    background: var(--accent);
+}
+
+.resize-handle-h {
+    height: 24px;
+    cursor: row-resize;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 0.8rem;
+    transition: background 0.15s;
+}
+
+.resize-handle-h:hover, .resize-handle-h.active {
+    background: var(--bg-input);
+}
+
+.resize-label {
+    font-size: 0.8rem;
     font-weight: 600;
     color: var(--text-dim);
-    cursor: pointer;
-    background: var(--bg-card);
     user-select: none;
 }
 
-.output-panel summary:hover {
-    color: var(--text);
+/* === Output Panel === */
+.output-panel {
+    height: 150px;
+    min-height: 50px;
+    background: #1e1e1e;
+    overflow-y: auto;
+    flex-shrink: 0;
 }
 
 .output-content {
@@ -429,10 +457,7 @@ input:focus, select:focus { border-color: var(--accent); }
 
 /* === Responsive === */
 @media (max-width: 768px) {
-    .game-layout {
-        grid-template-columns: 1fr;
-        grid-template-rows: 1fr 1fr;
-    }
-
-    .problem-panel { border-right: none; border-bottom: 1px solid var(--border); }
+    .game-layout { flex-direction: column; }
+    .problem-panel { width: 100% !important; min-height: 200px; max-height: 50%; }
+    .resize-handle-v { display: none; }
 }

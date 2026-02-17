@@ -37,17 +37,20 @@
             <button id="lock-btn" class="btn btn-lock" hidden>Lock In</button>
         </div>
         <div class="game-layout">
-            <div class="problem-panel">
+            <div class="problem-panel" id="problem-panel">
                 <h2 id="problem-title"></h2>
                 <span id="problem-difficulty" class="difficulty-badge"></span>
                 <div id="problem-description" class="problem-desc"></div>
             </div>
+            <div class="resize-handle-v" id="resize-v"></div>
             <div class="editor-panel">
                 <div id="editor-container"></div>
-                <details id="output-panel" class="output-panel" hidden>
-                    <summary>Output</summary>
+                <div class="resize-handle-h" id="resize-h" hidden>
+                    <span class="resize-label">Output</span>
+                </div>
+                <div id="output-panel" class="output-panel" hidden>
                     <pre id="output-content" class="output-content"></pre>
-                </details>
+                </div>
             </div>
         </div>
         <div id="live-scoreboard" class="scoreboard-bar" hidden></div>
@@ -72,5 +75,6 @@
     <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
     <script src="/static/js/editor.js"></script>
     <script src="/static/js/room.js"></script>
+    <script src="/static/js/resize.js"></script>
 </body>
 </html>

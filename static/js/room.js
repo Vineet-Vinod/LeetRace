@@ -108,6 +108,7 @@ const handlers = {
         document.getElementById('live-scoreboard').hidden = true;
         document.getElementById('live-scoreboard').innerHTML = '';
         document.getElementById('output-panel').hidden = true;
+        document.getElementById('resize-h').hidden = true;
 
         // Buttons
         document.getElementById('submit-btn').disabled = false;
@@ -143,7 +144,7 @@ const handlers = {
         const content = document.getElementById('output-content');
         content.textContent = lines.join('\n');
         panel.hidden = false;
-        panel.open = true;
+        document.getElementById('resize-h').hidden = false;
     },
 
     locked() {
