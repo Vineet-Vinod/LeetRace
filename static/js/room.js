@@ -24,6 +24,7 @@ const ws = new WebSocket(`${wsProto}://${location.host}/ws/${roomId}`);
 
 let isHost = false;
 let gameActive = false;
+let lockedIn = false;
 let submitCooldown = false;
 let timerInterval = null;
 let remainingSeconds = 0;
@@ -70,6 +71,7 @@ const handlers = {
 
     game_start(msg) {
         gameActive = true;
+        lockedIn = false;
         submitCooldown = false;
         showScreen(playingScreen);
 
@@ -87,6 +89,7 @@ const handlers = {
             document.getElementById('char-count').textContent = `Chars: ${charCount(code)}`;
         });
         setEditorSubmitCallback(submitCode);
+        setEditorReadOnly(false);
 
         // Timer - start client-side countdown
         startTimer(msg.time_limit);
@@ -96,9 +99,10 @@ const handlers = {
         document.getElementById('live-scoreboard').innerHTML = '';
         document.getElementById('output-panel').hidden = true;
 
-        // Submit button
-        const submitBtn = document.getElementById('submit-btn');
-        submitBtn.disabled = false;
+        // Buttons
+        document.getElementById('submit-btn').disabled = false;
+        document.getElementById('lock-btn').hidden = true;
+        document.getElementById('lock-btn').disabled = false;
     },
 
     tick(msg) {
@@ -109,11 +113,13 @@ const handlers = {
     submit_result(msg) {
         if (msg.solved) {
             showFeedback(`Solved! ${msg.char_count} chars in ${msg.submit_time}s`, 'success');
+            if (!lockedIn) document.getElementById('lock-btn').hidden = false;
         } else {
             const text = msg.error
                 ? `${msg.passed}/${msg.total} tests passed - ${msg.error}`
                 : `${msg.passed}/${msg.total} tests passed`;
             showFeedback(text, 'fail');
+            document.getElementById('lock-btn').hidden = true;
         }
 
         const lines = [];
@@ -127,6 +133,15 @@ const handlers = {
         content.textContent = lines.join('\n');
         panel.hidden = false;
         panel.open = true;
+    },
+
+    locked() {
+        lockedIn = true;
+        setEditorReadOnly(true);
+        document.getElementById('submit-btn').disabled = true;
+        document.getElementById('lock-btn').disabled = true;
+        document.getElementById('lock-btn').textContent = 'Locked In';
+        showFeedback('Locked in! Your solution is final.', 'success');
     },
 
     scoreboard(msg) {
@@ -175,8 +190,9 @@ function updateLiveScoreboard(rankings) {
     const bar = document.getElementById('live-scoreboard');
     bar.hidden = false;
     bar.innerHTML = rankings.map(r => {
+        const locked = r.locked_at !== null;
         const status = r.solved
-            ? `<span class="rank-solved">${r.char_count} chars</span>`
+            ? `<span class="rank-solved">${r.char_count} chars${locked ? ' \u{1f512}' : ''}</span>`
             : r.tests_passed > 0
                 ? `${r.tests_passed}/${r.tests_total}`
                 : 'pending';
@@ -191,8 +207,9 @@ function updateLiveScoreboard(rankings) {
 function renderFinalRankings(rankings) {
     const el = document.getElementById('final-rankings');
     el.innerHTML = rankings.map(r => {
+        const locked = r.locked_at !== null;
         const stats = r.solved
-            ? `<span class="rank-solved">Solved</span>
+            ? `<span class="rank-solved">Solved${locked ? ' \u{1f512}' : ''}</span>
                <span>${r.char_count} chars</span>
                <span>${r.submit_time}s</span>`
             : `<span class="rank-failed">${r.tests_passed}/${r.tests_total} tests</span>`;
@@ -225,7 +242,7 @@ document.getElementById('start-btn').addEventListener('click', () => {
 });
 
 function submitCode() {
-    if (submitCooldown || !gameActive) return;
+    if (lockedIn || submitCooldown || !gameActive) return;
     const code = getCode();
     if (!code.trim()) {
         showFeedback('Write some code first!', 'fail');
@@ -241,6 +258,11 @@ function submitCode() {
 }
 
 document.getElementById('submit-btn').addEventListener('click', submitCode);
+
+document.getElementById('lock-btn').addEventListener('click', () => {
+    if (lockedIn || !gameActive) return;
+    ws.send(JSON.stringify({ type: 'lock' }));
+});
 
 document.addEventListener('keydown', (e) => {
     if (e.ctrlKey && e.key === 'Enter') {

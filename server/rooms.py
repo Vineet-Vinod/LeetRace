@@ -21,6 +21,7 @@ class Player:
     name: str
     websocket: WebSocket | None = None
     submission: dict | None = None  # {code, passed, total, error, time_ms, char_count, solved, submit_time}
+    locked_at: float | None = None  # timestamp when player locked in
 
 
 @dataclass

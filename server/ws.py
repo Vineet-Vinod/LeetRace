@@ -87,10 +87,27 @@ async def end_game(room: Room) -> None:
     })
 
 
-async def check_all_submitted(room: Room) -> None:
-    """If all players have solved the problem, end the game."""
-    if all(p.submission is not None and p.submission.get("solved") for p in room.players.values()):
-        await end_game(room)
+async def handle_lock(ws: WebSocket, room: Room, player_name: str) -> None:
+    """Handle a player locking in their submission."""
+    if room.state != RoomState.PLAYING:
+        return
+
+    player = room.players.get(player_name)
+    if not player:
+        return
+    if player.locked_at is not None:
+        await send_error(ws, "Already locked in")
+        return
+    if player.submission is None:
+        await send_error(ws, "Submit a solution before locking in")
+        return
+
+    player.locked_at = time.time() - room.start_time
+
+    if player.websocket:
+        await player.websocket.send_json({"type": "locked"})
+
+    await broadcast(room, scoreboard_msg(room))
 
 
 async def handle_join(ws: WebSocket, room: Room, data: dict) -> str | None:
@@ -161,6 +178,10 @@ async def handle_submit(room: Room, player_name: str, data: dict) -> None:
     player = room.players.get(player_name)
     if not player:
         return
+    if player.locked_at is not None:
+        if player.websocket:
+            await send_error(player.websocket, "You are locked in")
+        return
 
     code = data.get("code", "")
     if not code.strip():
@@ -211,9 +232,6 @@ async def handle_submit(room: Room, player_name: str, data: dict) -> None:
     # Broadcast updated scoreboard
     await broadcast(room, scoreboard_msg(room))
 
-    # Check if all done
-    await check_all_submitted(room)
-
 
 async def handle_restart(ws: WebSocket, room: Room, player_name: str) -> None:
     """Handle the host restarting the game with a new problem."""
@@ -230,6 +248,7 @@ async def handle_restart(ws: WebSocket, room: Room, player_name: str) -> None:
     room.start_time = None
     for player in room.players.values():
         player.submission = None
+        player.locked_at = None
 
     await broadcast(room, room_state_msg(room))
 
@@ -259,6 +278,9 @@ async def websocket_handler(ws: WebSocket, room_id: str) -> None:
 
             elif msg_type == "submit" and player_name:
                 await handle_submit(room, player_name, data)
+
+            elif msg_type == "lock" and player_name:
+                await handle_lock(ws, room, player_name)
 
             elif msg_type == "restart" and player_name:
                 await handle_restart(ws, room, player_name)

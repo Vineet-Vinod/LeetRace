@@ -129,6 +129,15 @@ input:focus, select:focus { border-color: var(--accent); }
 .btn-submit:hover { background: #6dff96; }
 .btn-submit:disabled { background: var(--text-dim); cursor: not-allowed; }
 
+.btn-lock {
+    background: var(--yellow);
+    color: #1a1a2e;
+    font-weight: 700;
+}
+
+.btn-lock:hover { background: #f5fc9c; }
+.btn-lock:disabled { background: var(--text-dim); cursor: not-allowed; }
+
 /* === Divider === */
 .divider {
     display: flex;
