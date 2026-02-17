@@ -36,16 +36,16 @@
             const x = e.clientX - rect.left;
             const pct = (x / rect.width) * 100;
             const clamped = Math.max(15, Math.min(85, pct));
-            problemPanel.style.width = clamped + '%';
+            problemPanel.style.flex = '0 0 ' + clamped + '%';
         } else if (dragging === 'h') {
             const editorPanel = outputPanel.parentElement;
             const rect = editorPanel.getBoundingClientRect();
             const y = e.clientY - rect.top;
             const totalH = rect.height;
             const handleH = resizeH.offsetHeight;
-            const outputH = totalH - y - handleH / 2;
-            const clamped = Math.max(50, Math.min(totalH - 100, outputH));
-            outputPanel.style.height = clamped + 'px';
+            const editorH = y - handleH / 2;
+            const clampedEditor = Math.max(100, Math.min(totalH - 50, editorH));
+            editorContainer.style.flex = '0 0 ' + clampedEditor + 'px';
         }
     });
 

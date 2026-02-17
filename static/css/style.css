@@ -2,20 +2,25 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-    --bg: #1a1a2e;
-    --bg-card: #16213e;
-    --bg-input: #0f3460;
+    --bg: #1a1a1a;
+    --bg-card: #2a2a2a;
+    --bg-input: #333;
+    --bg-editor: #1e1e1e;
     --accent: #e94560;
     --accent-hover: #ff6b81;
-    --text: #eee;
-    --text-dim: #8892b0;
-    --green: #50fa7b;
+    --text: #e0e0e0;
+    --text-dim: #999;
+    --green: #a7cc8d;
+    --green-bright: #50fa7b;
     --yellow: #f1fa8c;
+    --orange: #fca311;
     --red: #ff5555;
-    --border: #233554;
-    --radius: 8px;
-    --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    --mono: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    --border: #444;
+    --resizer: #555;
+    --radius: 5px;
+    --padding: 20px;
+    --font: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    --mono: 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
 }
 
 html, body {
@@ -24,6 +29,7 @@ html, body {
     background: var(--bg);
     color: var(--text);
     line-height: 1.6;
+    overflow: hidden;
 }
 
 /* === Custom Scrollbar === */
@@ -37,12 +43,12 @@ html, body {
 }
 
 ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
+    background: #666;
     border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.25);
+    background: #888;
 }
 
 ::-webkit-scrollbar-corner {
@@ -52,7 +58,7 @@ html, body {
 /* Firefox scrollbar */
 * {
     scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+    scrollbar-color: #666 transparent;
 }
 
 /* === Landing === */
@@ -63,12 +69,13 @@ html, body {
     justify-content: center;
     min-height: 100vh;
     padding: 2rem;
+    overflow-y: auto;
 }
 
 .logo { font-size: 3rem; font-weight: 800; letter-spacing: -2px; }
 .logo span, .logo { color: var(--accent); }
 .logo-sm { font-size: 2rem; }
-.logo-xs { font-size: 1.2rem; }
+.logo-xs { font-size: 1.5rem; color: var(--accent); }
 .tagline { color: var(--text-dim); margin-bottom: 2rem; font-size: 1.1rem; }
 
 /* === Card === */
@@ -119,13 +126,13 @@ input:focus, select:focus { border-color: var(--accent); }
 /* === Buttons === */
 .btn {
     display: inline-block;
-    padding: 0.65rem 1.5rem;
-    border: none;
-    border-radius: var(--radius);
-    font-size: 1rem;
+    padding: 5px 12px;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s, transform 0.1s;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
     font-family: var(--font);
 }
 
@@ -134,38 +141,52 @@ input:focus, select:focus { border-color: var(--accent); }
 .btn-primary {
     background: var(--accent);
     color: #fff;
+    border-color: var(--accent);
     width: 100%;
     margin-top: 1rem;
+    padding: 0.65rem 1.5rem;
+    font-size: 1rem;
 }
 
-.btn-primary:hover { background: var(--accent-hover); }
+.btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
 
 .btn-secondary {
-    background: var(--bg-input);
-    color: var(--text);
+    background: transparent;
+    color: var(--text-dim);
     border: 1px solid var(--border);
     white-space: nowrap;
 }
 
-.btn-secondary:hover { border-color: var(--accent); }
+.btn-secondary:hover { border-color: var(--text); color: var(--text); }
 
 .btn-submit {
-    background: var(--green);
-    color: #1a1a2e;
+    background: transparent;
+    border: 1px solid var(--green);
+    color: var(--green);
     font-weight: 700;
+    padding: 8px 20px;
+    font-size: 0.9rem;
 }
 
-.btn-submit:hover { background: #6dff96; }
-.btn-submit:disabled { background: var(--text-dim); cursor: not-allowed; }
+.btn-submit:hover { background: var(--green); color: var(--bg-card); }
+.btn-submit:disabled { border-color: var(--text-dim); color: var(--text-dim); background: transparent; cursor: not-allowed; }
 
 .btn-lock {
-    background: var(--yellow);
-    color: #1a1a2e;
+    background: transparent;
+    border: 1px solid var(--orange);
+    color: var(--orange);
     font-weight: 700;
+    padding: 8px 20px;
+    font-size: 0.9rem;
 }
 
-.btn-lock:hover { background: #f5fc9c; }
-.btn-lock:disabled { background: var(--text-dim); cursor: not-allowed; }
+.btn-lock:hover { background: var(--orange); color: var(--bg-card); }
+.btn-lock:disabled { border-color: var(--text-dim); color: var(--text-dim); background: transparent; cursor: not-allowed; }
+
+.header-actions .btn-secondary {
+    padding: 8px 20px;
+    font-size: 0.9rem;
+}
 
 /* === Divider === */
 .divider {
@@ -217,12 +238,12 @@ input:focus, select:focus { border-color: var(--accent); }
 .player-chip {
     background: var(--bg-input);
     padding: 0.4rem 0.8rem;
-    border-radius: 20px;
+    border-radius: 3px;
     font-size: 0.9rem;
     border: 1px solid var(--border);
 }
 
-.player-chip.host { border-color: var(--accent); }
+.player-chip.host { border-color: var(--accent); color: var(--accent); }
 
 .lobby-info {
     display: flex;
@@ -234,15 +255,28 @@ input:focus, select:focus { border-color: var(--accent); }
 
 /* === Game Layout === */
 .game-header {
-    display: flex;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
     align-items: center;
-    justify-content: space-between;
-    padding: 0.5rem 1rem;
+    padding: 10px var(--padding);
     background: var(--bg-card);
-    gap: 0.75rem;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    gap: 1rem;
 }
 
-.game-info { display: flex; gap: 1.5rem; align-items: center; }
+.game-info {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    justify-content: center;
+}
+
+.header-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
 
 .round-info {
     font-family: var(--mono);
@@ -272,30 +306,30 @@ input:focus, select:focus { border-color: var(--accent); }
 
 .char-count {
     font-family: var(--mono);
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     color: var(--text-dim);
 }
 
 .game-layout {
+    flex-grow: 1;
     display: flex;
-    height: calc(100vh - 50px - 40px);
     overflow: hidden;
-    border-top: 1px solid var(--border);
 }
 
+/* === Problem Panel (left pane) === */
 .problem-panel {
-    width: 50%;
+    flex: 1 1 50%;
     min-width: 200px;
-    padding: 1.5rem;
+    padding: var(--padding);
     overflow-y: auto;
-    background: var(--bg-card);
-    border-right: 1px solid var(--border);
-    border-radius: 6px 0 0 6px;
+    display: flex;
+    flex-direction: column;
 }
 
 .problem-panel h2 {
     margin-bottom: 0.25rem;
-    font-size: 1.15rem;
+    font-size: 1.2em;
+    font-weight: bold;
 }
 
 .difficulty-badge {
@@ -303,45 +337,50 @@ input:focus, select:focus { border-color: var(--accent); }
     font-size: 0.75rem;
     font-weight: 600;
     padding: 0.15rem 0.5rem;
-    border-radius: 4px;
+    border-radius: 3px;
     margin-bottom: 1rem;
     text-transform: uppercase;
 }
 
-.difficulty-badge.easy { background: #50fa7b33; color: var(--green); }
-.difficulty-badge.medium { background: #f1fa8c33; color: var(--yellow); }
-.difficulty-badge.hard { background: #ff555533; color: var(--red); }
+.difficulty-badge.easy { background: rgba(167, 204, 141, 0.2); color: var(--green); }
+.difficulty-badge.medium { background: rgba(241, 250, 140, 0.2); color: var(--yellow); }
+.difficulty-badge.hard { background: rgba(255, 85, 85, 0.2); color: var(--red); }
 
 .problem-desc {
-    font-size: 0.9rem;
-    line-height: 1.8;
+    font-size: 0.95rem;
+    line-height: 1.6;
     white-space: pre-wrap;
     font-family: var(--mono);
-    color: var(--text-dim);
-    padding: 0.5rem 0;
+    color: #87ceeb;
+    flex-grow: 1;
+    overflow-y: auto;
+    min-height: 50px;
 }
 
+/* === Editor Panel (right pane) === */
 .editor-panel {
-    flex: 1;
+    flex: 1 1 50%;
     min-width: 200px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    background: #1e1e1e;
-    border-radius: 0 6px 6px 0;
+    padding: 0;
+    row-gap: 0;
+    min-height: 0;
 }
 
 #editor-container {
-    flex: 1;
-    min-height: 0;
+    flex: 1 1 70%;
+    min-height: 50px;
+    border: 1px solid var(--border);
 }
 
 /* === Resize Handles === */
 .resize-handle-v {
-    width: 5px;
+    flex: 0 0 5px;
     cursor: col-resize;
-    background: var(--border);
-    flex-shrink: 0;
+    background: var(--resizer);
+    z-index: 10;
     transition: background 0.2s;
 }
 
@@ -350,48 +389,58 @@ input:focus, select:focus { border-color: var(--accent); }
 }
 
 .resize-handle-h {
-    height: 24px;
+    flex: 0 0 5px;
     cursor: row-resize;
-    background: var(--bg-card);
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    padding: 0 0.8rem;
+    background: var(--resizer);
+    z-index: 10;
     transition: background 0.2s;
 }
 
 .resize-handle-h:hover, .resize-handle-h.active {
-    background: var(--bg-input);
+    background: var(--accent);
 }
 
 .resize-label {
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--text-dim);
-    user-select: none;
+    display: none;
 }
 
 /* === Output Panel === */
 .output-panel {
-    height: 150px;
+    flex: 1 1 30%;
     min-height: 50px;
-    background: #1e1e1e;
-    overflow-y: auto;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: #282828;
+    display: flex;
+    flex-direction: column;
+}
+
+.output-header {
+    padding: 8px 10px;
+    font-weight: bold;
+    color: var(--orange);
+    border-bottom: 1px dashed var(--border);
     flex-shrink: 0;
-    border-radius: 0 0 6px 0;
+    font-size: 0.85em;
 }
 
 .output-content {
+    position: relative;
+    overflow: auto;
+    padding: 10px;
+    flex-grow: 1;
+    min-height: 0;
+}
+
+.output-text {
     margin: 0;
-    padding: 0.75rem 1rem;
     font-family: var(--mono);
-    font-size: 0.85rem;
-    color: var(--text);
+    font-size: 0.9em;
+    color: var(--orange);
     white-space: pre-wrap;
     word-break: break-all;
-    line-height: 1.6;
+    line-height: 1.4;
 }
 
 /* === Scoreboard === */
@@ -403,6 +452,7 @@ input:focus, select:focus { border-color: var(--accent); }
     gap: 1rem;
     overflow-x: auto;
     font-size: 0.85rem;
+    flex-shrink: 0;
 }
 
 .score-entry {
@@ -410,9 +460,10 @@ input:focus, select:focus { border-color: var(--accent); }
     gap: 0.5rem;
     align-items: center;
     padding: 0.3rem 0.7rem;
-    border-radius: 4px;
+    border-radius: 3px;
     background: var(--bg-input);
     white-space: nowrap;
+    border: 1px solid var(--border);
 }
 
 .score-entry .rank {
@@ -420,7 +471,7 @@ input:focus, select:focus { border-color: var(--accent); }
     color: var(--accent);
 }
 
-.score-entry.solved { border: 1px solid var(--green); }
+.score-entry.solved { border-color: var(--green); }
 
 /* === Finished === */
 #finished {
@@ -478,7 +529,7 @@ input:focus, select:focus { border-color: var(--accent); }
     animation: fadeIn 0.3s ease;
 }
 
-.feedback.success { background: var(--green); color: #1a1a2e; }
+.feedback.success { background: var(--green); color: var(--bg); }
 .feedback.fail { background: var(--red); color: #fff; }
 
 @keyframes fadeIn {
@@ -499,6 +550,6 @@ input:focus, select:focus { border-color: var(--accent); }
 /* === Responsive === */
 @media (max-width: 768px) {
     .game-layout { flex-direction: column; }
-    .problem-panel { width: 100% !important; min-height: 200px; max-height: 50%; }
+    .problem-panel { width: 100% !important; flex: none !important; min-height: 200px; max-height: 50%; }
     .resize-handle-v { display: none; }
 }

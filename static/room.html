@@ -33,9 +33,11 @@
                 <span id="timer" class="timer">5:00</span>
                 <span id="char-count" class="char-count">Chars: 0</span>
             </div>
-            <button id="submit-btn" class="btn btn-submit">Submit</button>
-            <button id="lock-btn" class="btn btn-lock" hidden>Lock In</button>
-            <button id="back-to-results-btn" class="btn btn-secondary" hidden>Back to Results</button>
+            <div class="header-actions">
+                <button id="submit-btn" class="btn btn-submit">Submit</button>
+                <button id="lock-btn" class="btn btn-lock" hidden>Lock In</button>
+                <button id="back-to-results-btn" class="btn btn-secondary" hidden>Back to Results</button>
+            </div>
         </div>
         <div class="game-layout">
             <div class="problem-panel" id="problem-panel">
@@ -46,11 +48,12 @@
             <div class="resize-handle-v" id="resize-v"></div>
             <div class="editor-panel">
                 <div id="editor-container"></div>
-                <div class="resize-handle-h" id="resize-h" hidden>
-                    <span class="resize-label">Output</span>
-                </div>
+                <div class="resize-handle-h" id="resize-h" hidden></div>
                 <div id="output-panel" class="output-panel" hidden>
-                    <pre id="output-content" class="output-content"></pre>
+                    <div class="output-header">Output</div>
+                    <div class="output-content">
+                        <pre id="output-content" class="output-text"></pre>
+                    </div>
                 </div>
             </div>
         </div>
