@@ -28,6 +28,7 @@ let lockedIn = false;
 let submitCooldown = false;
 let timerInterval = null;
 let remainingSeconds = 0;
+let reviewMode = false;
 
 ws.onopen = () => {
     ws.send(JSON.stringify({ type: 'join', name: playerName }));
@@ -74,7 +75,14 @@ const handlers = {
         gameActive = true;
         lockedIn = false;
         submitCooldown = false;
+        reviewMode = false;
         showScreen(playingScreen);
+
+        // Restore game UI from review mode
+        document.getElementById('submit-btn').hidden = false;
+        document.getElementById('timer').hidden = false;
+        document.getElementById('char-count').hidden = false;
+        document.getElementById('back-to-results-btn').hidden = true;
 
         const p = msg.problem;
         document.getElementById('problem-title').textContent = p.title;
@@ -171,6 +179,7 @@ const handlers = {
         document.getElementById('break-countdown').hidden = false;
         document.getElementById('break-countdown').textContent =
             `Next round in ${msg.break_seconds}s...`;
+        document.getElementById('view-code-btn').hidden = false;
         document.getElementById('play-again-btn').hidden = true;
         document.getElementById('finished-waiting').hidden = true;
     },
@@ -188,6 +197,7 @@ const handlers = {
 
         document.getElementById('finished-title').textContent = 'Game Over!';
         document.getElementById('break-countdown').hidden = true;
+        document.getElementById('view-code-btn').hidden = false;
         document.getElementById('play-again-btn').hidden = !isHost;
         document.getElementById('finished-waiting').hidden = isHost;
     },
@@ -307,4 +317,24 @@ document.addEventListener('keydown', (e) => {
 
 document.getElementById('play-again-btn').addEventListener('click', () => {
     ws.send(JSON.stringify({ type: 'restart' }));
+});
+
+document.getElementById('view-code-btn').addEventListener('click', () => {
+    reviewMode = true;
+    showScreen(playingScreen);
+    setEditorReadOnly(true);
+
+    // Hide game controls, show back button
+    document.getElementById('submit-btn').hidden = true;
+    document.getElementById('lock-btn').hidden = true;
+    document.getElementById('timer').hidden = true;
+    document.getElementById('char-count').hidden = true;
+    document.getElementById('back-to-results-btn').hidden = false;
+    document.getElementById('live-scoreboard').hidden = true;
+});
+
+document.getElementById('back-to-results-btn').addEventListener('click', () => {
+    reviewMode = false;
+    showScreen(finishedScreen);
+    document.getElementById('back-to-results-btn').hidden = true;
 });
