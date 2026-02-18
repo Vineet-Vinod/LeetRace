@@ -696,3 +696,63 @@ input:focus, select:focus { border-color: var(--accent); }
     .example-block { padding: 0.6rem 0.75rem; }
     .constraint-list li { font-size: 0.82rem; }
 }
+
+/* === Code Review Tab Bar ===
+ *
+ * Displayed above the Monaco editor in review mode after a game/round ends.
+ * Each chip represents one player; colour indicates their solve status.
+ */
+.code-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 6px 8px;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    overflow-x: auto;
+}
+
+.code-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    background: var(--bg-input);
+    color: var(--text-dim);
+    font-family: var(--font);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+/* Player solved the problem */
+.code-tab.code-tab-solved { border-color: var(--green); color: var(--green); }
+.code-tab.code-tab-solved:hover { background: rgba(167, 204, 141, 0.15); }
+
+/* Player submitted but did not solve */
+.code-tab.code-tab-attempted { border-color: var(--orange); color: var(--orange); }
+.code-tab.code-tab-attempted:hover { background: rgba(252, 163, 17, 0.15); }
+
+/* Player never submitted anything */
+.code-tab.code-tab-none { border-color: var(--border); color: var(--text-dim); opacity: 0.6; }
+.code-tab.code-tab-none:hover { opacity: 1; }
+
+/* Active (currently selected) tab — highlighted in accent colour regardless
+   of solve status so the selection is always clearly visible. */
+.code-tab.code-tab-active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+}
+
+/* Small position badge "#1" rendered inside the chip */
+.code-tab-pos {
+    font-size: 0.75rem;
+    font-family: var(--mono);
+    opacity: 0.8;
+}

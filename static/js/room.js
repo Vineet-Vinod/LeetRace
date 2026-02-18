@@ -30,6 +30,11 @@ let timerInterval = null;
 let remainingSeconds = 0;
 let reviewMode = false;
 
+// Rankings saved when a round or game ends so the review mode tab bar can
+// access each player's submitted code. Entries come from rank_players() on
+// the server and include a `code` field (null when the player never submitted).
+let lastRankings = [];
+
 ws.onopen = () => {
     ws.send(JSON.stringify({ type: 'join', name: playerName }));
 };
@@ -171,6 +176,8 @@ const handlers = {
     round_over(msg) {
         gameActive = false;
         clearInterval(timerInterval);
+        // Persist rankings so the review tab bar can reference each player's code.
+        lastRankings = msg.rankings;
         showScreen(finishedScreen);
         renderFinalRankings(msg.rankings);
 
@@ -192,6 +199,8 @@ const handlers = {
     game_over(msg) {
         gameActive = false;
         clearInterval(timerInterval);
+        // Persist rankings so the review tab bar can reference each player's code.
+        lastRankings = msg.rankings;
         showScreen(finishedScreen);
         renderFinalRankings(msg.rankings);
 
@@ -374,6 +383,80 @@ function renderDescription(container, rawText) {
     container.innerHTML = parts.join('');
 }
 
+/**
+ * Build the opponent code tab bar and show it above the editor.
+ *
+ * Each entry in `rankings` is a rank_players() dict that now includes a `code`
+ * field. Tabs are ordered by final position. Clicking a tab loads that player's
+ * code into the (read-only) editor. The local player's own tab is pre-selected
+ * on open so they have a reference point before browsing opponents.
+ *
+ * @param {Array} rankings - Ranking entries from game_over / round_over message.
+ */
+function buildCodeTabs(rankings) {
+    const tabBar = document.getElementById('code-tabs');
+    tabBar.innerHTML = '';
+
+    if (rankings.length === 0) {
+        tabBar.hidden = true;
+        return;
+    }
+
+    rankings.forEach((entry, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'code-tab';
+        // Indicate solve status with a visual class so players can spot
+        // who solved the problem at a glance without reading the rankings.
+        if (entry.solved) {
+            btn.classList.add('code-tab-solved');
+        } else if (entry.code !== null && entry.code !== undefined) {
+            btn.classList.add('code-tab-attempted');
+        } else {
+            btn.classList.add('code-tab-none');
+        }
+
+        // Show position + name. Use esc() for the name to avoid XSS since
+        // player names are user-supplied strings.
+        btn.innerHTML = `<span class="code-tab-pos">#${entry.position}</span> ${esc(entry.name)}`;
+        btn.dataset.index = idx;
+        btn.addEventListener('click', () => showCodeTab(rankings, idx, tabBar));
+        tabBar.appendChild(btn);
+    });
+
+    tabBar.hidden = false;
+
+    // Pre-select the local player's tab; fall back to position 0 if not found.
+    const selfIdx = rankings.findIndex(r => r.name === playerName);
+    showCodeTab(rankings, selfIdx >= 0 ? selfIdx : 0, tabBar);
+}
+
+/**
+ * Activate a specific code tab and load the player's code into the editor.
+ *
+ * @param {Array}       rankings - Full rankings array.
+ * @param {number}      idx      - Index into rankings to display.
+ * @param {HTMLElement} tabBar   - The #code-tabs container element.
+ */
+function showCodeTab(rankings, idx, tabBar) {
+    const entry = rankings[idx];
+
+    // Mark the clicked tab active, clear all others.
+    tabBar.querySelectorAll('.code-tab').forEach((btn, i) => {
+        btn.classList.toggle('code-tab-active', i === idx);
+    });
+
+    const NO_SUBMISSION_PLACEHOLDER = '# No submission';
+
+    // Load code into the editor. editor.setValue() works even in read-only mode.
+    const code = (entry.code !== null && entry.code !== undefined)
+        ? entry.code
+        : NO_SUBMISSION_PLACEHOLDER;
+
+    if (typeof editor !== 'undefined' && editor) {
+        editor.setValue(code);
+    }
+}
+
 // Button handlers
 
 document.getElementById('start-btn').addEventListener('click', () => {
@@ -447,10 +530,18 @@ document.getElementById('view-code-btn').addEventListener('click', () => {
     document.getElementById('char-count').hidden = true;
     document.getElementById('back-to-results-btn').hidden = false;
     document.getElementById('live-scoreboard').hidden = true;
+
+    // Build and reveal the player tab bar using the stored end-of-game rankings.
+    buildCodeTabs(lastRankings);
 });
 
 document.getElementById('back-to-results-btn').addEventListener('click', () => {
     reviewMode = false;
     showScreen(finishedScreen);
     document.getElementById('back-to-results-btn').hidden = true;
+    // Hide and clear the tab bar so it is rebuilt fresh if the player opens
+    // review mode again (e.g. after a multi-round break refreshes rankings).
+    const tabBar = document.getElementById('code-tabs');
+    tabBar.hidden = true;
+    tabBar.innerHTML = '';
 });

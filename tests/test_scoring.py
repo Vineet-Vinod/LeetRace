@@ -28,6 +28,7 @@ def make_player(
     total=0,
     locked_at=None,
     submit_time=999999,
+    code="def solution(): pass",
 ):
     """Create a Player with best_submission pre-populated for convenience."""
     p = Player(name=name)
@@ -40,6 +41,7 @@ def make_player(
             "total": total,
             "submit_time": submit_time,
             "error": None,
+            "code": code,
         }
     return p
 
@@ -236,3 +238,56 @@ class TestRankPlayersNoSubmission:
         result = rank_players(players)
         positions = {e["name"]: e["position"] for e in result}
         assert set(positions.values()) == {1, 2}
+
+
+# ---------------------------------------------------------------------------
+# Code field — opponent code reveal feature
+# ---------------------------------------------------------------------------
+
+
+class TestRankPlayersCodeField:
+    """rank_players() must include a ``code`` key in every entry so the
+    frontend can display opponent solutions after the game ends."""
+
+    def test_code_field_present_for_player_with_submission(self):
+        players = {
+            "Alice": make_player(
+                "Alice", solved=True, char_count=50, passed=3, total=3,
+                code="def f(x): return x"
+            )
+        }
+        result = rank_players(players)
+        assert "code" in result[0]
+        assert result[0]["code"] == "def f(x): return x"
+
+    def test_code_field_is_none_when_no_submission(self):
+        # A Player with no best_submission should yield code=None so the
+        # frontend can show a "No submission" placeholder.
+        players = {"Ghost": Player(name="Ghost")}
+        result = rank_players(players)
+        assert "code" in result[0]
+        assert result[0]["code"] is None
+
+    def test_code_field_present_in_all_required_fields_check(self):
+        """Extend the existing required-fields test to include 'code'."""
+        players = {
+            "Alice": make_player(
+                "Alice", solved=True, char_count=50, passed=3, total=3
+            )
+        }
+        result = rank_players(players)
+        entry = result[0]
+        required = {
+            "name", "solved", "char_count", "submit_time", "locked_at",
+            "tests_passed", "tests_total", "error", "position", "code",
+        }
+        assert required.issubset(set(entry.keys()))
+
+    def test_code_field_for_unsolved_player_with_partial_submission(self):
+        players = {
+            "Bob": make_player(
+                "Bob", solved=False, passed=2, total=5, code="def g(): pass"
+            )
+        }
+        result = rank_players(players)
+        assert result[0]["code"] == "def g(): pass"
