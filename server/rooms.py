@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import secrets
+import time
 from dataclasses import dataclass, field
 from enum import Enum
 
@@ -52,6 +53,8 @@ class Room:
         difficulty: Optional difficulty filter ('Easy', 'Medium', 'Hard').
         total_rounds: Number of rounds configured for this room.
         current_round: 1-indexed round currently in progress (0 = lobby).
+        created_at: Unix timestamp when the room was created (for GC).
+        finished_at: Unix timestamp when the final game ended, or None (for GC).
     """
 
     id: str
@@ -64,6 +67,9 @@ class Room:
     difficulty: str | None = None
     total_rounds: int = 1
     current_round: int = 0
+    # Timestamps used by garbage collection to identify stale rooms.
+    created_at: float = field(default_factory=time.time)
+    finished_at: float | None = None
 
 
 rooms: dict[str, Room] = {}
@@ -104,3 +110,51 @@ def get_room(room_id: str) -> Room | None:
 def remove_room(room_id: str) -> None:
     """Remove a room from the registry. No-op if the room doesn't exist."""
     rooms.pop(room_id, None)
+
+
+# Catch-all maximum age for any room regardless of state.  Lobbies that were
+# created but never started will be pruned after this many seconds.
+_MAX_ROOM_AGE_SECONDS = 7200  # 2 hours
+
+
+def get_expired_rooms(max_age_seconds: int = 3600) -> list[str]:
+    """Return IDs of rooms that are eligible for garbage collection.
+
+    A room is expired if either condition is true:
+    - It is FINISHED and ``finished_at`` was recorded more than
+      ``max_age_seconds`` ago.
+    - Its ``created_at`` timestamp is older than ``_MAX_ROOM_AGE_SECONDS``
+      (catch-all for abandoned lobbies or rooms stuck in any state).
+
+    Rooms that are currently PLAYING are never returned, even if they are
+    somehow very old, to avoid disrupting active games.
+
+    Args:
+        max_age_seconds: How many seconds a finished room is kept before it
+            is considered expired. Defaults to 3600 (1 hour).
+
+    Returns:
+        List of room ID strings that should be removed.
+    """
+    now = time.time()
+    expired: list[str] = []
+
+    for room_id, room in rooms.items():
+        # Never expire a room mid-game — players are actively using it.
+        if room.state == RoomState.PLAYING:
+            continue
+
+        # Finished rooms: expire after max_age_seconds have passed since the
+        # game ended.  finished_at may be None for rooms that transitioned to
+        # FINISHED via old code paths; fall back to created_at in that case.
+        if room.state == RoomState.FINISHED:
+            end_ts = room.finished_at if room.finished_at is not None else room.created_at
+            if now - end_ts >= max_age_seconds:
+                expired.append(room_id)
+            continue
+
+        # Catch-all: lobby (or any unexpected state) rooms older than 2 hours.
+        if now - room.created_at >= _MAX_ROOM_AGE_SECONDS:
+            expired.append(room_id)
+
+    return expired
