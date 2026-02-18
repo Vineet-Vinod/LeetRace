@@ -9,12 +9,15 @@ Tests cover:
 - Player dataclass defaults and mutation
 """
 
+import time
+
 from server.rooms import (
     Room,
     Player,
     RoomState,
     create_room,
     get_room,
+    get_expired_rooms,
     remove_room,
     rooms,
 )
@@ -242,3 +245,132 @@ class TestPlayer:
         p2 = Player(name="Bob")
         p1.locked_at = 10.0
         assert p2.locked_at is None
+
+
+# ---------------------------------------------------------------------------
+# get_expired_rooms
+# ---------------------------------------------------------------------------
+
+
+class TestGetExpiredRooms:
+    """Tests for the GC helper that identifies rooms eligible for pruning."""
+
+    # -- Finished rooms -------------------------------------------------------
+
+    def test_finished_room_old_enough_is_returned(self):
+        room = create_room(host_name="Alice")
+        room.state = RoomState.FINISHED
+        # finished_at set far enough in the past to exceed the 1-hour default
+        room.finished_at = time.time() - 3700
+        expired = get_expired_rooms(max_age_seconds=3600)
+        assert room.id in expired
+
+    def test_finished_room_too_recent_is_not_returned(self):
+        room = create_room(host_name="Alice")
+        room.state = RoomState.FINISHED
+        room.finished_at = time.time() - 10  # only 10 seconds ago
+        expired = get_expired_rooms(max_age_seconds=3600)
+        assert room.id not in expired
+
+    def test_finished_room_exactly_at_boundary_is_returned(self):
+        """A room finished exactly max_age_seconds ago meets the >= threshold."""
+        room = create_room(host_name="Alice")
+        room.state = RoomState.FINISHED
+        room.finished_at = time.time() - 3600
+        expired = get_expired_rooms(max_age_seconds=3600)
+        assert room.id in expired
+
+    def test_finished_room_without_finished_at_falls_back_to_created_at(self):
+        """Rooms transitioned to FINISHED without finished_at use created_at as fallback."""
+        room = create_room(host_name="Alice")
+        room.state = RoomState.FINISHED
+        room.finished_at = None
+        # Backdate created_at so it appears old
+        room.created_at = time.time() - 3700
+        expired = get_expired_rooms(max_age_seconds=3600)
+        assert room.id in expired
+
+    def test_multiple_finished_rooms_all_detected(self):
+        rooms_list = []
+        for _ in range(3):
+            r = create_room(host_name="Alice")
+            r.state = RoomState.FINISHED
+            r.finished_at = time.time() - 4000
+            rooms_list.append(r)
+        expired = get_expired_rooms(max_age_seconds=3600)
+        for r in rooms_list:
+            assert r.id in expired
+
+    # -- PLAYING rooms --------------------------------------------------------
+
+    def test_playing_room_is_never_expired(self):
+        """Active games must never be pruned regardless of age."""
+        room = create_room(host_name="Alice")
+        room.state = RoomState.PLAYING
+        # Make it look extremely old
+        room.created_at = time.time() - 100_000
+        room.finished_at = time.time() - 100_000
+        expired = get_expired_rooms(max_age_seconds=3600)
+        assert room.id not in expired
+
+    # -- Lobby / abandoned rooms ----------------------------------------------
+
+    def test_old_lobby_room_is_returned(self):
+        """A lobby room older than 2 hours is treated as abandoned."""
+        room = create_room(host_name="Alice")
+        room.state = RoomState.LOBBY
+        room.created_at = time.time() - 7201  # just over 2 hours
+        expired = get_expired_rooms(max_age_seconds=3600)
+        assert room.id in expired
+
+    def test_recent_lobby_room_is_not_returned(self):
+        room = create_room(host_name="Alice")
+        room.state = RoomState.LOBBY
+        room.created_at = time.time() - 60  # 1 minute old
+        expired = get_expired_rooms(max_age_seconds=3600)
+        assert room.id not in expired
+
+    # -- Mixed room sets ------------------------------------------------------
+
+    def test_only_expired_rooms_returned_in_mixed_set(self):
+        """Verify that fresh and active rooms are correctly excluded."""
+        expired_room = create_room(host_name="Alice")
+        expired_room.state = RoomState.FINISHED
+        expired_room.finished_at = time.time() - 4000
+
+        fresh_room = create_room(host_name="Bob")
+        fresh_room.state = RoomState.FINISHED
+        fresh_room.finished_at = time.time() - 10
+
+        playing_room = create_room(host_name="Carol")
+        playing_room.state = RoomState.PLAYING
+        playing_room.created_at = time.time() - 100_000
+
+        expired = get_expired_rooms(max_age_seconds=3600)
+        assert expired_room.id in expired
+        assert fresh_room.id not in expired
+        assert playing_room.id not in expired
+
+    def test_empty_rooms_dict_returns_empty_list(self):
+        assert get_expired_rooms() == []
+
+    def test_custom_max_age_respected(self):
+        """A very short max_age_seconds should expire recently-finished rooms."""
+        room = create_room(host_name="Alice")
+        room.state = RoomState.FINISHED
+        room.finished_at = time.time() - 30  # 30 seconds ago
+        # With a 10-second threshold, 30 seconds is old enough
+        expired = get_expired_rooms(max_age_seconds=10)
+        assert room.id in expired
+
+    # -- Room dataclass defaults ----------------------------------------------
+
+    def test_new_room_has_created_at_set(self):
+        before = time.time()
+        room = create_room(host_name="Alice")
+        after = time.time()
+        assert before <= room.created_at <= after
+
+    def test_new_room_finished_at_is_none(self):
+        room = create_room(host_name="Alice")
+        assert room.finished_at is None

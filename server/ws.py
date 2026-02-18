@@ -116,8 +116,9 @@ async def end_game(room: Room) -> None:
         )
         asyncio.create_task(break_task(room))
     else:
-        # Final round — game is over
+        # Final round — game is permanently over; record timestamp for GC.
         room.state = RoomState.FINISHED
+        room.finished_at = time.time()
         await broadcast(
             room,
             {
