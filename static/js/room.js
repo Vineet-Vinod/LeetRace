@@ -205,6 +205,10 @@ const handlers = {
     error(msg) {
         showFeedback(msg.message, 'fail');
     },
+
+    chat(msg) {
+        appendChatMessage(msg.sender, msg.message);
+    },
 };
 
 // UI helpers
@@ -432,4 +436,79 @@ document.getElementById('back-to-results-btn').addEventListener('click', () => {
     reviewMode = false;
     showScreen(finishedScreen);
     document.getElementById('back-to-results-btn').hidden = true;
+});
+
+// === Chat ===
+
+let chatCollapsed = false;
+
+/**
+ * Append a chat message bubble to #chat-messages and auto-scroll to the bottom.
+ * Text is set via textContent (not innerHTML) so no further escaping is needed.
+ *
+ * @param {string} sender - The player name who sent the message
+ * @param {string} text   - The sanitized message body
+ */
+function appendChatMessage(sender, text) {
+    const container = document.getElementById('chat-messages');
+
+    const bubble = document.createElement('div');
+    bubble.className = 'chat-bubble' + (sender === playerName ? ' chat-bubble-self' : '');
+
+    const nameEl = document.createElement('span');
+    nameEl.className = 'chat-sender';
+    nameEl.textContent = sender;
+
+    const textEl = document.createElement('span');
+    textEl.className = 'chat-text';
+    textEl.textContent = text;
+
+    bubble.appendChild(nameEl);
+    bubble.appendChild(textEl);
+    container.appendChild(bubble);
+
+    // Only auto-scroll when the panel is open so we don't silently consume scroll
+    // state while collapsed. The unread badge (below) covers the collapsed case.
+    if (!chatCollapsed) {
+        container.scrollTop = container.scrollHeight;
+    } else {
+        // Show an unread indicator on the header when collapsed
+        const toggle = document.getElementById('chat-toggle');
+        toggle.classList.add('chat-has-unread');
+    }
+}
+
+function sendChatMessage() {
+    const input = document.getElementById('chat-input');
+    const text = input.value.trim();
+    if (!text) return;
+
+    ws.send(JSON.stringify({ type: 'chat', message: text }));
+    input.value = '';
+}
+
+document.getElementById('chat-send').addEventListener('click', sendChatMessage);
+
+document.getElementById('chat-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        sendChatMessage();
+    }
+});
+
+// Collapse/expand the chat panel body; keep the header always visible.
+document.getElementById('chat-toggle').addEventListener('click', () => {
+    const panel = document.getElementById('chat-panel');
+    chatCollapsed = !chatCollapsed;
+    panel.classList.toggle('chat-collapsed', chatCollapsed);
+
+    const toggle = document.getElementById('chat-toggle');
+    // Update arrow direction and clear any unread indicator on expand
+    toggle.innerHTML = chatCollapsed ? '&#x25B2;' : '&#x25BC;';
+    if (!chatCollapsed) {
+        toggle.classList.remove('chat-has-unread');
+        // Scroll to bottom now that the messages area is visible again
+        const container = document.getElementById('chat-messages');
+        container.scrollTop = container.scrollHeight;
+    }
 });

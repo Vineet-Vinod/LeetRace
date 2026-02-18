@@ -76,6 +76,26 @@
     <!-- SUBMIT FEEDBACK -->
     <div id="submit-feedback" class="feedback" hidden></div>
 
+    <!-- CHAT PANEL (fixed overlay, visible on all screens) -->
+    <div id="chat-panel" class="chat-panel">
+        <div class="chat-header">
+            <span class="chat-title">Chat</span>
+            <button id="chat-toggle" class="chat-toggle" aria-label="Toggle chat">&#x25BC;</button>
+        </div>
+        <div id="chat-messages" class="chat-messages"></div>
+        <div class="chat-input-row">
+            <input
+                id="chat-input"
+                class="chat-input"
+                type="text"
+                placeholder="Say something..."
+                maxlength="200"
+                autocomplete="off"
+            >
+            <button id="chat-send" class="chat-send btn">Send</button>
+        </div>
+    </div>
+
     <!-- Monaco Editor CDN -->
     <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
     <script src="/static/js/editor.js"></script>
