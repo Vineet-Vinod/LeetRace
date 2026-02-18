@@ -43,9 +43,9 @@ def rank_players(players: dict[str, Player]) -> list[dict]:
 
     entries.sort(key=lambda e: (
         not e["solved"],                        # solved=True first
-        e["char_count"],                        # fewer chars better
-        e["locked_at"] if e["locked_at"] is not None else float('inf'),  # earlier lock wins
         -e["tests_passed"],                     # more tests better
+        e["char_count"] if e["solved"] else 0,  # fewer chars better (only matters when solved)
+        e["locked_at"] if e["locked_at"] is not None else float('inf'),  # earlier lock wins
     ))
 
     for i, entry in enumerate(entries):
