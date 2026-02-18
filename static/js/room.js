@@ -380,6 +380,27 @@ document.getElementById('start-btn').addEventListener('click', () => {
     ws.send(JSON.stringify({ type: 'start' }));
 });
 
+document.getElementById('copy-invite-btn').addEventListener('click', () => {
+    // Construct the full invite URL using the roomId already parsed from the
+    // query string at the top of this file — no need to re-read the DOM.
+    const inviteUrl = `${location.origin}/room?id=${roomId}`;
+    navigator.clipboard.writeText(inviteUrl).then(() => {
+        const btn = document.getElementById('copy-invite-btn');
+        const originalText = btn.textContent;
+        btn.textContent = 'Copied!';
+        btn.classList.add('btn-invite-copied');
+        // Reset button text after 2 seconds so the user can copy again
+        setTimeout(() => {
+            btn.textContent = originalText;
+            btn.classList.remove('btn-invite-copied');
+        }, 2000);
+    }).catch(() => {
+        // Clipboard API can fail if the page is not focused or permissions are
+        // denied — fall back to a visible error in the existing feedback toast.
+        showFeedback('Could not copy link — please copy it manually.', 'fail');
+    });
+});
+
 function submitCode() {
     if (lockedIn || submitCooldown || !gameActive) return;
     const code = getCode();
