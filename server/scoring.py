@@ -12,6 +12,8 @@ _NO_SUBMISSION: dict = {
     "passed": 0,
     "total": 0,
     "error": None,
+    # code is absent from the sentinel so the .get() below yields None,
+    # which the frontend interprets as "no submission".
 }
 
 
@@ -39,6 +41,10 @@ def rank_players(players: dict[str, Player]) -> list[dict]:
                 "tests_passed": sub.get("passed", 0),
                 "tests_total": sub.get("total", 0),
                 "error": sub.get("error"),
+                # Include the player's best submitted code so the frontend can
+                # show opponent solutions after the game ends. None when the
+                # player never submitted.
+                "code": sub.get("code"),
             }
         )
 
