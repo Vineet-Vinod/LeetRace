@@ -253,6 +253,28 @@ input:focus, select:focus { border-color: var(--accent); }
     margin-bottom: 0.5rem;
 }
 
+/* Row that pairs the "share this code" hint with the copy-link button */
+.lobby-invite-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.25rem;
+}
+
+/* The copy button sits inline; override the full-width default of btn-primary */
+.lobby-invite-row .btn {
+    width: auto;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* Brief "Copied!" confirmation state — accent border signals success */
+.btn-invite-copied {
+    border-color: var(--green) !important;
+    color: var(--green) !important;
+}
+
 /* === Game Layout === */
 .game-header {
     position: relative;
