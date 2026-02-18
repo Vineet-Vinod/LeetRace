@@ -1,4 +1,4 @@
-.PHONY: help format lint test serve dev dev-backend dev-frontend
+.PHONY: help format lint test serve dev dev-backend dev-frontend clean
 
 # Load environment variables from .env if it exists
 ifneq (,$(wildcard .env))
@@ -40,6 +40,16 @@ dev-frontend:
 ## dev: Start both backend and frontend servers together
 dev:
 	@command -v tmux >/dev/null 2>&1 && ./tmux-dev.sh || (echo "tmux not found, using dev.sh instead..." && ./dev.sh)
+
+## clean: Remove build artifacts, cache, and dependencies
+clean:
+	@echo "Cleaning up..."
+	@rm -rf __pycache__ .pytest_cache .venv build dist
+	@find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+	@find . -type f -name '*.pyc' -delete
+	@find . -type f -name '*.pyo' -delete
+	@rm -rf frontend/node_modules frontend/dist frontend/.vite
+	@echo "Clean complete!"
 
 ## cloc: Count lines of code
 cloc:
