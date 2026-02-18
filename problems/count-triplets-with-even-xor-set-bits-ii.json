@@ -1,6 +1,6 @@
 {
   "id": "count-triplets-with-even-xor-set-bits-ii",
-  "title": "Count Triplets With Even Xor Set Bits Ii",
+  "title": "Count Triplets With Even Xor Set Bits II",
   "difficulty": "Medium",
   "tags": [
     "Bit Manipulation",

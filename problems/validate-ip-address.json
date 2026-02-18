@@ -1,6 +1,6 @@
 {
   "id": "validate-ip-address",
-  "title": "Validate Ip Address",
+  "title": "Validate IP Address",
   "difficulty": "Medium",
   "tags": [
     "String"

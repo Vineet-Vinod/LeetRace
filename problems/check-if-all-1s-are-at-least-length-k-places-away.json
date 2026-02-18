@@ -1,6 +1,6 @@
 {
   "id": "check-if-all-1s-are-at-least-length-k-places-away",
-  "title": "Check If All 1S Are At Least Length K Places Away",
+  "title": "Check If All 1s Are At Least Length K Places Away",
   "difficulty": "Easy",
   "tags": [
     "Array"

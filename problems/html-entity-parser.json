@@ -1,6 +1,6 @@
 {
   "id": "html-entity-parser",
-  "title": "Html Entity Parser",
+  "title": "HTML Entity Parser",
   "difficulty": "Medium",
   "tags": [
     "Hash Table",

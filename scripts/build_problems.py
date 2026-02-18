@@ -49,6 +49,29 @@ def extract_test_cases(check_fn: str) -> list[str]:
     return cases
 
 
+# Words that should be fully uppercased when converting slugs to titles.
+# Covers Roman numerals (common in LeetCode problem names like "III", "IV")
+# and common CS abbreviations.
+_UPPERCASE_WORDS = {
+    "i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x",
+    "bst", "dfs", "bfs", "lru", "lfu", "sql", "xml", "json", "csv",
+    "ip", "url", "api", "cpu", "ram", "html", "css", "rgb",
+}
+
+
+def smart_title(slug: str) -> str:
+    """Convert a hyphenated slug to a human-readable title.
+
+    Like str.title() but preserves words that should be fully uppercased
+    (Roman numerals, CS abbreviations).
+    """
+    words = slug.replace("-", " ").split()
+    return " ".join(
+        w.upper() if w.lower() in _UPPERCASE_WORDS else w.capitalize()
+        for w in words
+    )
+
+
 def slugify(title: str) -> str:
     """Convert problem title to a filename-safe slug."""
     slug = title.lower().strip()
@@ -110,7 +133,7 @@ def build():
         # Build the problem JSON
         problem_data = {
             "id": slug,
-            "title": title.replace("-", " ").title(),
+            "title": smart_title(title),
             "difficulty": difficulty,
             "tags": tags if isinstance(tags, list) else [],
             "description": description,

@@ -1,6 +1,6 @@
 {
   "id": "longest-increasing-subsequence-ii",
-  "title": "Longest Increasing Subsequence Ii",
+  "title": "Longest Increasing Subsequence II",
   "difficulty": "Hard",
   "tags": [
     "Binary Indexed Tree",

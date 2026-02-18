@@ -1,6 +1,6 @@
 {
   "id": "single-threaded-cpu",
-  "title": "Single Threaded Cpu",
+  "title": "Single Threaded CPU",
   "difficulty": "Medium",
   "tags": [
     "Array",

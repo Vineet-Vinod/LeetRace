@@ -145,7 +145,7 @@
   },
   {
     "id": "3sum",
-    "title": "3Sum",
+    "title": "3sum",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -156,7 +156,7 @@
   },
   {
     "id": "3sum-closest",
-    "title": "3Sum Closest",
+    "title": "3sum Closest",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -178,7 +178,7 @@
   },
   {
     "id": "4sum",
-    "title": "4Sum",
+    "title": "4sum",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -407,7 +407,7 @@
   },
   {
     "id": "combination-sum-ii",
-    "title": "Combination Sum Ii",
+    "title": "Combination Sum II",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -463,7 +463,7 @@
   },
   {
     "id": "jump-game-ii",
-    "title": "Jump Game Ii",
+    "title": "Jump Game II",
     "difficulty": "Medium",
     "tags": [
       "Greedy",
@@ -484,7 +484,7 @@
   },
   {
     "id": "permutations-ii",
-    "title": "Permutations Ii",
+    "title": "Permutations II",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -538,7 +538,7 @@
   },
   {
     "id": "n-queens-ii",
-    "title": "N Queens Ii",
+    "title": "N Queens II",
     "difficulty": "Hard",
     "tags": [
       "Backtracking"
@@ -608,7 +608,7 @@
   },
   {
     "id": "spiral-matrix-ii",
-    "title": "Spiral Matrix Ii",
+    "title": "Spiral Matrix II",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -650,7 +650,7 @@
   },
   {
     "id": "unique-paths-ii",
-    "title": "Unique Paths Ii",
+    "title": "Unique Paths II",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -766,7 +766,7 @@
   },
   {
     "id": "search-a-2d-matrix",
-    "title": "Search A 2D Matrix",
+    "title": "Search A 2d Matrix",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -832,7 +832,7 @@
   },
   {
     "id": "remove-duplicates-from-sorted-array-ii",
-    "title": "Remove Duplicates From Sorted Array Ii",
+    "title": "Remove Duplicates From Sorted Array II",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -842,7 +842,7 @@
   },
   {
     "id": "search-in-rotated-sorted-array-ii",
-    "title": "Search In Rotated Sorted Array Ii",
+    "title": "Search In Rotated Sorted Array II",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -852,7 +852,7 @@
   },
   {
     "id": "remove-duplicates-from-sorted-list-ii",
-    "title": "Remove Duplicates From Sorted List Ii",
+    "title": "Remove Duplicates From Sorted List II",
     "difficulty": "Medium",
     "tags": [
       "Linked List",
@@ -937,7 +937,7 @@
   },
   {
     "id": "subsets-ii",
-    "title": "Subsets Ii",
+    "title": "Subsets II",
     "difficulty": "Medium",
     "tags": [
       "Bit Manipulation",
@@ -958,7 +958,7 @@
   },
   {
     "id": "reverse-linked-list-ii",
-    "title": "Reverse Linked List Ii",
+    "title": "Reverse Linked List II",
     "difficulty": "Medium",
     "tags": [
       "Linked List"
@@ -967,7 +967,7 @@
   },
   {
     "id": "restore-ip-addresses",
-    "title": "Restore Ip Addresses",
+    "title": "Restore IP Addresses",
     "difficulty": "Medium",
     "tags": [
       "String",
@@ -1120,7 +1120,7 @@
   },
   {
     "id": "binary-tree-level-order-traversal-ii",
-    "title": "Binary Tree Level Order Traversal Ii",
+    "title": "Binary Tree Level Order Traversal II",
     "difficulty": "Medium",
     "tags": [
       "Tree",
@@ -1192,7 +1192,7 @@
   },
   {
     "id": "path-sum-ii",
-    "title": "Path Sum Ii",
+    "title": "Path Sum II",
     "difficulty": "Medium",
     "tags": [
       "Tree",
@@ -1237,7 +1237,7 @@
   },
   {
     "id": "pascals-triangle-ii",
-    "title": "Pascals Triangle Ii",
+    "title": "Pascals Triangle II",
     "difficulty": "Easy",
     "tags": [
       "Array",
@@ -1267,7 +1267,7 @@
   },
   {
     "id": "best-time-to-buy-and-sell-stock-ii",
-    "title": "Best Time To Buy And Sell Stock Ii",
+    "title": "Best Time To Buy And Sell Stock II",
     "difficulty": "Medium",
     "tags": [
       "Greedy",
@@ -1278,7 +1278,7 @@
   },
   {
     "id": "best-time-to-buy-and-sell-stock-iii",
-    "title": "Best Time To Buy And Sell Stock Iii",
+    "title": "Best Time To Buy And Sell Stock III",
     "difficulty": "Hard",
     "tags": [
       "Array",
@@ -1367,7 +1367,7 @@
   },
   {
     "id": "palindrome-partitioning-ii",
-    "title": "Palindrome Partitioning Ii",
+    "title": "Palindrome Partitioning II",
     "difficulty": "Hard",
     "tags": [
       "String",
@@ -1407,7 +1407,7 @@
   },
   {
     "id": "single-number-ii",
-    "title": "Single Number Ii",
+    "title": "Single Number II",
     "difficulty": "Medium",
     "tags": [
       "Bit Manipulation",
@@ -1431,7 +1431,7 @@
   },
   {
     "id": "word-break-ii",
-    "title": "Word Break Ii",
+    "title": "Word Break II",
     "difficulty": "Hard",
     "tags": [
       "Trie",
@@ -1569,7 +1569,7 @@
   },
   {
     "id": "find-minimum-in-rotated-sorted-array-ii",
-    "title": "Find Minimum In Rotated Sorted Array Ii",
+    "title": "Find Minimum In Rotated Sorted Array II",
     "difficulty": "Hard",
     "tags": [
       "Array",
@@ -1674,7 +1674,7 @@
   },
   {
     "id": "two-sum-ii-input-array-is-sorted",
-    "title": "Two Sum Ii Input Array Is Sorted",
+    "title": "Two Sum II Input Array Is Sorted",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -1750,7 +1750,7 @@
   },
   {
     "id": "reverse-words-in-a-string-ii",
-    "title": "Reverse Words In A String Ii",
+    "title": "Reverse Words In A String II",
     "difficulty": "Medium",
     "tags": [
       "Two Pointers",
@@ -1774,7 +1774,7 @@
   },
   {
     "id": "best-time-to-buy-and-sell-stock-iv",
-    "title": "Best Time To Buy And Sell Stock Iv",
+    "title": "Best Time To Buy And Sell Stock IV",
     "difficulty": "Hard",
     "tags": [
       "Array",
@@ -1936,7 +1936,7 @@
   },
   {
     "id": "course-schedule-ii",
-    "title": "Course Schedule Ii",
+    "title": "Course Schedule II",
     "difficulty": "Medium",
     "tags": [
       "Depth-First Search",
@@ -1948,7 +1948,7 @@
   },
   {
     "id": "word-search-ii",
-    "title": "Word Search Ii",
+    "title": "Word Search II",
     "difficulty": "Hard",
     "tags": [
       "Trie",
@@ -1961,7 +1961,7 @@
   },
   {
     "id": "house-robber-ii",
-    "title": "House Robber Ii",
+    "title": "House Robber II",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -1996,7 +1996,7 @@
   },
   {
     "id": "combination-sum-iii",
-    "title": "Combination Sum Iii",
+    "title": "Combination Sum III",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -2032,7 +2032,7 @@
   },
   {
     "id": "contains-duplicate-ii",
-    "title": "Contains Duplicate Ii",
+    "title": "Contains Duplicate II",
     "difficulty": "Easy",
     "tags": [
       "Array",
@@ -2043,7 +2043,7 @@
   },
   {
     "id": "contains-duplicate-iii",
-    "title": "Contains Duplicate Iii",
+    "title": "Contains Duplicate III",
     "difficulty": "Hard",
     "tags": [
       "Array",
@@ -2113,7 +2113,7 @@
   },
   {
     "id": "basic-calculator-ii",
-    "title": "Basic Calculator Ii",
+    "title": "Basic Calculator II",
     "difficulty": "Medium",
     "tags": [
       "Stack",
@@ -2133,7 +2133,7 @@
   },
   {
     "id": "majority-element-ii",
-    "title": "Majority Element Ii",
+    "title": "Majority Element II",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -2145,7 +2145,7 @@
   },
   {
     "id": "kth-smallest-element-in-a-bst",
-    "title": "Kth Smallest Element In A Bst",
+    "title": "Kth Smallest Element In A BST",
     "difficulty": "Medium",
     "tags": [
       "Tree",
@@ -2225,7 +2225,7 @@
   },
   {
     "id": "search-a-2d-matrix-ii",
-    "title": "Search A 2D Matrix Ii",
+    "title": "Search A 2d Matrix II",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -2271,7 +2271,7 @@
   },
   {
     "id": "shortest-word-distance-iii",
-    "title": "Shortest Word Distance Iii",
+    "title": "Shortest Word Distance III",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -2292,7 +2292,7 @@
   },
   {
     "id": "strobogrammatic-number-ii",
-    "title": "Strobogrammatic Number Ii",
+    "title": "Strobogrammatic Number II",
     "difficulty": "Medium",
     "tags": [
       "Recursion",
@@ -2303,7 +2303,7 @@
   },
   {
     "id": "strobogrammatic-number-iii",
-    "title": "Strobogrammatic Number Iii",
+    "title": "Strobogrammatic Number III",
     "difficulty": "Hard",
     "tags": [
       "Recursion",
@@ -2346,7 +2346,7 @@
   },
   {
     "id": "meeting-rooms-ii",
-    "title": "Meeting Rooms Ii",
+    "title": "Meeting Rooms II",
     "difficulty": "Medium",
     "tags": [
       "Greedy",
@@ -2418,7 +2418,7 @@
   },
   {
     "id": "3sum-smaller",
-    "title": "3Sum Smaller",
+    "title": "3sum Smaller",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -2430,7 +2430,7 @@
   },
   {
     "id": "single-number-iii",
-    "title": "Single Number Iii",
+    "title": "Single Number III",
     "difficulty": "Medium",
     "tags": [
       "Bit Manipulation",
@@ -2461,7 +2461,7 @@
   },
   {
     "id": "ugly-number-ii",
-    "title": "Ugly Number Ii",
+    "title": "Ugly Number II",
     "difficulty": "Medium",
     "tags": [
       "Hash Table",
@@ -2473,7 +2473,7 @@
   },
   {
     "id": "paint-house-ii",
-    "title": "Paint House Ii",
+    "title": "Paint House II",
     "difficulty": "Hard",
     "tags": [
       "Array",
@@ -2494,7 +2494,7 @@
   },
   {
     "id": "palindrome-permutation-ii",
-    "title": "Palindrome Permutation Ii",
+    "title": "Palindrome Permutation II",
     "difficulty": "Medium",
     "tags": [
       "Hash Table",
@@ -2546,7 +2546,7 @@
   },
   {
     "id": "closest-binary-search-tree-value-ii",
-    "title": "Closest Binary Search Tree Value Ii",
+    "title": "Closest Binary Search Tree Value II",
     "difficulty": "Hard",
     "tags": [
       "Stack",
@@ -2583,7 +2583,7 @@
   },
   {
     "id": "h-index-ii",
-    "title": "H Index Ii",
+    "title": "H Index II",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -2689,7 +2689,7 @@
   },
   {
     "id": "word-pattern-ii",
-    "title": "Word Pattern Ii",
+    "title": "Word Pattern II",
     "difficulty": "Medium",
     "tags": [
       "Hash Table",
@@ -2720,7 +2720,7 @@
   },
   {
     "id": "flip-game-ii",
-    "title": "Flip Game Ii",
+    "title": "Flip Game II",
     "difficulty": "Medium",
     "tags": [
       "Memoization",
@@ -2791,7 +2791,7 @@
   },
   {
     "id": "number-of-islands-ii",
-    "title": "Number Of Islands Ii",
+    "title": "Number Of Islands II",
     "difficulty": "Hard",
     "tags": [
       "Union Find",
@@ -2986,7 +2986,7 @@
   },
   {
     "id": "wiggle-sort-ii",
-    "title": "Wiggle Sort Ii",
+    "title": "Wiggle Sort II",
     "difficulty": "Medium",
     "tags": [
       "Greedy",
@@ -3093,7 +3093,7 @@
   },
   {
     "id": "largest-bst-subtree",
-    "title": "Largest Bst Subtree",
+    "title": "Largest BST Subtree",
     "difficulty": "Medium",
     "tags": [
       "Tree",
@@ -3139,7 +3139,7 @@
   },
   {
     "id": "house-robber-iii",
-    "title": "House Robber Iii",
+    "title": "House Robber III",
     "difficulty": "Medium",
     "tags": [
       "Tree",
@@ -3242,7 +3242,7 @@
   },
   {
     "id": "intersection-of-two-arrays-ii",
-    "title": "Intersection Of Two Arrays Ii",
+    "title": "Intersection Of Two Arrays II",
     "difficulty": "Easy",
     "tags": [
       "Array",
@@ -3435,7 +3435,7 @@
   },
   {
     "id": "guess-number-higher-or-lower-ii",
-    "title": "Guess Number Higher Or Lower Ii",
+    "title": "Guess Number Higher Or Lower II",
     "difficulty": "Medium",
     "tags": [
       "Math",
@@ -3457,7 +3457,7 @@
   },
   {
     "id": "combination-sum-iv",
-    "title": "Combination Sum Iv",
+    "title": "Combination Sum IV",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -3714,7 +3714,7 @@
   },
   {
     "id": "trapping-rain-water-ii",
-    "title": "Trapping Rain Water Ii",
+    "title": "Trapping Rain Water II",
     "difficulty": "Hard",
     "tags": [
       "Breadth-First Search",
@@ -3969,7 +3969,7 @@
   },
   {
     "id": "path-sum-iii",
-    "title": "Path Sum Iii",
+    "title": "Path Sum III",
     "difficulty": "Medium",
     "tags": [
       "Tree",
@@ -4052,7 +4052,7 @@
   },
   {
     "id": "add-two-numbers-ii",
-    "title": "Add Two Numbers Ii",
+    "title": "Add Two Numbers II",
     "difficulty": "Medium",
     "tags": [
       "Stack",
@@ -4063,7 +4063,7 @@
   },
   {
     "id": "arithmetic-slices-ii-subsequence",
-    "title": "Arithmetic Slices Ii Subsequence",
+    "title": "Arithmetic Slices II Subsequence",
     "difficulty": "Hard",
     "tags": [
       "Array",
@@ -4094,7 +4094,7 @@
   },
   {
     "id": "delete-node-in-a-bst",
-    "title": "Delete Node In A Bst",
+    "title": "Delete Node In A BST",
     "difficulty": "Medium",
     "tags": [
       "Tree",
@@ -4140,7 +4140,7 @@
   },
   {
     "id": "4sum-ii",
-    "title": "4Sum Ii",
+    "title": "4sum II",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -4216,7 +4216,7 @@
   },
   {
     "id": "minimum-moves-to-equal-array-elements-ii",
-    "title": "Minimum Moves To Equal Array Elements Ii",
+    "title": "Minimum Moves To Equal Array Elements II",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -4286,7 +4286,7 @@
   },
   {
     "id": "validate-ip-address",
-    "title": "Validate Ip Address",
+    "title": "Validate IP Address",
     "difficulty": "Medium",
     "tags": [
       "String"
@@ -4470,7 +4470,7 @@
   },
   {
     "id": "max-consecutive-ones-ii",
-    "title": "Max Consecutive Ones Ii",
+    "title": "Max Consecutive Ones II",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -4573,7 +4573,7 @@
   },
   {
     "id": "the-maze-iii",
-    "title": "The Maze Iii",
+    "title": "The Maze III",
     "difficulty": "Hard",
     "tags": [
       "Depth-First Search",
@@ -4624,7 +4624,7 @@
   },
   {
     "id": "next-greater-element-ii",
-    "title": "Next Greater Element Ii",
+    "title": "Next Greater Element II",
     "difficulty": "Medium",
     "tags": [
       "Stack",
@@ -4644,7 +4644,7 @@
   },
   {
     "id": "the-maze-ii",
-    "title": "The Maze Ii",
+    "title": "The Maze II",
     "difficulty": "Medium",
     "tags": [
       "Depth-First Search",
@@ -4759,7 +4759,7 @@
   },
   {
     "id": "coin-change-ii",
-    "title": "Coin Change Ii",
+    "title": "Coin Change II",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -4787,7 +4787,7 @@
   },
   {
     "id": "longest-uncommon-subsequence-ii",
-    "title": "Longest Uncommon Subsequence Ii",
+    "title": "Longest Uncommon Subsequence II",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -4873,7 +4873,7 @@
   },
   {
     "id": "minimum-absolute-difference-in-bst",
-    "title": "Minimum Absolute Difference In Bst",
+    "title": "Minimum Absolute Difference In BST",
     "difficulty": "Easy",
     "tags": [
       "Tree",
@@ -4910,7 +4910,7 @@
   },
   {
     "id": "lonely-pixel-ii",
-    "title": "Lonely Pixel Ii",
+    "title": "Lonely Pixel II",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -4945,7 +4945,7 @@
   },
   {
     "id": "convert-bst-to-greater-tree",
-    "title": "Convert Bst To Greater Tree",
+    "title": "Convert BST To Greater Tree",
     "difficulty": "Medium",
     "tags": [
       "Tree",
@@ -4979,7 +4979,7 @@
   },
   {
     "id": "reverse-string-ii",
-    "title": "Reverse String Ii",
+    "title": "Reverse String II",
     "difficulty": "Easy",
     "tags": [
       "Two Pointers",
@@ -5068,7 +5068,7 @@
   },
   {
     "id": "binary-tree-longest-consecutive-sequence-ii",
-    "title": "Binary Tree Longest Consecutive Sequence Ii",
+    "title": "Binary Tree Longest Consecutive Sequence II",
     "difficulty": "Medium",
     "tags": [
       "Tree",
@@ -5088,7 +5088,7 @@
   },
   {
     "id": "student-attendance-record-ii",
-    "title": "Student Attendance Record Ii",
+    "title": "Student Attendance Record II",
     "difficulty": "Hard",
     "tags": [
       "Dynamic Programming"
@@ -5129,7 +5129,7 @@
   },
   {
     "id": "next-greater-element-iii",
-    "title": "Next Greater Element Iii",
+    "title": "Next Greater Element III",
     "difficulty": "Medium",
     "tags": [
       "Math",
@@ -5140,13 +5140,13 @@
   },
   {
     "id": "reverse-words-in-a-string-iii",
-    "title": "Reverse Words In A String Iii",
+    "title": "Reverse Words In A String III",
     "difficulty": "Easy",
     "tags": [
       "Two Pointers",
       "String"
     ],
-    "test_count": 91
+    "test_count": 83
   },
   {
     "id": "subarray-sum-equals-k",
@@ -5383,7 +5383,7 @@
   },
   {
     "id": "range-addition-ii",
-    "title": "Range Addition Ii",
+    "title": "Range Addition II",
     "difficulty": "Easy",
     "tags": [
       "Array",
@@ -5550,7 +5550,7 @@
   },
   {
     "id": "course-schedule-iii",
-    "title": "Course Schedule Iii",
+    "title": "Course Schedule III",
     "difficulty": "Hard",
     "tags": [
       "Greedy",
@@ -5634,7 +5634,7 @@
   },
   {
     "id": "decode-ways-ii",
-    "title": "Decode Ways Ii",
+    "title": "Decode Ways II",
     "difficulty": "Hard",
     "tags": [
       "String",
@@ -5665,7 +5665,7 @@
   },
   {
     "id": "maximum-average-subarray-ii",
-    "title": "Maximum Average Subarray Ii",
+    "title": "Maximum Average Subarray II",
     "difficulty": "Hard",
     "tags": [
       "Array",
@@ -5754,7 +5754,7 @@
   },
   {
     "id": "two-sum-iv-input-is-a-bst",
-    "title": "Two Sum Iv Input Is A Bst",
+    "title": "Two Sum IV Input Is A BST",
     "difficulty": "Easy",
     "tags": [
       "Tree",
@@ -5902,7 +5902,7 @@
   },
   {
     "id": "path-sum-iv",
-    "title": "Path Sum Iv",
+    "title": "Path Sum IV",
     "difficulty": "Medium",
     "tags": [
       "Tree",
@@ -5915,7 +5915,7 @@
   },
   {
     "id": "beautiful-arrangement-ii",
-    "title": "Beautiful Arrangement Ii",
+    "title": "Beautiful Arrangement II",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -5968,7 +5968,7 @@
   },
   {
     "id": "bulb-switcher-ii",
-    "title": "Bulb Switcher Ii",
+    "title": "Bulb Switcher II",
     "difficulty": "Medium",
     "tags": [
       "Bit Manipulation",
@@ -6036,7 +6036,7 @@
   },
   {
     "id": "valid-palindrome-ii",
-    "title": "Valid Palindrome Ii",
+    "title": "Valid Palindrome II",
     "difficulty": "Easy",
     "tags": [
       "Greedy",
@@ -6098,7 +6098,7 @@
   },
   {
     "id": "redundant-connection-ii",
-    "title": "Redundant Connection Ii",
+    "title": "Redundant Connection II",
     "difficulty": "Hard",
     "tags": [
       "Depth-First Search",
@@ -6303,7 +6303,7 @@
   },
   {
     "id": "number-of-distinct-islands-ii",
-    "title": "Number Of Distinct Islands Ii",
+    "title": "Number Of Distinct Islands II",
     "difficulty": "Hard",
     "tags": [
       "Depth-First Search",
@@ -6532,7 +6532,7 @@
   },
   {
     "id": "sentence-similarity-ii",
-    "title": "Sentence Similarity Ii",
+    "title": "Sentence Similarity II",
     "difficulty": "Medium",
     "tags": [
       "Depth-First Search",
@@ -6680,7 +6680,7 @@
   },
   {
     "id": "ip-to-cidr",
-    "title": "Ip To Cidr",
+    "title": "IP To Cidr",
     "difficulty": "Medium",
     "tags": [
       "Bit Manipulation",
@@ -6857,7 +6857,7 @@
   },
   {
     "id": "max-chunks-to-make-sorted-ii",
-    "title": "Max Chunks To Make Sorted Ii",
+    "title": "Max Chunks To Make Sorted II",
     "difficulty": "Hard",
     "tags": [
       "Stack",
@@ -6883,7 +6883,7 @@
   },
   {
     "id": "basic-calculator-iv",
-    "title": "Basic Calculator Iv",
+    "title": "Basic Calculator IV",
     "difficulty": "Hard",
     "tags": [
       "Stack",
@@ -6906,7 +6906,7 @@
   },
   {
     "id": "basic-calculator-iii",
-    "title": "Basic Calculator Iii",
+    "title": "Basic Calculator III",
     "difficulty": "Hard",
     "tags": [
       "Stack",
@@ -7021,7 +7021,7 @@
   },
   {
     "id": "minimum-distance-between-bst-nodes",
-    "title": "Minimum Distance Between Bst Nodes",
+    "title": "Minimum Distance Between BST Nodes",
     "difficulty": "Easy",
     "tags": [
       "Tree",
@@ -7210,7 +7210,7 @@
   },
   {
     "id": "similar-rgb-color",
-    "title": "Similar Rgb Color",
+    "title": "Similar RGB Color",
     "difficulty": "Easy",
     "tags": [
       "Math",
@@ -7748,7 +7748,7 @@
   },
   {
     "id": "rectangle-area-ii",
-    "title": "Rectangle Area Ii",
+    "title": "Rectangle Area II",
     "difficulty": "Hard",
     "tags": [
       "Segment Tree",
@@ -8094,7 +8094,7 @@
   },
   {
     "id": "projection-area-of-3d-shapes",
-    "title": "Projection Area Of 3D Shapes",
+    "title": "Projection Area Of 3d Shapes",
     "difficulty": "Easy",
     "tags": [
       "Geometry",
@@ -8117,7 +8117,7 @@
   },
   {
     "id": "spiral-matrix-iii",
-    "title": "Spiral Matrix Iii",
+    "title": "Spiral Matrix III",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -8198,7 +8198,7 @@
   },
   {
     "id": "surface-area-of-3d-shapes",
-    "title": "Surface Area Of 3D Shapes",
+    "title": "Surface Area Of 3d Shapes",
     "difficulty": "Easy",
     "tags": [
       "Geometry",
@@ -8356,7 +8356,7 @@
   },
   {
     "id": "smallest-range-ii",
-    "title": "Smallest Range Ii",
+    "title": "Smallest Range II",
     "difficulty": "Medium",
     "tags": [
       "Greedy",
@@ -8476,7 +8476,7 @@
   },
   {
     "id": "sort-array-by-parity-ii",
-    "title": "Sort Array By Parity Ii",
+    "title": "Sort Array By Parity II",
     "difficulty": "Easy",
     "tags": [
       "Array",
@@ -8487,7 +8487,7 @@
   },
   {
     "id": "3sum-with-multiplicity",
-    "title": "3Sum With Multiplicity",
+    "title": "3sum With Multiplicity",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -8544,7 +8544,7 @@
   },
   {
     "id": "minimize-malware-spread-ii",
-    "title": "Minimize Malware Spread Ii",
+    "title": "Minimize Malware Spread II",
     "difficulty": "Hard",
     "tags": [
       "Depth-First Search",
@@ -8647,7 +8647,7 @@
   },
   {
     "id": "range-sum-of-bst",
-    "title": "Range Sum Of Bst",
+    "title": "Range Sum Of BST",
     "difficulty": "Easy",
     "tags": [
       "Tree",
@@ -8672,7 +8672,7 @@
   },
   {
     "id": "distinct-subsequences-ii",
-    "title": "Distinct Subsequences Ii",
+    "title": "Distinct Subsequences II",
     "difficulty": "Hard",
     "tags": [
       "String",
@@ -8843,7 +8843,7 @@
   },
   {
     "id": "delete-columns-to-make-sorted-ii",
-    "title": "Delete Columns To Make Sorted Ii",
+    "title": "Delete Columns To Make Sorted II",
     "difficulty": "Medium",
     "tags": [
       "Greedy",
@@ -8901,7 +8901,7 @@
   },
   {
     "id": "delete-columns-to-make-sorted-iii",
-    "title": "Delete Columns To Make Sorted Iii",
+    "title": "Delete Columns To Make Sorted III",
     "difficulty": "Hard",
     "tags": [
       "Array",
@@ -8912,7 +8912,7 @@
   },
   {
     "id": "n-repeated-element-in-size-2n-array",
-    "title": "N Repeated Element In Size 2N Array",
+    "title": "N Repeated Element In Size 2n Array",
     "difficulty": "Easy",
     "tags": [
       "Array",
@@ -8934,7 +8934,7 @@
   },
   {
     "id": "minimum-area-rectangle-ii",
-    "title": "Minimum Area Rectangle Ii",
+    "title": "Minimum Area Rectangle II",
     "difficulty": "Medium",
     "tags": [
       "Geometry",
@@ -9129,7 +9129,7 @@
   },
   {
     "id": "unique-paths-iii",
-    "title": "Unique Paths Iii",
+    "title": "Unique Paths III",
     "difficulty": "Hard",
     "tags": [
       "Bit Manipulation",
@@ -9326,7 +9326,7 @@
   },
   {
     "id": "maximum-binary-tree-ii",
-    "title": "Maximum Binary Tree Ii",
+    "title": "Maximum Binary Tree II",
     "difficulty": "Medium",
     "tags": [
       "Tree",
@@ -9389,7 +9389,7 @@
   },
   {
     "id": "max-consecutive-ones-iii",
-    "title": "Max Consecutive Ones Iii",
+    "title": "Max Consecutive Ones III",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -9774,7 +9774,7 @@
   },
   {
     "id": "moving-stones-until-consecutive-ii",
-    "title": "Moving Stones Until Consecutive Ii",
+    "title": "Moving Stones Until Consecutive II",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -9866,7 +9866,7 @@
   },
   {
     "id": "last-stone-weight-ii",
-    "title": "Last Stone Weight Ii",
+    "title": "Last Stone Weight II",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -10043,7 +10043,7 @@
   },
   {
     "id": "campus-bikes-ii",
-    "title": "Campus Bikes Ii",
+    "title": "Campus Bikes II",
     "difficulty": "Medium",
     "tags": [
       "Bit Manipulation",
@@ -10186,7 +10186,7 @@
   },
   {
     "id": "confusing-number-ii",
-    "title": "Confusing Number Ii",
+    "title": "Confusing Number II",
     "difficulty": "Hard",
     "tags": [
       "Math",
@@ -10264,7 +10264,7 @@
   },
   {
     "id": "brace-expansion-ii",
-    "title": "Brace Expansion Ii",
+    "title": "Brace Expansion II",
     "difficulty": "Hard",
     "tags": [
       "Stack",
@@ -10367,7 +10367,7 @@
   },
   {
     "id": "defanging-an-ip-address",
-    "title": "Defanging An Ip Address",
+    "title": "Defanging An IP Address",
     "difficulty": "Easy",
     "tags": [
       "String"
@@ -10603,7 +10603,7 @@
   },
   {
     "id": "stone-game-ii",
-    "title": "Stone Game Ii",
+    "title": "Stone Game II",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -10671,7 +10671,7 @@
   },
   {
     "id": "minimum-swaps-to-group-all-1s-together",
-    "title": "Minimum Swaps To Group All 1S Together",
+    "title": "Minimum Swaps To Group All 1s Together",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -11073,7 +11073,7 @@
   },
   {
     "id": "ugly-number-iii",
-    "title": "Ugly Number Iii",
+    "title": "Ugly Number III",
     "difficulty": "Medium",
     "tags": [
       "Math",
@@ -11134,7 +11134,7 @@
   },
   {
     "id": "remove-all-adjacent-duplicates-in-string-ii",
-    "title": "Remove All Adjacent Duplicates In String Ii",
+    "title": "Remove All Adjacent Duplicates In String II",
     "difficulty": "Medium",
     "tags": [
       "Stack",
@@ -11193,7 +11193,7 @@
   },
   {
     "id": "valid-palindrome-iii",
-    "title": "Valid Palindrome Iii",
+    "title": "Valid Palindrome III",
     "difficulty": "Hard",
     "tags": [
       "String",
@@ -11605,7 +11605,7 @@
   },
   {
     "id": "shift-2d-grid",
-    "title": "Shift 2D Grid",
+    "title": "Shift 2d Grid",
     "difficulty": "Easy",
     "tags": [
       "Array",
@@ -11751,7 +11751,7 @@
   },
   {
     "id": "palindrome-partitioning-iii",
-    "title": "Palindrome Partitioning Iii",
+    "title": "Palindrome Partitioning III",
     "difficulty": "Hard",
     "tags": [
       "String",
@@ -11823,7 +11823,7 @@
   },
   {
     "id": "minimum-falling-path-sum-ii",
-    "title": "Minimum Falling Path Sum Ii",
+    "title": "Minimum Falling Path Sum II",
     "difficulty": "Hard",
     "tags": [
       "Array",
@@ -11986,7 +11986,7 @@
   },
   {
     "id": "jump-game-iii",
-    "title": "Jump Game Iii",
+    "title": "Jump Game III",
     "difficulty": "Medium",
     "tags": [
       "Depth-First Search",
@@ -12330,7 +12330,7 @@
   },
   {
     "id": "jump-game-iv",
-    "title": "Jump Game Iv",
+    "title": "Jump Game IV",
     "difficulty": "Hard",
     "tags": [
       "Breadth-First Search",
@@ -12577,7 +12577,7 @@
   },
   {
     "id": "maximum-sum-bst-in-binary-tree",
-    "title": "Maximum Sum Bst In Binary Tree",
+    "title": "Maximum Sum BST In Binary Tree",
     "difficulty": "Hard",
     "tags": [
       "Tree",
@@ -12714,7 +12714,7 @@
   },
   {
     "id": "pizza-with-3n-slices",
-    "title": "Pizza With 3N Slices",
+    "title": "Pizza With 3n Slices",
     "difficulty": "Hard",
     "tags": [
       "Greedy",
@@ -12881,7 +12881,7 @@
   },
   {
     "id": "stone-game-iii",
-    "title": "Stone Game Iii",
+    "title": "Stone Game III",
     "difficulty": "Hard",
     "tags": [
       "Array",
@@ -12915,7 +12915,7 @@
   },
   {
     "id": "html-entity-parser",
-    "title": "Html Entity Parser",
+    "title": "HTML Entity Parser",
     "difficulty": "Medium",
     "tags": [
       "Hash Table",
@@ -13037,7 +13037,7 @@
   },
   {
     "id": "diagonal-traverse-ii",
-    "title": "Diagonal Traverse Ii",
+    "title": "Diagonal Traverse II",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -13148,7 +13148,7 @@
   },
   {
     "id": "check-if-all-1s-are-at-least-length-k-places-away",
-    "title": "Check If All 1S Are At Least Length K Places Away",
+    "title": "Check If All 1s Are At Least Length K Places Away",
     "difficulty": "Easy",
     "tags": [
       "Array"
@@ -13358,7 +13358,7 @@
   },
   {
     "id": "course-schedule-iv",
-    "title": "Course Schedule Iv",
+    "title": "Course Schedule IV",
     "difficulty": "Medium",
     "tags": [
       "Depth-First Search",
@@ -13370,7 +13370,7 @@
   },
   {
     "id": "cherry-pickup-ii",
-    "title": "Cherry Pickup Ii",
+    "title": "Cherry Pickup II",
     "difficulty": "Hard",
     "tags": [
       "Array",
@@ -13460,7 +13460,7 @@
   },
   {
     "id": "paint-house-iii",
-    "title": "Paint House Iii",
+    "title": "Paint House III",
     "difficulty": "Hard",
     "tags": [
       "Array",
@@ -13515,7 +13515,7 @@
   },
   {
     "id": "running-sum-of-1d-array",
-    "title": "Running Sum Of 1D Array",
+    "title": "Running Sum Of 1d Array",
     "difficulty": "Easy",
     "tags": [
       "Array",
@@ -13615,7 +13615,7 @@
   },
   {
     "id": "longest-subarray-of-1s-after-deleting-one-element",
-    "title": "Longest Subarray Of 1S After Deleting One Element",
+    "title": "Longest Subarray Of 1s After Deleting One Element",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -13626,7 +13626,7 @@
   },
   {
     "id": "parallel-courses-ii",
-    "title": "Parallel Courses Ii",
+    "title": "Parallel Courses II",
     "difficulty": "Hard",
     "tags": [
       "Bit Manipulation",
@@ -13762,7 +13762,7 @@
   },
   {
     "id": "stone-game-iv",
-    "title": "Stone Game Iv",
+    "title": "Stone Game IV",
     "difficulty": "Hard",
     "tags": [
       "Math",
@@ -13785,7 +13785,7 @@
   },
   {
     "id": "number-of-substrings-with-only-1s",
-    "title": "Number Of Substrings With Only 1S",
+    "title": "Number Of Substrings With Only 1s",
     "difficulty": "Medium",
     "tags": [
       "Math",
@@ -13941,7 +13941,7 @@
   },
   {
     "id": "string-compression-ii",
-    "title": "String Compression Ii",
+    "title": "String Compression II",
     "difficulty": "Hard",
     "tags": [
       "String",
@@ -14170,7 +14170,7 @@
   },
   {
     "id": "detect-cycles-in-2d-grid",
-    "title": "Detect Cycles In 2D Grid",
+    "title": "Detect Cycles In 2d Grid",
     "difficulty": "Medium",
     "tags": [
       "Depth-First Search",
@@ -14275,7 +14275,7 @@
   },
   {
     "id": "number-of-ways-to-reorder-array-to-get-same-bst",
-    "title": "Number Of Ways To Reorder Array To Get Same Bst",
+    "title": "Number Of Ways To Reorder Array To Get Same BST",
     "difficulty": "Hard",
     "tags": [
       "Tree",
@@ -14380,7 +14380,7 @@
   },
   {
     "id": "put-boxes-into-the-warehouse-ii",
-    "title": "Put Boxes Into The Warehouse Ii",
+    "title": "Put Boxes Into The Warehouse II",
     "difficulty": "Medium",
     "tags": [
       "Greedy",
@@ -14468,7 +14468,7 @@
   },
   {
     "id": "strange-printer-ii",
-    "title": "Strange Printer Ii",
+    "title": "Strange Printer II",
     "difficulty": "Hard",
     "tags": [
       "Graph",
@@ -14905,7 +14905,7 @@
   },
   {
     "id": "lowest-common-ancestor-of-a-binary-tree-ii",
-    "title": "Lowest Common Ancestor Of A Binary Tree Ii",
+    "title": "Lowest Common Ancestor Of A Binary Tree II",
     "difficulty": "Medium",
     "tags": [
       "Tree",
@@ -15211,7 +15211,7 @@
   },
   {
     "id": "longest-palindromic-subsequence-ii",
-    "title": "Longest Palindromic Subsequence Ii",
+    "title": "Longest Palindromic Subsequence II",
     "difficulty": "Medium",
     "tags": [
       "String",
@@ -15245,7 +15245,7 @@
   },
   {
     "id": "stone-game-vi",
-    "title": "Stone Game Vi",
+    "title": "Stone Game VI",
     "difficulty": "Medium",
     "tags": [
       "Greedy",
@@ -15294,7 +15294,7 @@
   },
   {
     "id": "stone-game-vii",
-    "title": "Stone Game Vii",
+    "title": "Stone Game VII",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -15346,7 +15346,7 @@
   },
   {
     "id": "jump-game-vi",
-    "title": "Jump Game Vi",
+    "title": "Jump Game VI",
     "difficulty": "Medium",
     "tags": [
       "Queue",
@@ -15653,7 +15653,7 @@
   },
   {
     "id": "cat-and-mouse-ii",
-    "title": "Cat And Mouse Ii",
+    "title": "Cat And Mouse II",
     "difficulty": "Hard",
     "tags": [
       "Graph",
@@ -15805,7 +15805,7 @@
   },
   {
     "id": "palindrome-partitioning-iv",
-    "title": "Palindrome Partitioning Iv",
+    "title": "Palindrome Partitioning IV",
     "difficulty": "Hard",
     "tags": [
       "String",
@@ -15856,7 +15856,7 @@
   },
   {
     "id": "maximum-number-of-events-that-can-be-attended-ii",
-    "title": "Maximum Number Of Events That Can Be Attended Ii",
+    "title": "Maximum Number Of Events That Can Be Attended II",
     "difficulty": "Hard",
     "tags": [
       "Array",
@@ -16097,7 +16097,7 @@
   },
   {
     "id": "car-fleet-ii",
-    "title": "Car Fleet Ii",
+    "title": "Car Fleet II",
     "difficulty": "Hard",
     "tags": [
       "Stack",
@@ -16377,7 +16377,7 @@
   },
   {
     "id": "sentence-similarity-iii",
-    "title": "Sentence Similarity Iii",
+    "title": "Sentence Similarity III",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -16567,7 +16567,7 @@
   },
   {
     "id": "single-threaded-cpu",
-    "title": "Single Threaded Cpu",
+    "title": "Single Threaded CPU",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -16904,7 +16904,7 @@
   },
   {
     "id": "jump-game-vii",
-    "title": "Jump Game Vii",
+    "title": "Jump Game VII",
     "difficulty": "Medium",
     "tags": [
       "String",
@@ -16916,7 +16916,7 @@
   },
   {
     "id": "stone-game-viii",
-    "title": "Stone Game Viii",
+    "title": "Stone Game VIII",
     "difficulty": "Hard",
     "tags": [
       "Array",
@@ -17194,7 +17194,7 @@
   },
   {
     "id": "find-a-peak-element-ii",
-    "title": "Find A Peak Element Ii",
+    "title": "Find A Peak Element II",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -17205,7 +17205,7 @@
   },
   {
     "id": "depth-of-bst-given-insertion-order",
-    "title": "Depth Of Bst Given Insertion Order",
+    "title": "Depth Of BST Given Insertion Order",
     "difficulty": "Medium",
     "tags": [
       "Tree",
@@ -17408,7 +17408,7 @@
   },
   {
     "id": "erect-the-fence-ii",
-    "title": "Erect The Fence Ii",
+    "title": "Erect The Fence II",
     "difficulty": "Hard",
     "tags": [
       "Geometry",
@@ -18330,7 +18330,7 @@
   },
   {
     "id": "convert-1d-array-into-2d-array",
-    "title": "Convert 1D Array Into 2D Array",
+    "title": "Convert 1d Array Into 2d Array",
     "difficulty": "Easy",
     "tags": [
       "Array",
@@ -18399,7 +18399,7 @@
   },
   {
     "id": "stone-game-ix",
-    "title": "Stone Game Ix",
+    "title": "Stone Game IX",
     "difficulty": "Medium",
     "tags": [
       "Greedy",
@@ -18609,7 +18609,7 @@
   },
   {
     "id": "parallel-courses-iii",
-    "title": "Parallel Courses Iii",
+    "title": "Parallel Courses III",
     "difficulty": "Hard",
     "tags": [
       "Graph",
@@ -19126,7 +19126,7 @@
   },
   {
     "id": "watering-plants-ii",
-    "title": "Watering Plants Ii",
+    "title": "Watering Plants II",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -19421,7 +19421,7 @@
   },
   {
     "id": "minimum-swaps-to-group-all-1s-together-ii",
-    "title": "Minimum Swaps To Group All 1S Together Ii",
+    "title": "Minimum Swaps To Group All 1s Together II",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -19811,7 +19811,7 @@
   },
   {
     "id": "remove-all-ones-with-row-and-column-flips-ii",
-    "title": "Remove All Ones With Row And Column Flips Ii",
+    "title": "Remove All Ones With Row And Column Flips II",
     "difficulty": "Medium",
     "tags": [
       "Bit Manipulation",
@@ -19935,7 +19935,7 @@
   },
   {
     "id": "minimum-number-of-steps-to-make-two-strings-anagram-ii",
-    "title": "Minimum Number Of Steps To Make Two Strings Anagram Ii",
+    "title": "Minimum Number Of Steps To Make Two Strings Anagram II",
     "difficulty": "Medium",
     "tags": [
       "Hash Table",
@@ -21012,7 +21012,7 @@
   },
   {
     "id": "jump-game-viii",
-    "title": "Jump Game Viii",
+    "title": "Jump Game VIII",
     "difficulty": "Medium",
     "tags": [
       "Stack",
@@ -21026,7 +21026,7 @@
   },
   {
     "id": "strong-password-checker-ii",
-    "title": "Strong Password Checker Ii",
+    "title": "Strong Password Checker II",
     "difficulty": "Easy",
     "tags": [
       "String"
@@ -21259,7 +21259,7 @@
   },
   {
     "id": "find-minimum-time-to-finish-all-jobs-ii",
-    "title": "Find Minimum Time To Finish All Jobs Ii",
+    "title": "Find Minimum Time To Finish All Jobs II",
     "difficulty": "Medium",
     "tags": [
       "Greedy",
@@ -21280,7 +21280,7 @@
   },
   {
     "id": "spiral-matrix-iv",
-    "title": "Spiral Matrix Iv",
+    "title": "Spiral Matrix IV",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -21319,7 +21319,7 @@
   },
   {
     "id": "valid-palindrome-iv",
-    "title": "Valid Palindrome Iv",
+    "title": "Valid Palindrome IV",
     "difficulty": "Medium",
     "tags": [
       "Two Pointers",
@@ -21646,7 +21646,7 @@
   },
   {
     "id": "task-scheduler-ii",
-    "title": "Task Scheduler Ii",
+    "title": "Task Scheduler II",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -21804,7 +21804,7 @@
   },
   {
     "id": "shifting-letters-ii",
-    "title": "Shifting Letters Ii",
+    "title": "Shifting Letters II",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -22024,7 +22024,7 @@
   },
   {
     "id": "meeting-rooms-iii",
-    "title": "Meeting Rooms Iii",
+    "title": "Meeting Rooms III",
     "difficulty": "Hard",
     "tags": [
       "Array",
@@ -22085,7 +22085,7 @@
   },
   {
     "id": "longest-increasing-subsequence-ii",
-    "title": "Longest Increasing Subsequence Ii",
+    "title": "Longest Increasing Subsequence II",
     "difficulty": "Hard",
     "tags": [
       "Binary Indexed Tree",
@@ -22597,7 +22597,7 @@
   },
   {
     "id": "next-greater-element-iv",
-    "title": "Next Greater Element Iv",
+    "title": "Next Greater Element IV",
     "difficulty": "Hard",
     "tags": [
       "Stack",
@@ -23060,7 +23060,7 @@
   },
   {
     "id": "frog-jump-ii",
-    "title": "Frog Jump Ii",
+    "title": "Frog Jump II",
     "difficulty": "Medium",
     "tags": [
       "Greedy",
@@ -23181,7 +23181,7 @@
   },
   {
     "id": "check-if-there-is-a-path-with-equal-number-of-0s-and-1s",
-    "title": "Check If There Is A Path With Equal Number Of 0S And 1S",
+    "title": "Check If There Is A Path With Equal Number Of 0s And 1s",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -23480,7 +23480,7 @@
   },
   {
     "id": "minimum-operations-to-make-array-equal-ii",
-    "title": "Minimum Operations To Make Array Equal Ii",
+    "title": "Minimum Operations To Make Array Equal II",
     "difficulty": "Medium",
     "tags": [
       "Greedy",
@@ -23650,7 +23650,7 @@
   },
   {
     "id": "maximum-number-of-integers-to-choose-from-a-range-ii",
-    "title": "Maximum Number Of Integers To Choose From A Range Ii",
+    "title": "Maximum Number Of Integers To Choose From A Range II",
     "difficulty": "Medium",
     "tags": [
       "Greedy",
@@ -23684,7 +23684,7 @@
   },
   {
     "id": "house-robber-iv",
-    "title": "House Robber Iv",
+    "title": "House Robber IV",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -23793,7 +23793,7 @@
   },
   {
     "id": "merge-two-2d-arrays-by-summing-values",
-    "title": "Merge Two 2D Arrays By Summing Values",
+    "title": "Merge Two 2d Arrays By Summing Values",
     "difficulty": "Easy",
     "tags": [
       "Array",
@@ -24234,7 +24234,7 @@
   },
   {
     "id": "convert-an-array-into-a-2d-array-with-conditions",
-    "title": "Convert An Array Into A 2D Array With Conditions",
+    "title": "Convert An Array Into A 2d Array With Conditions",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -24353,7 +24353,7 @@
   },
   {
     "id": "cousins-in-binary-tree-ii",
-    "title": "Cousins In Binary Tree Ii",
+    "title": "Cousins In Binary Tree II",
     "difficulty": "Medium",
     "tags": [
       "Tree",
@@ -25806,7 +25806,7 @@
   },
   {
     "id": "check-if-strings-can-be-made-equal-with-operations-ii",
-    "title": "Check If Strings Can Be Made Equal With Operations Ii",
+    "title": "Check If Strings Can Be Made Equal With Operations II",
     "difficulty": "Medium",
     "tags": [
       "Hash Table",
@@ -26076,7 +26076,7 @@
   },
   {
     "id": "beautiful-towers-ii",
-    "title": "Beautiful Towers Ii",
+    "title": "Beautiful Towers II",
     "difficulty": "Medium",
     "tags": [
       "Stack",
@@ -26167,7 +26167,7 @@
   },
   {
     "id": "maximum-value-of-an-ordered-triplet-ii",
-    "title": "Maximum Value Of An Ordered Triplet Ii",
+    "title": "Maximum Value Of An Ordered Triplet II",
     "difficulty": "Medium",
     "tags": [
       "Array"
@@ -26284,7 +26284,7 @@
   },
   {
     "id": "longest-unequal-adjacent-groups-subsequence-ii",
-    "title": "Longest Unequal Adjacent Groups Subsequence Ii",
+    "title": "Longest Unequal Adjacent Groups Subsequence II",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -26327,7 +26327,7 @@
   },
   {
     "id": "find-indices-with-index-and-value-difference-ii",
-    "title": "Find Indices With Index And Value Difference Ii",
+    "title": "Find Indices With Index And Value Difference II",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -26368,7 +26368,7 @@
   },
   {
     "id": "minimum-sum-of-mountain-triplets-ii",
-    "title": "Minimum Sum Of Mountain Triplets Ii",
+    "title": "Minimum Sum Of Mountain Triplets II",
     "difficulty": "Medium",
     "tags": [
       "Array"
@@ -26428,7 +26428,7 @@
   },
   {
     "id": "subarrays-distinct-element-sum-of-squares-ii",
-    "title": "Subarrays Distinct Element Sum Of Squares Ii",
+    "title": "Subarrays Distinct Element Sum Of Squares II",
     "difficulty": "Hard",
     "tags": [
       "Binary Indexed Tree",
@@ -26484,7 +26484,7 @@
   },
   {
     "id": "maximum-profitable-triplets-with-increasing-prices-ii",
-    "title": "Maximum Profitable Triplets With Increasing Prices Ii",
+    "title": "Maximum Profitable Triplets With Increasing Prices II",
     "difficulty": "Hard",
     "tags": [
       "Binary Indexed Tree",
@@ -26505,7 +26505,7 @@
   },
   {
     "id": "find-champion-ii",
-    "title": "Find Champion Ii",
+    "title": "Find Champion II",
     "difficulty": "Medium",
     "tags": [
       "Graph"
@@ -26538,7 +26538,7 @@
   },
   {
     "id": "distribute-candies-among-children-iii",
-    "title": "Distribute Candies Among Children Iii",
+    "title": "Distribute Candies Among Children III",
     "difficulty": "Hard",
     "tags": [
       "Math",
@@ -26559,7 +26559,7 @@
   },
   {
     "id": "distribute-candies-among-children-ii",
-    "title": "Distribute Candies Among Children Ii",
+    "title": "Distribute Candies Among Children II",
     "difficulty": "Medium",
     "tags": [
       "Math",
@@ -26629,7 +26629,7 @@
   },
   {
     "id": "maximum-strong-pair-xor-ii",
-    "title": "Maximum Strong Pair Xor Ii",
+    "title": "Maximum Strong Pair Xor II",
     "difficulty": "Hard",
     "tags": [
       "Bit Manipulation",
@@ -26785,7 +26785,7 @@
   },
   {
     "id": "count-beautiful-substrings-ii",
-    "title": "Count Beautiful Substrings Ii",
+    "title": "Count Beautiful Substrings II",
     "difficulty": "Hard",
     "tags": [
       "Hash Table",
@@ -26980,7 +26980,7 @@
   },
   {
     "id": "minimum-number-of-coins-for-fruits-ii",
-    "title": "Minimum Number Of Coins For Fruits Ii",
+    "title": "Minimum Number Of Coins For Fruits II",
     "difficulty": "Hard",
     "tags": [
       "Queue",
@@ -27017,7 +27017,7 @@
   },
   {
     "id": "count-the-number-of-incremovable-subarrays-ii",
-    "title": "Count The Number Of Incremovable Subarrays Ii",
+    "title": "Count The Number Of Incremovable Subarrays II",
     "difficulty": "Hard",
     "tags": [
       "Array",
@@ -27076,7 +27076,7 @@
   },
   {
     "id": "minimum-cost-to-convert-string-ii",
-    "title": "Minimum Cost To Convert String Ii",
+    "title": "Minimum Cost To Convert String II",
     "difficulty": "Hard",
     "tags": [
       "Graph",
@@ -27124,7 +27124,7 @@
   },
   {
     "id": "find-longest-special-substring-that-occurs-thrice-ii",
-    "title": "Find Longest Special Substring That Occurs Thrice Ii",
+    "title": "Find Longest Special Substring That Occurs Thrice II",
     "difficulty": "Medium",
     "tags": [
       "Hash Table",
@@ -27294,7 +27294,7 @@
   },
   {
     "id": "find-beautiful-indices-in-the-given-array-ii",
-    "title": "Find Beautiful Indices In The Given Array Ii",
+    "title": "Find Beautiful Indices In The Given Array II",
     "difficulty": "Hard",
     "tags": [
       "Two Pointers",
@@ -27354,7 +27354,7 @@
   },
   {
     "id": "divide-an-array-into-subarrays-with-minimum-cost-ii",
-    "title": "Divide An Array Into Subarrays With Minimum Cost Ii",
+    "title": "Divide An Array Into Subarrays With Minimum Cost II",
     "difficulty": "Hard",
     "tags": [
       "Array",
@@ -27388,7 +27388,7 @@
   },
   {
     "id": "minimum-number-of-pushes-to-type-word-ii",
-    "title": "Minimum Number Of Pushes To Type Word Ii",
+    "title": "Minimum Number Of Pushes To Type Word II",
     "difficulty": "Medium",
     "tags": [
       "Greedy",
@@ -27401,7 +27401,7 @@
   },
   {
     "id": "count-the-number-of-houses-at-a-certain-distance-ii",
-    "title": "Count The Number Of Houses At A Certain Distance Ii",
+    "title": "Count The Number Of Houses At A Certain Distance II",
     "difficulty": "Hard",
     "tags": [
       "Graph",
@@ -27496,7 +27496,7 @@
   },
   {
     "id": "find-the-number-of-ways-to-place-people-ii",
-    "title": "Find The Number Of Ways To Place People Ii",
+    "title": "Find The Number Of Ways To Place People II",
     "difficulty": "Hard",
     "tags": [
       "Geometry",
@@ -27542,7 +27542,7 @@
   },
   {
     "id": "minimum-time-to-revert-word-to-initial-state-ii",
-    "title": "Minimum Time To Revert Word To Initial State Ii",
+    "title": "Minimum Time To Revert Word To Initial State II",
     "difficulty": "Hard",
     "tags": [
       "String",
@@ -27554,7 +27554,7 @@
   },
   {
     "id": "count-numbers-with-unique-digits-ii",
-    "title": "Count Numbers With Unique Digits Ii",
+    "title": "Count Numbers With Unique Digits II",
     "difficulty": "Easy",
     "tags": [
       "Hash Table",
@@ -27601,7 +27601,7 @@
   },
   {
     "id": "number-of-subarrays-that-match-a-pattern-ii",
-    "title": "Number Of Subarrays That Match A Pattern Ii",
+    "title": "Number Of Subarrays That Match A Pattern II",
     "difficulty": "Hard",
     "tags": [
       "Array",
@@ -27635,7 +27635,7 @@
   },
   {
     "id": "maximum-number-of-operations-with-the-same-score-ii",
-    "title": "Maximum Number Of Operations With The Same Score Ii",
+    "title": "Maximum Number Of Operations With The Same Score II",
     "difficulty": "Medium",
     "tags": [
       "Memoization",
@@ -27698,7 +27698,7 @@
   },
   {
     "id": "count-prefix-and-suffix-pairs-ii",
-    "title": "Count Prefix And Suffix Pairs Ii",
+    "title": "Count Prefix And Suffix Pairs II",
     "difficulty": "Hard",
     "tags": [
       "Trie",
@@ -27773,7 +27773,7 @@
   },
   {
     "id": "minimum-operations-to-exceed-threshold-value-ii",
-    "title": "Minimum Operations To Exceed Threshold Value Ii",
+    "title": "Minimum Operations To Exceed Threshold Value II",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -27842,7 +27842,7 @@
   },
   {
     "id": "distribute-elements-into-two-arrays-ii",
-    "title": "Distribute Elements Into Two Arrays Ii",
+    "title": "Distribute Elements Into Two Arrays II",
     "difficulty": "Hard",
     "tags": [
       "Binary Indexed Tree",
@@ -28092,7 +28092,7 @@
   },
   {
     "id": "shortest-subarray-with-or-at-least-k-ii",
-    "title": "Shortest Subarray With Or At Least K Ii",
+    "title": "Shortest Subarray With Or At Least K II",
     "difficulty": "Medium",
     "tags": [
       "Bit Manipulation",
@@ -28123,7 +28123,7 @@
   },
   {
     "id": "water-bottles-ii",
-    "title": "Water Bottles Ii",
+    "title": "Water Bottles II",
     "difficulty": "Medium",
     "tags": [
       "Math",
@@ -28339,7 +28339,7 @@
   },
   {
     "id": "count-the-number-of-special-characters-ii",
-    "title": "Count The Number Of Special Characters Ii",
+    "title": "Count The Number Of Special Characters II",
     "difficulty": "Medium",
     "tags": [
       "Hash Table",
@@ -28418,7 +28418,7 @@
   },
   {
     "id": "find-all-possible-stable-binary-arrays-ii",
-    "title": "Find All Possible Stable Binary Arrays Ii",
+    "title": "Find All Possible Stable Binary Arrays II",
     "difficulty": "Hard",
     "tags": [
       "Dynamic Programming",
@@ -28437,7 +28437,7 @@
   },
   {
     "id": "find-the-integer-added-to-array-ii",
-    "title": "Find The Integer Added To Array Ii",
+    "title": "Find The Integer Added To Array II",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -28623,7 +28623,7 @@
   },
   {
     "id": "special-array-ii",
-    "title": "Special Array Ii",
+    "title": "Special Array II",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -28736,7 +28736,7 @@
   },
   {
     "id": "string-compression-iii",
-    "title": "String Compression Iii",
+    "title": "String Compression III",
     "difficulty": "Medium",
     "tags": [
       "String"
@@ -28745,7 +28745,7 @@
   },
   {
     "id": "find-the-number-of-good-pairs-ii",
-    "title": "Find The Number Of Good Pairs Ii",
+    "title": "Find The Number Of Good Pairs II",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -28866,7 +28866,7 @@
   },
   {
     "id": "find-the-maximum-length-of-a-good-subsequence-ii",
-    "title": "Find The Maximum Length Of A Good Subsequence Ii",
+    "title": "Find The Maximum Length Of A Good Subsequence II",
     "difficulty": "Hard",
     "tags": [
       "Array",
@@ -28910,7 +28910,7 @@
   },
   {
     "id": "maximum-total-reward-using-operations-ii",
-    "title": "Maximum Total Reward Using Operations Ii",
+    "title": "Maximum Total Reward Using Operations II",
     "difficulty": "Hard",
     "tags": [
       "Bit Manipulation",
@@ -28942,7 +28942,7 @@
   },
   {
     "id": "count-pairs-that-form-a-complete-day-ii",
-    "title": "Count Pairs That Form A Complete Day Ii",
+    "title": "Count Pairs That Form A Complete Day II",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -29014,7 +29014,7 @@
   },
   {
     "id": "minimum-operations-to-make-binary-array-elements-equal-to-one-ii",
-    "title": "Minimum Operations To Make Binary Array Elements Equal To One Ii",
+    "title": "Minimum Operations To Make Binary Array Elements Equal To One II",
     "difficulty": "Medium",
     "tags": [
       "Greedy",
@@ -29066,7 +29066,7 @@
   },
   {
     "id": "find-the-minimum-area-to-cover-all-ones-ii",
-    "title": "Find The Minimum Area To Cover All Ones Ii",
+    "title": "Find The Minimum Area To Cover All Ones II",
     "difficulty": "Hard",
     "tags": [
       "Array",
@@ -29107,7 +29107,7 @@
   },
   {
     "id": "find-the-maximum-length-of-valid-subsequence-ii",
-    "title": "Find The Maximum Length Of Valid Subsequence Ii",
+    "title": "Find The Maximum Length Of Valid Subsequence II",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -29162,7 +29162,7 @@
   },
   {
     "id": "alternating-groups-ii",
-    "title": "Alternating Groups Ii",
+    "title": "Alternating Groups II",
     "difficulty": "Medium",
     "tags": [
       "Array",
@@ -29227,7 +29227,7 @@
   },
   {
     "id": "count-triplets-with-even-xor-set-bits-ii",
-    "title": "Count Triplets With Even Xor Set Bits Ii",
+    "title": "Count Triplets With Even Xor Set Bits II",
     "difficulty": "Medium",
     "tags": [
       "Bit Manipulation",
@@ -29270,7 +29270,7 @@
   },
   {
     "id": "minimum-cost-for-cutting-cake-ii",
-    "title": "Minimum Cost For Cutting Cake Ii",
+    "title": "Minimum Cost For Cutting Cake II",
     "difficulty": "Hard",
     "tags": [
       "Greedy",
@@ -29281,7 +29281,7 @@
   },
   {
     "id": "maximum-array-hopping-score-ii",
-    "title": "Maximum Array Hopping Score Ii",
+    "title": "Maximum Array Hopping Score II",
     "difficulty": "Medium",
     "tags": [
       "Stack",
@@ -29472,7 +29472,7 @@
   },
   {
     "id": "minimum-number-of-flips-to-make-binary-grid-palindromic-ii",
-    "title": "Minimum Number Of Flips To Make Binary Grid Palindromic Ii",
+    "title": "Minimum Number Of Flips To Make Binary Grid Palindromic II",
     "difficulty": "Medium",
     "tags": [
       "Array",

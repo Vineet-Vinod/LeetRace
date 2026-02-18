@@ -1,6 +1,6 @@
 {
   "id": "ip-to-cidr",
-  "title": "Ip To Cidr",
+  "title": "IP To Cidr",
   "difficulty": "Medium",
   "tags": [
     "Bit Manipulation",
