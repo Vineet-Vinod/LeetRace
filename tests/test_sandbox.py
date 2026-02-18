@@ -18,8 +18,10 @@ Tests cover:
 - Async run_code wrapper: correct plumbing to _run_sync
 """
 
+import asyncio
+
 import pytest
-from server.sandbox import run_code, _run_sync
+from server.sandbox import _MAX_CONCURRENT_SUBMISSIONS, _run_sync, run_code
 
 
 PREAMBLE = "from typing import *\nfrom collections import *\nfrom functools import *\n"
@@ -395,3 +397,50 @@ class Solution:
         )
         assert result["passed"] == 1
         assert result["error"] is None
+
+    @pytest.mark.asyncio
+    async def test_semaphore_limits_concurrent_executions(self):
+        """At most _MAX_CONCURRENT_SUBMISSIONS run_code calls execute simultaneously.
+
+        Strategy: replace the semaphore-guarded work with a coroutine that
+        increments a shared counter on entry and decrements on exit, recording
+        the peak. We launch _MAX_CONCURRENT_SUBMISSIONS + 2 tasks and assert
+        the peak never exceeds _MAX_CONCURRENT_SUBMISSIONS.
+        """
+        import server.sandbox as sandbox_module
+
+        peak = 0
+        active = 0
+
+        # Use a real semaphore with the same limit so we test the actual guard,
+        # but intercept asyncio.to_thread to avoid spawning real subprocesses.
+        async def fake_to_thread(fn, *args, **kwargs):
+            nonlocal peak, active
+            active += 1
+            peak = max(peak, active)
+            # Yield so other tasks get a chance to enter (or be blocked by the
+            # semaphore), making the concurrency observable.
+            await asyncio.sleep(0)
+            active -= 1
+            # Return a minimal valid result so run_code succeeds.
+            return {"passed": 1, "total": 1, "error": None, "time_ms": 0}
+
+        total_tasks = _MAX_CONCURRENT_SUBMISSIONS + 2  # intentionally above the limit
+
+        # Patch at the call site inside sandbox_module.
+        original = sandbox_module.asyncio.to_thread
+
+        sandbox_module.asyncio.to_thread = fake_to_thread
+        try:
+            tasks = [
+                run_code("def f(x): return x", "f", ["assert candidate(1) == 1"])
+                for _ in range(total_tasks)
+            ]
+            results = await asyncio.gather(*tasks)
+        finally:
+            sandbox_module.asyncio.to_thread = original
+
+        # Every task should have completed successfully.
+        assert len(results) == total_tasks
+        # Peak concurrency must not exceed the semaphore limit.
+        assert peak <= _MAX_CONCURRENT_SUBMISSIONS

@@ -24,6 +24,13 @@ logger = logging.getLogger(__name__)
 
 _SUBPROCESS_TIMEOUT_SECONDS = 10
 
+# Limit concurrent sandbox subprocess executions to avoid CPU saturation when
+# many players submit simultaneously. Each subprocess is CPU-bound, so running
+# more than ~4 at once on a typical host provides no throughput benefit and
+# degrades latency for every in-flight submission.
+_MAX_CONCURRENT_SUBMISSIONS = 4
+_submission_semaphore = asyncio.Semaphore(_MAX_CONCURRENT_SUBMISSIONS)
+
 # Resource limits applied to the sandbox subprocess (POSIX only).
 _CPU_LIMIT_SECONDS = 5
 _MEMORY_LIMIT_BYTES = 256 * 1024 * 1024  # 256 MB
@@ -353,6 +360,11 @@ async def run_code(
     any_order: bool = False,
 ) -> dict:
     """Run user code in a sandbox. Returns {passed, total, error, time_ms}."""
-    return await asyncio.to_thread(
-        _run_sync, code, entry_point, test_cases, preamble, any_order
-    )
+    # Acquire the semaphore before spawning the subprocess so that at most
+    # _MAX_CONCURRENT_SUBMISSIONS subprocesses run simultaneously. The I/O
+    # wait before the semaphore is intentionally excluded — only the actual
+    # CPU-bound subprocess execution is counted against the limit.
+    async with _submission_semaphore:
+        return await asyncio.to_thread(
+            _run_sync, code, entry_point, test_cases, preamble, any_order
+        )
