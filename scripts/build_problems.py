@@ -102,6 +102,11 @@ def build():
         else:
             slug_counts[slug] = 0
 
+        # Ensure starter_code has a valid body (add pass if it ends with just a signature)
+        if starter_code and starter_code.rstrip().endswith(':'):
+            # Function/class definition without body, add pass statement
+            starter_code = starter_code.rstrip() + '\n        pass'
+
         # Build the problem JSON
         problem_data = {
             "id": slug,

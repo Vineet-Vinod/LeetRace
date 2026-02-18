@@ -187,6 +187,24 @@ RUNNER_SCRIPT = textwrap.dedent("""\
     # Execute user code
     try:
         exec(code, namespace)
+    except SyntaxError as e:
+        # Special handling for "expected an indented block" errors
+        if "expected an indented block" in str(e).lower() and code.rstrip().endswith(':'):
+            # User submitted incomplete code (function/class without body)
+            # Try again with a pass statement appended
+            try:
+                fixed_code = code.rstrip() + '\\n        pass'
+                exec(fixed_code, namespace)
+            except Exception as retry_e:
+                sys.stdout = real_stdout
+                print(json.dumps({"passed": 0, "total": len(test_cases), "error": f"Compilation error: {retry_e}",
+                                   "stdout": captured_out.getvalue()[:5000], "stderr": captured_err.getvalue()[:5000]}))
+                sys.exit(0)
+        else:
+            sys.stdout = real_stdout
+            print(json.dumps({"passed": 0, "total": len(test_cases), "error": f"Compilation error: {e}",
+                               "stdout": captured_out.getvalue()[:5000], "stderr": captured_err.getvalue()[:5000]}))
+            sys.exit(0)
     except Exception as e:
         sys.stdout = real_stdout
         print(json.dumps({"passed": 0, "total": len(test_cases), "error": f"Compilation error: {e}",
