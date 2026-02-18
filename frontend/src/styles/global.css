@@ -1,0 +1,154 @@
+@import "tailwindcss";
+
+/* =============================================================
+   LEETRACE — Velocity Terminal Design System (Tailwind v4)
+   ============================================================= */
+
+@theme {
+  /* Backgrounds */
+  --color-deep: #06060c;
+  --color-base: #0b0b16;
+  --color-surface: #111122;
+  --color-elevated: #191930;
+  --color-panel: #0e0e1e;
+
+  /* Primary: Electric Teal */
+  --color-primary: #00e5c7;
+  --color-primary-bright: #00ffdd;
+  --color-primary-dim: #009e8a;
+
+  /* Secondary: Hot Magenta */
+  --color-secondary: #ff2d78;
+  --color-secondary-bright: #ff5a9d;
+
+  /* Accent: Electric Violet */
+  --color-accent: #7c3aed;
+  --color-accent-bright: #a855f7;
+
+  /* Text tones */
+  --color-light: #e4e6f0;
+  --color-muted: #8b8da3;
+  --color-dim: #4e506a;
+  --color-inverse: #06060c;
+
+  /* Borders */
+  --color-brd: #1e1e3a;
+  --color-brd-light: #2a2a50;
+
+  /* Status */
+  --color-ok: #22c55e;
+  --color-warn: #eab308;
+  --color-err: #ef4444;
+
+  /* Medals */
+  --color-gold: #ffd700;
+  --color-silver: #c0c0c0;
+  --color-bronze: #cd7f32;
+
+  /* Fonts */
+  --font-display: 'Chakra Petch', sans-serif;
+  --font-body: 'Exo 2', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Shadows */
+  --shadow-glow: 0 0 20px rgba(0, 229, 199, 0.25), 0 0 60px rgba(0, 229, 199, 0.08);
+  --shadow-glow-sm: 0 0 12px rgba(0, 229, 199, 0.2);
+  --shadow-glow-ok: 0 0 20px rgba(34, 197, 94, 0.25);
+  --shadow-glow-warn: 0 0 20px rgba(234, 179, 8, 0.25);
+  --shadow-glow-err: 0 0 20px rgba(239, 68, 68, 0.25);
+  --shadow-panel: 0 4px 24px rgba(0, 0, 0, 0.45);
+  --shadow-deep: 0 8px 40px rgba(0, 0, 0, 0.55);
+
+  /* Animations */
+  --animate-pulse-danger: pulse-danger 1s ease-in-out infinite;
+  --animate-glow-pulse: glow-pulse 2.5s ease-in-out infinite;
+}
+
+/* --- Keyframes --- */
+@keyframes pulse-danger {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(0, 229, 199, 0.15); }
+  50% { box-shadow: 0 0 24px rgba(0, 229, 199, 0.35); }
+}
+
+/* --- Base styles --- */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    font-family: var(--font-body);
+    color: var(--color-light);
+    background-color: var(--color-deep);
+    background-image:
+      linear-gradient(rgba(0, 229, 199, 0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 229, 199, 0.025) 1px, transparent 1px),
+      radial-gradient(ellipse at 50% -10%, rgba(0, 229, 199, 0.07) 0%, transparent 55%);
+    background-size: 56px 56px, 56px 56px, 100% 100%;
+    background-attachment: fixed;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background: rgba(0, 229, 199, 0.25);
+    color: var(--color-light);
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--color-brd-light); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--color-dim); }
+}
+
+/* --- Resize handles (need stateful CSS that Tailwind can't express) --- */
+@layer components {
+  .resize-handle-v {
+    width: 5px;
+    cursor: col-resize;
+    background: var(--color-brd);
+    transition: background 0.15s ease, box-shadow 0.15s ease;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 5;
+  }
+  .resize-handle-v:hover,
+  .resize-handle-v.active {
+    background: var(--color-primary);
+    box-shadow: 0 0 8px rgba(0, 229, 199, 0.25);
+  }
+  .resize-handle-h {
+    height: 5px;
+    cursor: row-resize;
+    background: var(--color-brd);
+    transition: background 0.15s ease, box-shadow 0.15s ease;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 5;
+  }
+  .resize-handle-h:hover,
+  .resize-handle-h.active {
+    background: var(--color-primary);
+    box-shadow: 0 0 8px rgba(0, 229, 199, 0.25);
+  }
+
+  /* Prevent text selection while dragging resize handles */
+  .resizing {
+    user-select: none !important;
+    cursor: col-resize !important;
+  }
+  .resizing-h {
+    user-select: none !important;
+    cursor: row-resize !important;
+  }
+}
