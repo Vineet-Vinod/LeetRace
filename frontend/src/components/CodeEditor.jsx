@@ -1,4 +1,4 @@
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
 
 const VELOCITY_THEME = {
@@ -48,6 +48,12 @@ const VELOCITY_THEME = {
 
 export default function CodeEditor({ value, onChange, readOnly = false, onSubmit }) {
   const editorRef = useRef(null);
+  const onSubmitRef = useRef(onSubmit);
+
+  // Keep the ref in sync so the Monaco command always calls the latest handler
+  useEffect(() => {
+    onSubmitRef.current = onSubmit;
+  }, [onSubmit]);
 
   const handleMount = useCallback((editor, monaco) => {
     editorRef.current = editor;
@@ -56,11 +62,11 @@ export default function CodeEditor({ value, onChange, readOnly = false, onSubmit
     monaco.editor.setTheme('velocity-terminal');
 
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
-      if (onSubmit) onSubmit();
+      if (onSubmitRef.current) onSubmitRef.current();
     });
 
     editor.focus();
-  }, [onSubmit]);
+  }, []);
 
   return (
     <Editor
