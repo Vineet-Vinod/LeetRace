@@ -79,6 +79,13 @@
     <!-- Monaco Editor CDN -->
     <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.45.0/min/vs/loader.js"></script>
     <script src="/static/js/editor.js"></script>
+    <!-- descriptionParser.js is an ES module; import it and expose parseDescription
+         as a global so the plain-script room.js can call it. The WebSocket message
+         that triggers rendering always arrives after the module has loaded. -->
+    <script type="module">
+        import { parseDescription } from '/static/js/descriptionParser.js';
+        window.parseDescription = parseDescription;
+    </script>
     <script src="/static/js/room.js"></script>
     <script src="/static/js/resize.js"></script>
 </body>

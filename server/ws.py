@@ -240,8 +240,8 @@ async def handle_start(ws: WebSocket, room: Room, player_name: str) -> None:
     if room.state != RoomState.LOBBY:
         await send_error(ws, "Game has already started")
         return
-    if len(room.players) < 2:
-        await send_error(ws, "Need at least 2 players to start")
+    if len(room.players) < 1:
+        await send_error(ws, "At least one player must be in the room")
         return
 
     problem = pick_random(room.difficulty)

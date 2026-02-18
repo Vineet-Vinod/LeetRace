@@ -91,7 +91,7 @@ const handlers = {
         badge.textContent = p.difficulty;
         badge.className = 'difficulty-badge ' + p.difficulty.toLowerCase();
 
-        document.getElementById('problem-description').textContent = p.description;
+        renderDescription(document.getElementById('problem-description'), p.description);
 
         // Round info
         const roundEl = document.getElementById('round-info');
@@ -277,6 +277,101 @@ function esc(str) {
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
+}
+
+// escHtml is the same DOM-based escape used by esc(), exposed with a name that
+// makes the intent clear at call sites inside renderDescription().
+const escHtml = esc;
+
+/**
+ * Render a structured problem description into the given container element.
+ *
+ * Attempts to parse the raw description text with parseDescription(). If
+ * parsing throws or returns nothing useful, falls back to plain text so the
+ * player always sees the problem content.
+ *
+ * @param {HTMLElement} container - The #problem-description element
+ * @param {string} rawText - Raw description string from the server
+ */
+function renderDescription(container, rawText) {
+    // Defensive: always show something even if the parser fails or is not yet
+    // available (parseDescription is assigned to window by an inline module script
+    // in room.html; it should always be ready before a WebSocket game_start fires).
+    let parsed = null;
+    try {
+        if (typeof parseDescription !== 'function') throw new Error('parser not loaded');
+        parsed = parseDescription(rawText);
+    } catch (e) {
+        // Parser threw or isn't available — fall back to plain text
+        container.textContent = rawText;
+        return;
+    }
+
+    // If the parser returned no meaningful content, fall back to plain text
+    if (!parsed || (!parsed.statement && parsed.examples.length === 0 && parsed.constraints.length === 0)) {
+        container.textContent = rawText;
+        return;
+    }
+
+    // Build HTML using template literals. All user-sourced text goes through
+    // escHtml() to prevent XSS. Unicode superscripts produced by fix_exponents()
+    // on the server survive escaping because they are ordinary Unicode characters,
+    // not HTML entities. Code brackets like [1,2,3] also survive correctly.
+
+    const parts = [];
+
+    // --- Problem statement ---
+    if (parsed.statement) {
+        // The statement may contain \n within paragraphs; convert them to <br>
+        // so paragraph structure is preserved without switching to <pre>.
+        const stmtHtml = escHtml(parsed.statement)
+            // Blank lines (two consecutive newlines) become paragraph breaks
+            .replace(/\n{2,}/g, '</p><p>')
+            // Single newlines become line breaks
+            .replace(/\n/g, '<br>');
+        parts.push(`<p class="problem-statement">${stmtHtml}</p>`);
+    }
+
+    // --- Examples ---
+    parsed.examples.forEach(ex => {
+        const inputHtml = ex.input ? `<div class="example-input"><span class="example-field-label">Input:</span> <code>${escHtml(ex.input)}</code></div>` : '';
+        const outputHtml = ex.output ? `<div class="example-output"><span class="example-field-label">Output:</span> <code>${escHtml(ex.output)}</code></div>` : '';
+        // Explanation may contain embedded newlines for multi-step content (e.g.
+        // "1. step\n2. step"); convert them to <br> so they render visually.
+        const explanationHtml = ex.explanation
+            ? `<div class="example-explanation"><span class="example-field-label">Explanation:</span> ${escHtml(ex.explanation).replace(/\n/g, '<br>')}</div>`
+            : '';
+
+        parts.push(`
+<section class="example-block">
+    <div class="example-label">Example ${escHtml(String(ex.number))}:</div>
+    ${inputHtml}
+    ${outputHtml}
+    ${explanationHtml}
+</section>`);
+    });
+
+    // --- Constraints ---
+    if (parsed.constraints.length > 0) {
+        const items = parsed.constraints
+            .map(c => `<li>${escHtml(c)}</li>`)
+            .join('');
+        parts.push(`
+<section class="constraints-section">
+    <div class="constraints-label">Constraints:</div>
+    <ul class="constraint-list">${items}</ul>
+</section>`);
+    }
+
+    // --- Follow-up ---
+    if (parsed.followUp) {
+        parts.push(`
+<section class="follow-up-section">
+    <span class="follow-up-label">Follow-up:</span> ${escHtml(parsed.followUp)}
+</section>`);
+    }
+
+    container.innerHTML = parts.join('');
 }
 
 // Button handlers

@@ -547,3 +547,130 @@ input:focus, select:focus { border-color: var(--accent); }
     .problem-panel { width: 100% !important; flex: none !important; min-height: 200px; max-height: 50%; }
     .resize-handle-v { display: none; }
 }
+
+/* === Problem Description Rendering ===
+ *
+ * These classes style the structured HTML produced by renderDescription() in
+ * room.js. The old .problem-desc rule keeps white-space: pre-wrap and
+ * font-family: mono as fallback defaults; the classes below override those
+ * properties for the rendered elements so only code values use monospace.
+ */
+
+/* Main statement paragraph — readable serif-ish system font, not monospace */
+.problem-statement {
+    font-family: var(--font);
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--text);
+    margin-bottom: 1rem;
+    white-space: normal;   /* override the .problem-desc pre-wrap */
+}
+
+/* Each example is a visually distinct card */
+.example-block {
+    background: #222;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.85rem;
+    font-family: var(--font);
+    font-size: 0.9rem;
+    white-space: normal;   /* override the .problem-desc pre-wrap */
+}
+
+/* "Example 1:" heading inside the card */
+.example-label {
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* Input / Output / Explanation rows inside an example */
+.example-input,
+.example-output,
+.example-explanation {
+    margin-top: 0.3rem;
+    line-height: 1.5;
+    color: var(--text);
+}
+
+/* Bolded "Input:", "Output:", "Explanation:" micro-labels */
+.example-field-label {
+    font-weight: 600;
+    color: var(--text-dim);
+}
+
+/* Input/Output values rendered as inline code blocks.
+ * Using <code> means brackets like [1,2,3] stay readable and monospace while
+ * prose text in the explanation remains proportional. */
+.example-input code,
+.example-output code {
+    font-family: var(--mono);
+    font-size: 0.88rem;
+    background: #1a1a1a;
+    color: #87ceeb;        /* match the original description colour */
+    border-radius: 3px;
+    padding: 0.05rem 0.35rem;
+    /* Allow long values to wrap within the panel rather than overflow */
+    word-break: break-all;
+}
+
+/* Constraints section */
+.constraints-section {
+    margin-bottom: 0.85rem;
+    white-space: normal;   /* override the .problem-desc pre-wrap */
+}
+
+.constraints-label {
+    font-weight: 700;
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.4rem;
+}
+
+/* Each constraint as a list item — far more readable than a wall of text */
+.constraint-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.constraint-list li {
+    font-family: var(--mono);
+    font-size: 0.87rem;
+    color: var(--text);
+    padding: 0.15rem 0 0.15rem 1rem;
+    border-left: 2px solid var(--border);
+    /* Unicode superscripts (10⁵) and brackets ([0..n]) display without issues */
+}
+
+/* Follow-up question */
+.follow-up-section {
+    font-family: var(--font);
+    font-size: 0.9rem;
+    color: var(--text-dim);
+    border-top: 1px dashed var(--border);
+    padding-top: 0.65rem;
+    margin-top: 0.5rem;
+    white-space: normal;   /* override the .problem-desc pre-wrap */
+}
+
+.follow-up-label {
+    font-weight: 700;
+    color: var(--yellow);
+}
+
+/* Responsive tweaks for description inside the compressed mobile panel */
+@media (max-width: 768px) {
+    .example-block { padding: 0.6rem 0.75rem; }
+    .constraint-list li { font-size: 0.82rem; }
+}

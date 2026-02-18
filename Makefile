@@ -19,3 +19,7 @@ test:
 ## serve: Start the FastAPI server on http://localhost:8000
 serve:
 	uv run python main.py
+
+## cloc: Count lines of code
+cloc:
+	cloc 

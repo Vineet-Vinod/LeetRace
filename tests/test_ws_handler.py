@@ -140,18 +140,17 @@ class TestWebSocketStart:
             assert msg["type"] == "error"
             assert "host" in msg["message"].lower()
 
-    def test_start_with_only_one_player_receives_error(self, client):
+    def test_host_can_start_with_one_player(self, client):
         room = create_room(host_name="Alice")
-        with client.websocket_connect(f"/ws/{room.id}") as ws:
-            ws.send_json({"type": "join", "name": "Alice"})
-            ws.receive_json()  # room_state
-            ws.send_json({"type": "start"})
-            msg = ws.receive_json()
-            assert msg["type"] == "error"
-            assert any(
-                kw in msg["message"].lower()
-                for kw in ["2 player", "least 2", "at least"]
-            )
+
+        with patch.object(ws_module, "pick_random", return_value=FAKE_PROBLEM):
+            with client.websocket_connect(f"/ws/{room.id}") as ws:
+                ws.send_json({"type": "join", "name": "Alice"})
+                ws.receive_json()  # room_state
+                ws.send_json({"type": "start"})
+                msg = ws.receive_json()
+                assert msg["type"] == "game_start"
+                assert msg["problem"]["id"] == "two-sum"
 
     def test_host_can_start_with_two_players(self, client):
         room = create_room(host_name="Alice")
