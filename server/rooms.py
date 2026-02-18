@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import secrets
-import time
 from dataclasses import dataclass, field
 from enum import Enum
 
@@ -12,6 +11,7 @@ from fastapi import WebSocket
 
 class RoomState(str, Enum):
     """Lifecycle states for a game room."""
+
     LOBBY = "lobby"
     PLAYING = "playing"
     FINISHED = "finished"
@@ -29,6 +29,7 @@ class Player:
         locked_at: Seconds after round start when the player locked in,
                    or None if not yet locked.
     """
+
     name: str
     websocket: WebSocket | None = None
     submission: dict | None = None
@@ -52,6 +53,7 @@ class Room:
         total_rounds: Number of rounds configured for this room.
         current_round: 1-indexed round currently in progress (0 = lobby).
     """
+
     id: str
     host: str
     state: RoomState = RoomState.LOBBY
@@ -72,7 +74,12 @@ def _generate_id() -> str:
     return secrets.token_hex(3).upper()
 
 
-def create_room(host_name: str, time_limit: int = 300, difficulty: str | None = None, rounds: int = 1) -> Room:
+def create_room(
+    host_name: str,
+    time_limit: int = 300,
+    difficulty: str | None = None,
+    rounds: int = 1,
+) -> Room:
     """Create a new room with a unique ID and register it globally."""
     room_id = _generate_id()
     while room_id in rooms:

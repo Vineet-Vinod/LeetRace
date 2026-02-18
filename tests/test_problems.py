@@ -8,8 +8,6 @@ Tests cover:
 """
 
 import json
-import pytest
-from pathlib import Path
 from unittest.mock import patch
 
 import server.problems as problems_module
@@ -21,9 +19,27 @@ from server.problems import load_index, load_problem, pick_random
 # ---------------------------------------------------------------------------
 
 FAKE_INDEX = [
-    {"id": "two-sum",     "title": "Two Sum",     "difficulty": "Easy",   "tags": [], "test_count": 5},
-    {"id": "merge-sort",  "title": "Merge Sort",  "difficulty": "Medium", "tags": [], "test_count": 3},
-    {"id": "trapping",    "title": "Trapping Rain","difficulty": "Hard",   "tags": [], "test_count": 4},
+    {
+        "id": "two-sum",
+        "title": "Two Sum",
+        "difficulty": "Easy",
+        "tags": [],
+        "test_count": 5,
+    },
+    {
+        "id": "merge-sort",
+        "title": "Merge Sort",
+        "difficulty": "Medium",
+        "tags": [],
+        "test_count": 3,
+    },
+    {
+        "id": "trapping",
+        "title": "Trapping Rain",
+        "difficulty": "Hard",
+        "tags": [],
+        "test_count": 4,
+    },
 ]
 
 FAKE_PROBLEM = {
@@ -44,6 +60,7 @@ FAKE_PROBLEM = {
 # ---------------------------------------------------------------------------
 # load_index
 # ---------------------------------------------------------------------------
+
 
 class TestLoadIndex:
     def test_returns_list(self):
@@ -90,6 +107,7 @@ class TestLoadIndex:
 # load_problem
 # ---------------------------------------------------------------------------
 
+
 class TestLoadProblem:
     def test_real_problem_returns_dict(self):
         result = load_problem("two-sum")
@@ -101,8 +119,15 @@ class TestLoadProblem:
 
     def test_real_problem_has_required_fields(self):
         result = load_problem("two-sum")
-        required = {"id", "title", "difficulty", "description",
-                    "entry_point", "starter_code", "test_cases"}
+        required = {
+            "id",
+            "title",
+            "difficulty",
+            "description",
+            "entry_point",
+            "starter_code",
+            "test_cases",
+        }
         assert required.issubset(set(result.keys()))
 
     def test_test_cases_is_nonempty_list(self):
@@ -141,6 +166,7 @@ class TestLoadProblem:
 # ---------------------------------------------------------------------------
 # pick_random
 # ---------------------------------------------------------------------------
+
 
 class TestPickRandom:
     def test_returns_a_problem_dict(self):

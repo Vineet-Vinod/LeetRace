@@ -18,21 +18,17 @@ Tests cover:
 - Async run_code wrapper: correct plumbing to _run_sync
 """
 
-import asyncio
 import pytest
 from server.sandbox import run_code, _run_sync
 
 
-PREAMBLE = (
-    "from typing import *\n"
-    "from collections import *\n"
-    "from functools import *\n"
-)
+PREAMBLE = "from typing import *\nfrom collections import *\nfrom functools import *\n"
 
 
 # ---------------------------------------------------------------------------
 # Correct solutions
 # ---------------------------------------------------------------------------
+
 
 class TestCorrectCode:
     def test_two_sum_solution_passes_all_cases(self):
@@ -121,6 +117,7 @@ class Solution:
 # Time metadata
 # ---------------------------------------------------------------------------
 
+
 class TestTimeMeta:
     def test_time_ms_present_and_non_negative(self):
         result = _run_sync("def f(x): return x", "f", ["assert candidate(1) == 1"])
@@ -129,7 +126,9 @@ class TestTimeMeta:
         assert result["time_ms"] >= 0
 
     def test_time_ms_present_even_on_error(self):
-        result = _run_sync("def f(x): raise ValueError", "f", ["assert candidate(1) == 1"])
+        result = _run_sync(
+            "def f(x): raise ValueError", "f", ["assert candidate(1) == 1"]
+        )
         assert "time_ms" in result
         assert result["time_ms"] >= 0
 
@@ -138,13 +137,14 @@ class TestTimeMeta:
 # Partial passes
 # ---------------------------------------------------------------------------
 
+
 class TestPartialPass:
     def test_off_by_one_fails_some_tests(self):
         code = "def add(a, b): return a + b + 1"  # always off by 1
         test_cases = [
-            "assert candidate(1, 2) == 3",   # fails: returns 4
-            "assert candidate(0, 0) == 0",   # fails: returns 1
-            "assert candidate(0, 0) == 1",   # passes: returns 1 (lucky)
+            "assert candidate(1, 2) == 3",  # fails: returns 4
+            "assert candidate(0, 0) == 0",  # fails: returns 1
+            "assert candidate(0, 0) == 1",  # passes: returns 1 (lucky)
         ]
         result = _run_sync(code, "add", test_cases)
         assert result["total"] == 3
@@ -164,18 +164,23 @@ class TestPartialPass:
     def test_first_failing_error_is_captured(self):
         code = "def f(x): return x * 2"
         test_cases = [
-            "assert candidate(1) == 99",   # fails first
-            "assert candidate(2) == 4",    # passes second
+            "assert candidate(1) == 99",  # fails first
+            "assert candidate(2) == 4",  # passes second
         ]
         result = _run_sync(code, "f", test_cases)
         assert result["error"] is not None
         # Error message should mention expected vs got
-        assert "99" in result["error"] or "Expected" in result["error"] or "2" in result["error"]
+        assert (
+            "99" in result["error"]
+            or "Expected" in result["error"]
+            or "2" in result["error"]
+        )
 
 
 # ---------------------------------------------------------------------------
 # Wrong output
 # ---------------------------------------------------------------------------
+
 
 class TestWrongOutput:
     def test_wrong_return_value_results_in_zero_passed(self):
@@ -198,6 +203,7 @@ class TestWrongOutput:
 # Compilation / syntax errors
 # ---------------------------------------------------------------------------
 
+
 class TestCompilationErrors:
     def test_syntax_error_reports_compilation_error(self):
         code = "def f(x\n    return x"  # missing closing paren
@@ -206,7 +212,11 @@ class TestCompilationErrors:
         assert result["passed"] == 0
         assert result["error"] is not None
         error_lower = result["error"].lower()
-        assert "compilation error" in error_lower or "syntaxerror" in error_lower or "error" in error_lower
+        assert (
+            "compilation error" in error_lower
+            or "syntaxerror" in error_lower
+            or "error" in error_lower
+        )
 
     def test_undefined_variable_in_code(self):
         code = "def f(x): return undefined_var + x"
@@ -227,12 +237,13 @@ class TestCompilationErrors:
 # Runtime exceptions per test case
 # ---------------------------------------------------------------------------
 
+
 class TestRuntimeExceptions:
     def test_zero_division_in_function(self):
         code = "def f(x): return 10 // x"
         test_cases = [
-            "assert candidate(0) == 1",    # ZeroDivisionError
-            "assert candidate(2) == 5",    # passes
+            "assert candidate(0) == 1",  # ZeroDivisionError
+            "assert candidate(2) == 5",  # passes
         ]
         result = _run_sync(code, "f", test_cases)
         assert result["total"] == 2
@@ -259,6 +270,7 @@ class TestRuntimeExceptions:
 # ---------------------------------------------------------------------------
 # Entry point resolution
 # ---------------------------------------------------------------------------
+
 
 class TestEntryPoint:
     def test_unknown_entry_point_returns_error(self):
@@ -288,6 +300,7 @@ class Solution:
 # ---------------------------------------------------------------------------
 # Edge cases
 # ---------------------------------------------------------------------------
+
 
 class TestEdgeCases:
     def test_empty_test_cases_list(self):
@@ -343,6 +356,7 @@ class TestEdgeCases:
 # Async run_code wrapper
 # ---------------------------------------------------------------------------
 
+
 class TestRunCodeAsync:
     @pytest.mark.asyncio
     async def test_correct_solution_via_async(self):
@@ -374,7 +388,8 @@ class Solution:
         return sum(nums)
 """
         result = await run_code(
-            code, "Solution().fn",
+            code,
+            "Solution().fn",
             ["assert candidate(nums=[1,2,3]) == 6"],
             preamble=PREAMBLE,
         )

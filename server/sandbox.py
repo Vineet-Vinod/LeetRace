@@ -27,8 +27,8 @@ _SUBPROCESS_TIMEOUT_SECONDS = 10
 # Resource limits applied to the sandbox subprocess (POSIX only).
 _CPU_LIMIT_SECONDS = 5
 _MEMORY_LIMIT_BYTES = 256 * 1024 * 1024  # 256 MB
-_FILE_SIZE_LIMIT_BYTES = 1024 * 1024      # 1 MB
-_MAX_CHILD_PROCESSES = 0                   # no forking
+_FILE_SIZE_LIMIT_BYTES = 1024 * 1024  # 1 MB
+_MAX_CHILD_PROCESSES = 0  # no forking
 
 
 RUNNER_SCRIPT = textwrap.dedent("""\
@@ -238,23 +238,43 @@ def _set_limits():
     """Set POSIX resource limits for the child process (Linux and macOS)."""
     try:
         import resource
-        resource.setrlimit(resource.RLIMIT_CPU, (_CPU_LIMIT_SECONDS, _CPU_LIMIT_SECONDS))
-        resource.setrlimit(resource.RLIMIT_AS, (_MEMORY_LIMIT_BYTES, _MEMORY_LIMIT_BYTES))
-        resource.setrlimit(resource.RLIMIT_FSIZE, (_FILE_SIZE_LIMIT_BYTES, _FILE_SIZE_LIMIT_BYTES))
-        resource.setrlimit(resource.RLIMIT_NPROC, (_MAX_CHILD_PROCESSES, _MAX_CHILD_PROCESSES))
+
+        resource.setrlimit(
+            resource.RLIMIT_CPU, (_CPU_LIMIT_SECONDS, _CPU_LIMIT_SECONDS)
+        )
+        resource.setrlimit(
+            resource.RLIMIT_AS, (_MEMORY_LIMIT_BYTES, _MEMORY_LIMIT_BYTES)
+        )
+        resource.setrlimit(
+            resource.RLIMIT_FSIZE, (_FILE_SIZE_LIMIT_BYTES, _FILE_SIZE_LIMIT_BYTES)
+        )
+        resource.setrlimit(
+            resource.RLIMIT_NPROC, (_MAX_CHILD_PROCESSES, _MAX_CHILD_PROCESSES)
+        )
     except (ImportError, ValueError, OSError) as e:
-        logger.warning("Sandbox resource limits could not be applied (%s). Code will run without limits.", e)
+        logger.warning(
+            "Sandbox resource limits could not be applied (%s). Code will run without limits.",
+            e,
+        )
 
 
-def _run_sync(code: str, entry_point: str, test_cases: list[str], preamble: str = "", any_order: bool = False) -> dict:
+def _run_sync(
+    code: str,
+    entry_point: str,
+    test_cases: list[str],
+    preamble: str = "",
+    any_order: bool = False,
+) -> dict:
     """Synchronous sandbox execution."""
-    payload = json.dumps({
-        "code": code,
-        "entry_point": entry_point,
-        "test_cases": test_cases,
-        "preamble": preamble,
-        "any_order": any_order,
-    })
+    payload = json.dumps(
+        {
+            "code": code,
+            "entry_point": entry_point,
+            "test_cases": test_cases,
+            "preamble": preamble,
+            "any_order": any_order,
+        }
+    )
 
     start = time.monotonic()
     try:
@@ -270,7 +290,12 @@ def _run_sync(code: str, entry_point: str, test_cases: list[str], preamble: str 
 
         if proc.returncode != 0 and not proc.stdout.strip():
             stderr = proc.stderr.strip()[:200]
-            return {"passed": 0, "total": len(test_cases), "error": stderr or "Process crashed", "time_ms": elapsed_ms}
+            return {
+                "passed": 0,
+                "total": len(test_cases),
+                "error": stderr or "Process crashed",
+                "time_ms": elapsed_ms,
+            }
 
         result = json.loads(proc.stdout.strip())
         result["time_ms"] = elapsed_ms
@@ -278,15 +303,38 @@ def _run_sync(code: str, entry_point: str, test_cases: list[str], preamble: str 
 
     except subprocess.TimeoutExpired:
         elapsed_ms = int((time.monotonic() - start) * 1000)
-        return {"passed": 0, "total": len(test_cases), "error": f"Time limit exceeded ({_SUBPROCESS_TIMEOUT_SECONDS}s)", "time_ms": elapsed_ms}
+        return {
+            "passed": 0,
+            "total": len(test_cases),
+            "error": f"Time limit exceeded ({_SUBPROCESS_TIMEOUT_SECONDS}s)",
+            "time_ms": elapsed_ms,
+        }
     except json.JSONDecodeError as e:
         elapsed_ms = int((time.monotonic() - start) * 1000)
-        return {"passed": 0, "total": len(test_cases), "error": f"Runner produced invalid output: {e}", "time_ms": elapsed_ms}
+        return {
+            "passed": 0,
+            "total": len(test_cases),
+            "error": f"Runner produced invalid output: {e}",
+            "time_ms": elapsed_ms,
+        }
     except Exception as e:
         elapsed_ms = int((time.monotonic() - start) * 1000)
-        return {"passed": 0, "total": len(test_cases), "error": str(e)[:200], "time_ms": elapsed_ms}
+        return {
+            "passed": 0,
+            "total": len(test_cases),
+            "error": str(e)[:200],
+            "time_ms": elapsed_ms,
+        }
 
 
-async def run_code(code: str, entry_point: str, test_cases: list[str], preamble: str = "", any_order: bool = False) -> dict:
+async def run_code(
+    code: str,
+    entry_point: str,
+    test_cases: list[str],
+    preamble: str = "",
+    any_order: bool = False,
+) -> dict:
     """Run user code in a sandbox. Returns {passed, total, error, time_ms}."""
-    return await asyncio.to_thread(_run_sync, code, entry_point, test_cases, preamble, any_order)
+    return await asyncio.to_thread(
+        _run_sync, code, entry_point, test_cases, preamble, any_order
+    )

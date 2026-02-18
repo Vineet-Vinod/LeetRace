@@ -3,7 +3,9 @@
 import re
 
 # Maps ASCII digits to their Unicode superscript equivalents.
-_SUP_DIGITS = str.maketrans("0123456789", "\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079")
+_SUP_DIGITS = str.maketrans(
+    "0123456789", "\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079"
+)
 
 
 def fix_exponents(text: str) -> str:

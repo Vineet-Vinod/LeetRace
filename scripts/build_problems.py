@@ -119,13 +119,15 @@ def build():
         problem_path = PROBLEMS_DIR / f"{slug}.json"
         problem_path.write_text(json.dumps(problem_data, indent=2))
 
-        index.append({
-            "id": slug,
-            "title": problem_data["title"],
-            "difficulty": difficulty,
-            "tags": problem_data["tags"],
-            "test_count": len(test_cases),
-        })
+        index.append(
+            {
+                "id": slug,
+                "title": problem_data["title"],
+                "difficulty": difficulty,
+                "tags": problem_data["tags"],
+                "test_count": len(test_cases),
+            }
+        )
         written += 1
 
     # Write index

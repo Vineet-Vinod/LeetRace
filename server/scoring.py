@@ -29,23 +29,31 @@ def rank_players(players: dict[str, Player]) -> list[dict]:
     entries = []
     for name, player in players.items():
         sub = player.best_submission or _NO_SUBMISSION
-        entries.append({
-            "name": name,
-            "solved": sub.get("solved", False),
-            "char_count": sub.get("char_count", float("inf")),
-            "submit_time": sub.get("submit_time", float("inf")),
-            "locked_at": player.locked_at,
-            "tests_passed": sub.get("passed", 0),
-            "tests_total": sub.get("total", 0),
-            "error": sub.get("error"),
-        })
+        entries.append(
+            {
+                "name": name,
+                "solved": sub.get("solved", False),
+                "char_count": sub.get("char_count", float("inf")),
+                "submit_time": sub.get("submit_time", float("inf")),
+                "locked_at": player.locked_at,
+                "tests_passed": sub.get("passed", 0),
+                "tests_total": sub.get("total", 0),
+                "error": sub.get("error"),
+            }
+        )
 
-    entries.sort(key=lambda e: (
-        not e["solved"],                        # solved=True first
-        -e["tests_passed"],                     # more tests better
-        e["char_count"] if e["solved"] else 0,  # fewer chars better (only matters when solved)
-        e["locked_at"] if e["locked_at"] is not None else float('inf'),  # earlier lock wins
-    ))
+    entries.sort(
+        key=lambda e: (
+            not e["solved"],  # solved=True first
+            -e["tests_passed"],  # more tests better
+            e["char_count"]
+            if e["solved"]
+            else 0,  # fewer chars better (only matters when solved)
+            e["locked_at"]
+            if e["locked_at"] is not None
+            else float("inf"),  # earlier lock wins
+        )
+    )
 
     for i, entry in enumerate(entries):
         entry["position"] = i + 1

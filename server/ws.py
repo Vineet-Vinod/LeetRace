@@ -76,11 +76,14 @@ async def timer_task(room: Room) -> None:
         elapsed = time.time() - start
         remaining = max(0, limit - elapsed)
 
-        await broadcast(room, {
-            "type": "tick",
-            "remaining": int(remaining),
-            "elapsed": int(elapsed),
-        })
+        await broadcast(
+            room,
+            {
+                "type": "tick",
+                "remaining": int(remaining),
+                "elapsed": int(elapsed),
+            },
+        )
 
         if remaining <= 0:
             await end_game(room)
@@ -98,22 +101,30 @@ async def end_game(room: Room) -> None:
 
     if room.current_round < room.total_rounds:
         # More rounds to play — show round results with a break
-        room.state = RoomState.FINISHED  # temporarily, will change to PLAYING on next round
-        await broadcast(room, {
-            "type": "round_over",
-            "rankings": rankings,
-            "current_round": room.current_round,
-            "total_rounds": room.total_rounds,
-            "break_seconds": BREAK_DURATION_SECONDS,
-        })
+        room.state = (
+            RoomState.FINISHED
+        )  # temporarily, will change to PLAYING on next round
+        await broadcast(
+            room,
+            {
+                "type": "round_over",
+                "rankings": rankings,
+                "current_round": room.current_round,
+                "total_rounds": room.total_rounds,
+                "break_seconds": BREAK_DURATION_SECONDS,
+            },
+        )
         asyncio.create_task(break_task(room))
     else:
         # Final round — game is over
         room.state = RoomState.FINISHED
-        await broadcast(room, {
-            "type": "game_over",
-            "rankings": rankings,
-        })
+        await broadcast(
+            room,
+            {
+                "type": "game_over",
+                "rankings": rankings,
+            },
+        )
 
 
 async def break_task(room: Room) -> None:
@@ -122,10 +133,13 @@ async def break_task(room: Room) -> None:
         await asyncio.sleep(1)
         if room.state != RoomState.FINISHED:
             return  # room was manually restarted or cleaned up
-        await broadcast(room, {
-            "type": "break_tick",
-            "remaining": remaining,
-        })
+        await broadcast(
+            room,
+            {
+                "type": "break_tick",
+                "remaining": remaining,
+            },
+        )
 
     await start_next_round(room)
 
@@ -197,20 +211,23 @@ async def _begin_round(room: Room, problem: dict, round_number: int) -> None:
     room.start_time = time.time()
     room.current_round = round_number
 
-    await broadcast(room, {
-        "type": "game_start",
-        "problem": {
-            "id": problem["id"],
-            "title": problem["title"],
-            "difficulty": problem["difficulty"],
-            "description": fix_exponents(problem["description"]),
-            "entry_point": problem["entry_point"],
-            "starter_code": problem["starter_code"],
+    await broadcast(
+        room,
+        {
+            "type": "game_start",
+            "problem": {
+                "id": problem["id"],
+                "title": problem["title"],
+                "difficulty": problem["difficulty"],
+                "description": fix_exponents(problem["description"]),
+                "entry_point": problem["entry_point"],
+                "starter_code": problem["starter_code"],
+            },
+            "time_limit": room.time_limit,
+            "current_round": room.current_round,
+            "total_rounds": room.total_rounds,
         },
-        "time_limit": room.time_limit,
-        "current_round": room.current_round,
-        "total_rounds": room.total_rounds,
-    })
+    )
 
     asyncio.create_task(timer_task(room))
 
@@ -229,7 +246,13 @@ async def handle_start(ws: WebSocket, room: Room, player_name: str) -> None:
 
     problem = pick_random(room.difficulty)
     if not problem:
-        await broadcast(room, {"type": "error", "message": "No problems available. Run build_problems.py first."})
+        await broadcast(
+            room,
+            {
+                "type": "error",
+                "message": "No problems available. Run build_problems.py first.",
+            },
+        )
         return
 
     await _begin_round(room, problem, 1)
@@ -305,17 +328,19 @@ async def handle_submit(room: Room, player_name: str, data: dict) -> None:
 
     # Notify the submitter of their result
     if player.websocket:
-        await player.websocket.send_json({
-            "type": "submit_result",
-            "passed": result["passed"],
-            "total": result["total"],
-            "error": result.get("error"),
-            "solved": solved,
-            "char_count": char_count,
-            "submit_time": round(submit_time, 2),
-            "stdout": result.get("stdout", ""),
-            "stderr": result.get("stderr", ""),
-        })
+        await player.websocket.send_json(
+            {
+                "type": "submit_result",
+                "passed": result["passed"],
+                "total": result["total"],
+                "error": result.get("error"),
+                "solved": solved,
+                "char_count": char_count,
+                "submit_time": round(submit_time, 2),
+                "stdout": result.get("stdout", ""),
+                "stderr": result.get("stderr", ""),
+            }
+        )
 
     # Broadcast updated scoreboard
     await broadcast(room, scoreboard_msg(room))
@@ -374,7 +399,9 @@ async def websocket_handler(ws: WebSocket, room_id: str) -> None:
     except WebSocketDisconnect:
         pass
     except Exception:
-        logger.exception("WebSocket error in room %s for player %s", room_id, player_name)
+        logger.exception(
+            "WebSocket error in room %s for player %s", room_id, player_name
+        )
         try:
             await send_error(ws, "Something went wrong. Please rejoin.")
         except Exception:

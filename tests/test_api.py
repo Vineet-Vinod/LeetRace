@@ -25,6 +25,7 @@ def client():
 # POST /api/rooms
 # ---------------------------------------------------------------------------
 
+
 class TestCreateRoomEndpoint:
     def test_success_returns_200(self, client):
         resp = client.post("/api/rooms", json={"host": "Alice"})
@@ -92,8 +93,10 @@ class TestCreateRoomEndpoint:
         assert id1 != id2
 
     def test_many_rooms_all_have_unique_ids(self, client):
-        ids = [client.post("/api/rooms", json={"host": f"User{i}"}).json()["room_id"]
-               for i in range(10)]
+        ids = [
+            client.post("/api/rooms", json={"host": f"User{i}"}).json()["room_id"]
+            for i in range(10)
+        ]
         assert len(set(ids)) == 10
 
     def test_room_state_starts_as_lobby(self, client):
@@ -106,6 +109,7 @@ class TestCreateRoomEndpoint:
 # ---------------------------------------------------------------------------
 # GET /api/rooms/{room_id}
 # ---------------------------------------------------------------------------
+
 
 class TestGetRoomEndpoint:
     def test_existing_room_returns_200(self, client):
@@ -151,7 +155,9 @@ class TestGetRoomEndpoint:
         assert resp.status_code == 404
 
     def test_time_limit_reflected_in_get(self, client):
-        room_id = client.post("/api/rooms", json={"host": "A", "time_limit": 60}).json()["room_id"]
+        room_id = client.post(
+            "/api/rooms", json={"host": "A", "time_limit": 60}
+        ).json()["room_id"]
         data = client.get(f"/api/rooms/{room_id}").json()
         assert data["time_limit"] == 60
 
@@ -164,6 +170,7 @@ class TestGetRoomEndpoint:
 # ---------------------------------------------------------------------------
 # GET /api/problems
 # ---------------------------------------------------------------------------
+
 
 class TestListProblemsEndpoint:
     def test_returns_200(self, client):
@@ -201,6 +208,7 @@ class TestListProblemsEndpoint:
 # ---------------------------------------------------------------------------
 # Static HTML pages
 # ---------------------------------------------------------------------------
+
 
 class TestStaticPages:
     def test_index_returns_200(self, client):

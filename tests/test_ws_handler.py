@@ -12,12 +12,11 @@ or mocking pick_random.
 
 import time
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 from fastapi.testclient import TestClient
 
 from server.app import app
-from server.rooms import Room, Player, RoomState, create_room
-import server.rooms as rooms_module
+from server.rooms import Player, RoomState, create_room
 import server.ws as ws_module
 
 
@@ -61,6 +60,7 @@ def client():
 # ===========================================================================
 # WebSocket integration tests (TestClient)
 # ===========================================================================
+
 
 class TestWebSocketJoin:
     def test_nonexistent_room_receives_error_message(self, client):
@@ -148,7 +148,10 @@ class TestWebSocketStart:
             ws.send_json({"type": "start"})
             msg = ws.receive_json()
             assert msg["type"] == "error"
-            assert any(kw in msg["message"].lower() for kw in ["2 player", "least 2", "at least"])
+            assert any(
+                kw in msg["message"].lower()
+                for kw in ["2 player", "least 2", "at least"]
+            )
 
     def test_host_can_start_with_two_players(self, client):
         room = create_room(host_name="Alice")
@@ -238,6 +241,7 @@ class TestWebSocketStart:
 # Direct async unit tests — handle_join
 # ===========================================================================
 
+
 class TestHandleJoinDirect:
     @pytest.mark.asyncio
     async def test_successful_join_adds_player(self):
@@ -311,6 +315,7 @@ class TestHandleJoinDirect:
 # Direct async unit tests — handle_submit
 # ===========================================================================
 
+
 class TestHandleSubmitDirect:
     def _playing_room(self):
         room = create_room(host_name="Alice")
@@ -366,8 +371,11 @@ class TestHandleSubmitDirect:
         with patch.object(ws_module, "broadcast", new_callable=AsyncMock):
             await ws_module.handle_submit(room, "Alice", {"code": CORRECT_TWO_SUM})
 
-        sr = next(c[0][0] for c in mock_ws.send_json.call_args_list
-                  if c[0][0]["type"] == "submit_result")
+        sr = next(
+            c[0][0]
+            for c in mock_ws.send_json.call_args_list
+            if c[0][0]["type"] == "submit_result"
+        )
         assert "solved" in sr
         assert sr["solved"] is True
 
@@ -432,8 +440,14 @@ class TestHandleSubmitDirect:
         mock_ws = AsyncMock()
         player = Player(name="Alice", websocket=mock_ws)
         player.best_submission = {
-            "solved": True, "char_count": 1000, "passed": 2, "total": 2,
-            "error": None, "time_ms": 50, "submit_time": 5.0, "code": "x" * 1000,
+            "solved": True,
+            "char_count": 1000,
+            "passed": 2,
+            "total": 2,
+            "error": None,
+            "time_ms": 50,
+            "submit_time": 5.0,
+            "code": "x" * 1000,
         }
         room.players["Alice"] = player
 
@@ -485,6 +499,7 @@ class TestHandleSubmitDirect:
 # Direct async unit tests — handle_lock
 # ===========================================================================
 
+
 class TestHandleLockDirect:
     def _playing_room_with_solved_player(self):
         room = create_room(host_name="Alice")
@@ -493,8 +508,14 @@ class TestHandleLockDirect:
         mock_ws = AsyncMock()
         player = Player(name="Alice", websocket=mock_ws)
         player.best_submission = {
-            "solved": True, "char_count": 100, "passed": 2, "total": 2,
-            "error": None, "time_ms": 50, "submit_time": 5.0, "code": "",
+            "solved": True,
+            "char_count": 100,
+            "passed": 2,
+            "total": 2,
+            "error": None,
+            "time_ms": 50,
+            "submit_time": 5.0,
+            "code": "",
         }
         room.players["Alice"] = player
         return room, player, mock_ws
@@ -546,8 +567,14 @@ class TestHandleLockDirect:
         mock_ws = AsyncMock()
         player = Player(name="Alice", websocket=mock_ws)
         player.best_submission = {
-            "solved": False, "char_count": 100, "passed": 1, "total": 2,
-            "error": "wrong", "time_ms": 50, "submit_time": 3.0, "code": "",
+            "solved": False,
+            "char_count": 100,
+            "passed": 1,
+            "total": 2,
+            "error": "wrong",
+            "time_ms": 50,
+            "submit_time": 3.0,
+            "code": "",
         }
         room.players["Alice"] = player
 
@@ -575,8 +602,14 @@ class TestHandleLockDirect:
         mock_ws = AsyncMock()
         player = Player(name="Alice", websocket=mock_ws)
         player.best_submission = {
-            "solved": True, "char_count": 100, "passed": 2, "total": 2,
-            "error": None, "time_ms": 50, "submit_time": 3.0, "code": "",
+            "solved": True,
+            "char_count": 100,
+            "passed": 2,
+            "total": 2,
+            "error": None,
+            "time_ms": 50,
+            "submit_time": 3.0,
+            "code": "",
         }
         room.players["Alice"] = player
 
@@ -599,13 +632,25 @@ class TestHandleLockDirect:
 
         alice = Player(name="Alice", websocket=mock_ws_alice)
         alice.best_submission = {
-            "solved": True, "char_count": 100, "passed": 2, "total": 2,
-            "error": None, "time_ms": 50, "submit_time": 3.0, "code": "",
+            "solved": True,
+            "char_count": 100,
+            "passed": 2,
+            "total": 2,
+            "error": None,
+            "time_ms": 50,
+            "submit_time": 3.0,
+            "code": "",
         }
         bob = Player(name="Bob", websocket=mock_ws_bob)
         bob.best_submission = {
-            "solved": True, "char_count": 120, "passed": 2, "total": 2,
-            "error": None, "time_ms": 60, "submit_time": 8.0, "code": "",
+            "solved": True,
+            "char_count": 120,
+            "passed": 2,
+            "total": 2,
+            "error": None,
+            "time_ms": 60,
+            "submit_time": 8.0,
+            "code": "",
         }
         bob.locked_at = 8.0  # Bob is already locked
 
@@ -622,6 +667,7 @@ class TestHandleLockDirect:
 # ===========================================================================
 # Direct async unit tests — handle_restart
 # ===========================================================================
+
 
 class TestHandleRestartDirect:
     @pytest.mark.asyncio
@@ -718,6 +764,7 @@ class TestHandleRestartDirect:
 # Direct async unit tests — end_game
 # ===========================================================================
 
+
 class TestEndGame:
     @pytest.mark.asyncio
     async def test_already_finished_room_is_noop(self):
@@ -752,7 +799,9 @@ class TestEndGame:
         with patch.object(ws_module, "broadcast", new_callable=AsyncMock) as mock_bc:
             await ws_module.end_game(room)
 
-        msgs = [c[0][1] for c in mock_bc.call_args_list if c[0][1]["type"] == "game_over"]
+        msgs = [
+            c[0][1] for c in mock_bc.call_args_list if c[0][1]["type"] == "game_over"
+        ]
         assert len(msgs) == 1
         assert "rankings" in msgs[0]
 
@@ -794,6 +843,8 @@ class TestEndGame:
             with patch("asyncio.create_task"):
                 await ws_module.end_game(room)
 
-        msgs = [c[0][1] for c in mock_bc.call_args_list if c[0][1]["type"] == "round_over"]
+        msgs = [
+            c[0][1] for c in mock_bc.call_args_list if c[0][1]["type"] == "round_over"
+        ]
         assert len(msgs) == 1
         assert "break_seconds" in msgs[0]

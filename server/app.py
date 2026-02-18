@@ -6,9 +6,9 @@ from typing import Literal
 from fastapi import FastAPI, WebSocket
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, field_validator
 
-from server.rooms import create_room, get_room, RoomState
+from server.rooms import create_room, get_room
 from server.problems import load_index
 from server.ws import websocket_handler
 
@@ -35,6 +35,7 @@ class CreateRoomRequest(BaseModel):
 
 
 # --- REST API ---
+
 
 @app.post("/api/rooms")
 async def api_create_room(body: CreateRoomRequest = CreateRoomRequest()):
@@ -69,12 +70,14 @@ async def api_list_problems():
 
 # --- WebSocket ---
 
+
 @app.websocket("/ws/{room_id}")
 async def ws_endpoint(ws: WebSocket, room_id: str):
     await websocket_handler(ws, room_id)
 
 
 # --- HTML pages ---
+
 
 @app.get("/")
 async def index():

@@ -9,16 +9,21 @@ Tests cover:
 - Player dataclass defaults and mutation
 """
 
-import pytest
 from server.rooms import (
-    Room, Player, RoomState,
-    create_room, get_room, remove_room, rooms,
+    Room,
+    Player,
+    RoomState,
+    create_room,
+    get_room,
+    remove_room,
+    rooms,
 )
 
 
 # ---------------------------------------------------------------------------
 # create_room
 # ---------------------------------------------------------------------------
+
 
 class TestCreateRoom:
     def test_returns_room_object(self):
@@ -104,6 +109,7 @@ class TestCreateRoom:
 # get_room
 # ---------------------------------------------------------------------------
 
+
 class TestGetRoom:
     def test_returns_correct_room_for_valid_id(self):
         room = create_room(host_name="Alice")
@@ -134,6 +140,7 @@ class TestGetRoom:
 # remove_room
 # ---------------------------------------------------------------------------
 
+
 class TestRemoveRoom:
     def test_removes_room_from_registry(self):
         room = create_room(host_name="Alice")
@@ -162,6 +169,7 @@ class TestRemoveRoom:
 # RoomState enum
 # ---------------------------------------------------------------------------
 
+
 class TestRoomState:
     def test_lobby_value(self):
         assert RoomState.LOBBY.value == "lobby"
@@ -189,6 +197,7 @@ class TestRoomState:
 # Player dataclass
 # ---------------------------------------------------------------------------
 
+
 class TestPlayer:
     def test_default_fields(self):
         p = Player(name="Alice")
@@ -200,8 +209,15 @@ class TestPlayer:
 
     def test_submission_can_be_set(self):
         p = Player(name="Alice")
-        sub = {"solved": True, "passed": 5, "total": 5, "char_count": 100,
-               "error": None, "time_ms": 50, "submit_time": 10.0}
+        sub = {
+            "solved": True,
+            "passed": 5,
+            "total": 5,
+            "char_count": 100,
+            "error": None,
+            "time_ms": 50,
+            "submit_time": 10.0,
+        }
         p.submission = sub
         assert p.submission["solved"] is True
 

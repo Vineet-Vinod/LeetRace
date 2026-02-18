@@ -26,5 +26,6 @@ def clear_problems_cache():
 def client():
     from fastapi.testclient import TestClient
     from server.app import app
+
     with TestClient(app) as c:
         yield c

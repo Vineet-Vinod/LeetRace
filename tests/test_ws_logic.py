@@ -8,7 +8,6 @@ Tests cover:
 - scoreboard_msg: message structure
 """
 
-import pytest
 from server.ws import fix_exponents, _is_better, room_state_msg, scoreboard_msg
 from server.rooms import Room, RoomState, Player
 
@@ -16,6 +15,7 @@ from server.rooms import Room, RoomState, Player
 # ---------------------------------------------------------------------------
 # fix_exponents
 # ---------------------------------------------------------------------------
+
 
 class TestFixExponents:
     # --- Explicit caret notation ---
@@ -112,23 +112,24 @@ class TestFixExponents:
 # _is_better
 # ---------------------------------------------------------------------------
 
+
 class TestIsBetter:
     # --- solved vs unsolved ---
 
     def test_solved_beats_unsolved(self):
-        new = {"solved": True,  "char_count": 999, "passed": 5}
-        old = {"solved": False, "char_count": 10,  "passed": 4}
+        new = {"solved": True, "char_count": 999, "passed": 5}
+        old = {"solved": False, "char_count": 10, "passed": 4}
         assert _is_better(new, old) is True
 
     def test_unsolved_does_not_beat_solved(self):
-        new = {"solved": False, "char_count": 10,  "passed": 4}
-        old = {"solved": True,  "char_count": 999, "passed": 5}
+        new = {"solved": False, "char_count": 10, "passed": 4}
+        old = {"solved": True, "char_count": 999, "passed": 5}
         assert _is_better(new, old) is False
 
     # --- both solved: fewer chars wins ---
 
     def test_both_solved_fewer_chars_is_better(self):
-        new = {"solved": True, "char_count": 80,  "passed": 5}
+        new = {"solved": True, "char_count": 80, "passed": 5}
         old = {"solved": True, "char_count": 100, "passed": 5}
         assert _is_better(new, old) is True
 
@@ -143,7 +144,7 @@ class TestIsBetter:
         assert _is_better(new, old) is False
 
     def test_both_solved_fewer_chars_by_one(self):
-        new = {"solved": True, "char_count": 99,  "passed": 5}
+        new = {"solved": True, "char_count": 99, "passed": 5}
         old = {"solved": True, "char_count": 100, "passed": 5}
         assert _is_better(new, old) is True
 
@@ -173,6 +174,7 @@ class TestIsBetter:
 # ---------------------------------------------------------------------------
 # room_state_msg
 # ---------------------------------------------------------------------------
+
 
 class TestRoomStateMsg:
     def _make_room(self, **kwargs):
@@ -215,7 +217,7 @@ class TestRoomStateMsg:
     def test_players_list_when_populated(self):
         room = self._make_room()
         room.players["Alice"] = Player(name="Alice")
-        room.players["Bob"]   = Player(name="Bob")
+        room.players["Bob"] = Player(name="Bob")
         msg = room_state_msg(room)
         assert set(msg["players"]) == {"Alice", "Bob"}
 
@@ -238,9 +240,15 @@ class TestRoomStateMsg:
     def test_required_keys_all_present(self):
         msg = room_state_msg(self._make_room())
         required = {
-            "type", "room_id", "state", "host",
-            "players", "time_limit", "difficulty",
-            "current_round", "total_rounds",
+            "type",
+            "room_id",
+            "state",
+            "host",
+            "players",
+            "time_limit",
+            "difficulty",
+            "current_round",
+            "total_rounds",
         }
         assert required.issubset(set(msg.keys()))
 
@@ -248,6 +256,7 @@ class TestRoomStateMsg:
 # ---------------------------------------------------------------------------
 # scoreboard_msg
 # ---------------------------------------------------------------------------
+
 
 class TestScoreboardMsg:
     def test_type_is_scoreboard(self):
@@ -273,7 +282,7 @@ class TestScoreboardMsg:
     def test_rankings_reflect_player_count(self):
         room = Room(id="ABCDEF", host="Alice")
         room.players["Alice"] = Player(name="Alice")
-        room.players["Bob"]   = Player(name="Bob")
+        room.players["Bob"] = Player(name="Bob")
         msg = scoreboard_msg(room)
         assert len(msg["rankings"]) == 2
 

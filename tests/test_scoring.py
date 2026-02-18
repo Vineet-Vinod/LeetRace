@@ -11,7 +11,6 @@ Tests cover:
 - Position numbering (1-indexed, sequential)
 """
 
-import pytest
 from server.rooms import Player
 from server.scoring import rank_players
 
@@ -19,6 +18,7 @@ from server.scoring import rank_players
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def make_player(
     name,
@@ -48,6 +48,7 @@ def make_player(
 # Empty / single player
 # ---------------------------------------------------------------------------
 
+
 class TestRankPlayersEmpty:
     def test_empty_dict_returns_empty_list(self):
         result = rank_players({})
@@ -67,11 +68,12 @@ class TestRankPlayersEmpty:
 # Solved beats unsolved
 # ---------------------------------------------------------------------------
 
+
 class TestRankPlayersSolvedFirst:
     def test_solved_player_ranks_above_unsolved(self):
         players = {
             "Alice": make_player("Alice", solved=False, passed=2, total=5),
-            "Bob":   make_player("Bob",   solved=True,  char_count=100, passed=5, total=5),
+            "Bob": make_player("Bob", solved=True, char_count=100, passed=5, total=5),
         }
         result = rank_players(players)
         assert result[0]["name"] == "Bob"
@@ -81,9 +83,13 @@ class TestRankPlayersSolvedFirst:
 
     def test_all_solved_sorted_by_char_count_ascending(self):
         players = {
-            "Alice": make_player("Alice", solved=True, char_count=200, passed=5, total=5),
-            "Bob":   make_player("Bob",   solved=True, char_count=100, passed=5, total=5),
-            "Carol": make_player("Carol", solved=True, char_count=150, passed=5, total=5),
+            "Alice": make_player(
+                "Alice", solved=True, char_count=200, passed=5, total=5
+            ),
+            "Bob": make_player("Bob", solved=True, char_count=100, passed=5, total=5),
+            "Carol": make_player(
+                "Carol", solved=True, char_count=150, passed=5, total=5
+            ),
         }
         result = rank_players(players)
         names = [e["name"] for e in result]
@@ -91,8 +97,12 @@ class TestRankPlayersSolvedFirst:
 
     def test_same_char_count_solved_tiebreak_by_locked_at(self):
         players = {
-            "Alice": make_player("Alice", solved=True, char_count=100, passed=5, total=5, locked_at=30.0),
-            "Bob":   make_player("Bob",   solved=True, char_count=100, passed=5, total=5, locked_at=10.0),
+            "Alice": make_player(
+                "Alice", solved=True, char_count=100, passed=5, total=5, locked_at=30.0
+            ),
+            "Bob": make_player(
+                "Bob", solved=True, char_count=100, passed=5, total=5, locked_at=10.0
+            ),
         }
         result = rank_players(players)
         # Bob locked in earlier — should rank first
@@ -102,17 +112,25 @@ class TestRankPlayersSolvedFirst:
     def test_solved_with_lock_beats_solved_without_lock(self):
         """locked_at=None is treated as infinity, so a player with a lock wins."""
         players = {
-            "Alice": make_player("Alice", solved=True, char_count=100, passed=5, total=5, locked_at=None),
-            "Bob":   make_player("Bob",   solved=True, char_count=100, passed=5, total=5, locked_at=20.0),
+            "Alice": make_player(
+                "Alice", solved=True, char_count=100, passed=5, total=5, locked_at=None
+            ),
+            "Bob": make_player(
+                "Bob", solved=True, char_count=100, passed=5, total=5, locked_at=20.0
+            ),
         }
         result = rank_players(players)
         assert result[0]["name"] == "Bob"
 
     def test_solved_and_unsolved_mixed_ordering(self):
         players = {
-            "A": make_player("A", solved=True,  char_count=50, passed=3, total=3, locked_at=5.0),
+            "A": make_player(
+                "A", solved=True, char_count=50, passed=3, total=3, locked_at=5.0
+            ),
             "B": make_player("B", solved=False, passed=2, total=3),
-            "C": make_player("C", solved=True,  char_count=80, passed=3, total=3, locked_at=3.0),
+            "C": make_player(
+                "C", solved=True, char_count=80, passed=3, total=3, locked_at=3.0
+            ),
             "D": make_player("D", solved=False, passed=0, total=3),
         }
         result = rank_players(players)
@@ -129,11 +147,12 @@ class TestRankPlayersSolvedFirst:
 # Unsolved tiebreaks
 # ---------------------------------------------------------------------------
 
+
 class TestRankPlayersUnsolved:
     def test_unsolved_sorted_by_tests_passed_descending(self):
         players = {
             "Alice": make_player("Alice", solved=False, passed=1, total=5),
-            "Bob":   make_player("Bob",   solved=False, passed=4, total=5),
+            "Bob": make_player("Bob", solved=False, passed=4, total=5),
             "Carol": make_player("Carol", solved=False, passed=2, total=5),
         }
         result = rank_players(players)
@@ -143,7 +162,7 @@ class TestRankPlayersUnsolved:
     def test_zero_passed_ranks_last_among_unsolved(self):
         players = {
             "Alice": make_player("Alice", solved=False, passed=3, total=5),
-            "Bob":   make_player("Bob",   solved=False, passed=0, total=5),
+            "Bob": make_player("Bob", solved=False, passed=0, total=5),
         }
         result = rank_players(players)
         assert result[0]["name"] == "Alice"
@@ -154,10 +173,11 @@ class TestRankPlayersUnsolved:
 # Position numbering
 # ---------------------------------------------------------------------------
 
+
 class TestRankPlayersPositions:
     def test_positions_are_1_indexed_and_sequential(self):
         players = {
-            "A": make_player("A", solved=True,  char_count=100, passed=5, total=5),
+            "A": make_player("A", solved=True, char_count=100, passed=5, total=5),
             "B": make_player("B", solved=False, passed=2, total=5),
             "C": make_player("C", solved=False, passed=0, total=5),
         }
@@ -165,12 +185,21 @@ class TestRankPlayersPositions:
         assert [e["position"] for e in result] == [1, 2, 3]
 
     def test_result_entry_contains_all_required_fields(self):
-        players = {"Alice": make_player("Alice", solved=True, char_count=50, passed=3, total=3)}
+        players = {
+            "Alice": make_player("Alice", solved=True, char_count=50, passed=3, total=3)
+        }
         result = rank_players(players)
         entry = result[0]
         required = {
-            "name", "solved", "char_count", "submit_time",
-            "locked_at", "tests_passed", "tests_total", "error", "position",
+            "name",
+            "solved",
+            "char_count",
+            "submit_time",
+            "locked_at",
+            "tests_passed",
+            "tests_total",
+            "error",
+            "position",
         }
         assert required.issubset(set(entry.keys()))
 
@@ -178,6 +207,7 @@ class TestRankPlayersPositions:
 # ---------------------------------------------------------------------------
 # Players with no submission
 # ---------------------------------------------------------------------------
+
 
 class TestRankPlayersNoSubmission:
     def test_no_submission_uses_default_values(self):
