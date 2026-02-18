@@ -1,10 +1,12 @@
 """FastAPI application: REST routes, WebSocket mount, static files."""
 
 from pathlib import Path
+from typing import Literal
 
 from fastapi import FastAPI, WebSocket
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field, field_validator
 
 from server.rooms import create_room, get_room, RoomState
 from server.problems import load_index
@@ -15,20 +17,33 @@ STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
 app = FastAPI(title="LeetRace")
 
 
+class CreateRoomRequest(BaseModel):
+    host: str = "Host"
+    time_limit: int = 300
+    difficulty: Literal["Easy", "Medium", "Hard"] | None = None
+    rounds: int = 1
+
+    @field_validator("time_limit")
+    @classmethod
+    def clamp_time_limit(cls, v: int) -> int:
+        return max(30, min(3600, v))
+
+    @field_validator("rounds")
+    @classmethod
+    def clamp_rounds(cls, v: int) -> int:
+        return max(1, min(10, v))
+
+
 # --- REST API ---
 
 @app.post("/api/rooms")
-async def api_create_room(body: dict | None = None):
-    body = body or {}
-    host = body.get("host", "Host")
-    time_limit = body.get("time_limit", 300)
-    difficulty = body.get("difficulty")
-    rounds = body.get("rounds", 1)
-
-    time_limit = int(time_limit)
-    rounds = max(1, min(10, int(rounds)))
-
-    room = create_room(host_name=host, time_limit=time_limit, difficulty=difficulty, rounds=rounds)
+async def api_create_room(body: CreateRoomRequest = CreateRoomRequest()):
+    room = create_room(
+        host_name=body.host,
+        time_limit=body.time_limit,
+        difficulty=body.difficulty,
+        rounds=body.rounds,
+    )
     return {"room_id": room.id, "host": room.host}
 
 

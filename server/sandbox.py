@@ -1,11 +1,34 @@
-"""Execute user code in a sandboxed subprocess with resource limits."""
+"""Execute user code in a sandboxed subprocess with resource limits.
+
+Security model:
+  - Each submission runs in a separate subprocess via subprocess.run().
+  - Resource limits (CPU time, memory, file size, process count) are set
+    via the POSIX resource module (Linux and macOS). On platforms where
+    resource limits are unavailable, the subprocess relies solely on the
+    wall-clock timeout.
+  - The subprocess has full filesystem read access. This sandbox does NOT
+    provide filesystem isolation. For production use, consider running
+    inside a container or seccomp-bpf sandbox.
+  - Network access is not restricted at this layer.
+"""
 
 import asyncio
 import json
+import logging
 import subprocess
 import sys
 import textwrap
 import time
+
+logger = logging.getLogger(__name__)
+
+_SUBPROCESS_TIMEOUT_SECONDS = 10
+
+# Resource limits applied to the sandbox subprocess (POSIX only).
+_CPU_LIMIT_SECONDS = 5
+_MEMORY_LIMIT_BYTES = 256 * 1024 * 1024  # 256 MB
+_FILE_SIZE_LIMIT_BYTES = 1024 * 1024      # 1 MB
+_MAX_CHILD_PROCESSES = 0                   # no forking
 
 
 RUNNER_SCRIPT = textwrap.dedent("""\
@@ -212,15 +235,15 @@ RUNNER_SCRIPT = textwrap.dedent("""\
 
 
 def _set_limits():
-    """Set resource limits for the child process (Linux only)."""
+    """Set POSIX resource limits for the child process (Linux and macOS)."""
     try:
         import resource
-        resource.setrlimit(resource.RLIMIT_CPU, (5, 5))
-        resource.setrlimit(resource.RLIMIT_AS, (256 * 1024 * 1024, 256 * 1024 * 1024))
-        resource.setrlimit(resource.RLIMIT_FSIZE, (1024 * 1024, 1024 * 1024))
-        resource.setrlimit(resource.RLIMIT_NPROC, (0, 0))
-    except (ImportError, ValueError, OSError):
-        pass
+        resource.setrlimit(resource.RLIMIT_CPU, (_CPU_LIMIT_SECONDS, _CPU_LIMIT_SECONDS))
+        resource.setrlimit(resource.RLIMIT_AS, (_MEMORY_LIMIT_BYTES, _MEMORY_LIMIT_BYTES))
+        resource.setrlimit(resource.RLIMIT_FSIZE, (_FILE_SIZE_LIMIT_BYTES, _FILE_SIZE_LIMIT_BYTES))
+        resource.setrlimit(resource.RLIMIT_NPROC, (_MAX_CHILD_PROCESSES, _MAX_CHILD_PROCESSES))
+    except (ImportError, ValueError, OSError) as e:
+        logger.warning("Sandbox resource limits could not be applied (%s). Code will run without limits.", e)
 
 
 def _run_sync(code: str, entry_point: str, test_cases: list[str], preamble: str = "", any_order: bool = False) -> dict:
@@ -240,7 +263,7 @@ def _run_sync(code: str, entry_point: str, test_cases: list[str], preamble: str 
             input=payload,
             capture_output=True,
             text=True,
-            timeout=10,
+            timeout=_SUBPROCESS_TIMEOUT_SECONDS,
             preexec_fn=_set_limits,
         )
         elapsed_ms = int((time.monotonic() - start) * 1000)
@@ -255,8 +278,11 @@ def _run_sync(code: str, entry_point: str, test_cases: list[str], preamble: str 
 
     except subprocess.TimeoutExpired:
         elapsed_ms = int((time.monotonic() - start) * 1000)
-        return {"passed": 0, "total": len(test_cases), "error": "Time limit exceeded (10s)", "time_ms": elapsed_ms}
-    except (json.JSONDecodeError, Exception) as e:
+        return {"passed": 0, "total": len(test_cases), "error": f"Time limit exceeded ({_SUBPROCESS_TIMEOUT_SECONDS}s)", "time_ms": elapsed_ms}
+    except json.JSONDecodeError as e:
+        elapsed_ms = int((time.monotonic() - start) * 1000)
+        return {"passed": 0, "total": len(test_cases), "error": f"Runner produced invalid output: {e}", "time_ms": elapsed_ms}
+    except Exception as e:
         elapsed_ms = int((time.monotonic() - start) * 1000)
         return {"passed": 0, "total": len(test_cases), "error": str(e)[:200], "time_ms": elapsed_ms}
 

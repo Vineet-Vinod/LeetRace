@@ -378,26 +378,18 @@ input:focus, select:focus { border-color: var(--accent); }
 }
 
 /* === Resize Handles === */
-.resize-handle-v {
-    flex: 0 0 5px;
-    cursor: col-resize;
-    background: var(--resizer);
-    z-index: 10;
-    transition: background 0.2s;
-}
-
-.resize-handle-v:hover, .resize-handle-v.active {
-    background: var(--accent);
-}
-
+.resize-handle-v,
 .resize-handle-h {
     flex: 0 0 5px;
-    cursor: row-resize;
     background: var(--resizer);
     z-index: 10;
     transition: background 0.2s;
 }
 
+.resize-handle-v { cursor: col-resize; }
+.resize-handle-h { cursor: row-resize; }
+
+.resize-handle-v:hover, .resize-handle-v.active,
 .resize-handle-h:hover, .resize-handle-h.active {
     background: var(--accent);
 }
@@ -427,7 +419,7 @@ input:focus, select:focus { border-color: var(--accent); }
     font-size: 0.85em;
 }
 
-.output-content {
+.output-wrapper {
     position: relative;
     overflow: auto;
     padding: 10px;

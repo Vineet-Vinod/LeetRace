@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import re
 import time
 
 from fastapi import WebSocket, WebSocketDisconnect
@@ -13,39 +12,19 @@ from server.rooms import Player, Room, RoomState, get_room, remove_room
 from server.problems import pick_random
 from server.sandbox import run_code
 from server.scoring import rank_players
+from server.utils import fix_exponents
 
 logger = logging.getLogger(__name__)
 
-# Superscript digit mapping
-_SUP_DIGITS = str.maketrans("0123456789", "\u2070\u00b9\u00b2\u00b3\u2074\u2075\u2076\u2077\u2078\u2079")
+BREAK_DURATION_SECONDS = 30
 
 
-def fix_exponents(text: str) -> str:
-    """Fix exponent display in problem descriptions.
-
-    Handles two forms:
-    - Explicit caret: '10^5' → '10⁵'
-    - Collapsed (from HTML scraping): '105' → '10⁵' anywhere as standalone number
-    """
-    # Explicit carets: 10^5 → 10⁵, 2^31 → 2³¹
-    text = re.sub(
-        r"(\d+)\^(\d+)",
-        lambda m: m.group(1) + m.group(2).translate(_SUP_DIGITS),
-        text,
-    )
-    # Collapsed base-10 exponents: standalone 10[4-9] → 10⁴..10⁹
-    text = re.sub(
-        r"(?<!\d)(-?)10([4-9])(?!\d)",
-        lambda m: m.group(1) + "10" + m.group(2).translate(_SUP_DIGITS),
-        text,
-    )
-    # Collapsed 2^31 / 2^32: standalone 231 or 232 → 2³¹ or 2³²
-    text = re.sub(
-        r"(?<!\d)(-?)2(3[12])(?!\d)",
-        lambda m: m.group(1) + "2" + m.group(2).translate(_SUP_DIGITS),
-        text,
-    )
-    return text
+def _reset_players(room: Room) -> None:
+    """Clear all player submission state in preparation for a new round."""
+    for player in room.players.values():
+        player.submission = None
+        player.best_submission = None
+        player.locked_at = None
 
 
 async def broadcast(room: Room, message: dict) -> None:
@@ -125,7 +104,7 @@ async def end_game(room: Room) -> None:
             "rankings": rankings,
             "current_round": room.current_round,
             "total_rounds": room.total_rounds,
-            "break_seconds": 30,
+            "break_seconds": BREAK_DURATION_SECONDS,
         })
         asyncio.create_task(break_task(room))
     else:
@@ -138,8 +117,8 @@ async def end_game(room: Room) -> None:
 
 
 async def break_task(room: Room) -> None:
-    """30-second break between rounds, then auto-start next round."""
-    for remaining in range(29, -1, -1):
+    """Countdown between rounds, then auto-start the next round."""
+    for remaining in range(BREAK_DURATION_SECONDS - 1, -1, -1):
         await asyncio.sleep(1)
         if room.state != RoomState.FINISHED:
             return  # room was manually restarted or cleaned up
@@ -158,33 +137,7 @@ async def start_next_round(room: Room) -> None:
         await broadcast(room, {"type": "error", "message": "No problems available."})
         return
 
-    # Reset player state for new round
-    for player in room.players.values():
-        player.submission = None
-        player.best_submission = None
-        player.locked_at = None
-
-    room.problem = problem
-    room.state = RoomState.PLAYING
-    room.start_time = time.time()
-    room.current_round += 1
-
-    await broadcast(room, {
-        "type": "game_start",
-        "problem": {
-            "id": problem["id"],
-            "title": problem["title"],
-            "difficulty": problem["difficulty"],
-            "description": fix_exponents(problem["description"]),
-            "entry_point": problem["entry_point"],
-            "starter_code": problem["starter_code"],
-        },
-        "time_limit": room.time_limit,
-        "current_round": room.current_round,
-        "total_rounds": room.total_rounds,
-    })
-
-    asyncio.create_task(timer_task(room))
+    await _begin_round(room, problem, room.current_round + 1)
 
 
 async def handle_lock(ws: WebSocket, room: Room, player_name: str) -> None:
@@ -235,6 +188,33 @@ async def handle_join(ws: WebSocket, room: Room, data: dict) -> str | None:
     return name
 
 
+async def _begin_round(room: Room, problem: dict, round_number: int) -> None:
+    """Reset players, assign the problem, update room state, broadcast, and start timer."""
+    _reset_players(room)
+
+    room.problem = problem
+    room.state = RoomState.PLAYING
+    room.start_time = time.time()
+    room.current_round = round_number
+
+    await broadcast(room, {
+        "type": "game_start",
+        "problem": {
+            "id": problem["id"],
+            "title": problem["title"],
+            "difficulty": problem["difficulty"],
+            "description": fix_exponents(problem["description"]),
+            "entry_point": problem["entry_point"],
+            "starter_code": problem["starter_code"],
+        },
+        "time_limit": room.time_limit,
+        "current_round": room.current_round,
+        "total_rounds": room.total_rounds,
+    })
+
+    asyncio.create_task(timer_task(room))
+
+
 async def handle_start(ws: WebSocket, room: Room, player_name: str) -> None:
     """Handle the host starting the game."""
     if player_name != room.host:
@@ -252,29 +232,7 @@ async def handle_start(ws: WebSocket, room: Room, player_name: str) -> None:
         await broadcast(room, {"type": "error", "message": "No problems available. Run build_problems.py first."})
         return
 
-    room.problem = problem
-    room.state = RoomState.PLAYING
-    room.start_time = time.time()
-    room.current_round = 1
-
-    # Send problem to players (without test cases)
-    await broadcast(room, {
-        "type": "game_start",
-        "problem": {
-            "id": problem["id"],
-            "title": problem["title"],
-            "difficulty": problem["difficulty"],
-            "description": fix_exponents(problem["description"]),
-            "entry_point": problem["entry_point"],
-            "starter_code": problem["starter_code"],
-        },
-        "time_limit": room.time_limit,
-        "current_round": room.current_round,
-        "total_rounds": room.total_rounds,
-    })
-
-    # Start the timer
-    asyncio.create_task(timer_task(room))
+    await _begin_round(room, problem, 1)
 
 
 def _is_better(new: dict, old: dict) -> bool:
@@ -311,7 +269,10 @@ async def handle_submit(room: Room, player_name: str, data: dict) -> None:
     char_count = len(code)
     submit_time = time.time() - room.start_time
 
-    # Run in sandbox
+    # Heuristic: detect problems where result order doesn't matter by scanning the
+    # description for "any order". This can produce false positives for problems
+    # that mention the phrase in a different context. A more robust approach would
+    # store this as an explicit boolean field in the problem JSON at build time.
     any_order = "any order" in room.problem.get("description", "").lower()
     result = await run_code(
         code=code,
@@ -369,15 +330,11 @@ async def handle_restart(ws: WebSocket, room: Room, player_name: str) -> None:
         await send_error(ws, "Game is not finished yet")
         return
 
-    # Reset room state
     room.state = RoomState.LOBBY
     room.problem = None
     room.start_time = None
     room.current_round = 0
-    for player in room.players.values():
-        player.submission = None
-        player.best_submission = None
-        player.locked_at = None
+    _reset_players(room)
 
     await broadcast(room, room_state_msg(room))
 

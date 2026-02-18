@@ -5,41 +5,40 @@ from __future__ import annotations
 from server.rooms import Player
 
 
-def rank_players(players: dict[str, Player]) -> list[dict]:
-    """
-    Rank players by:
-    1. solved (True first)
-    2. char_count (ascending — fewer chars = better)
-    3. locked_at (ascending — earlier lock wins tiebreak)
-    4. tests_passed (descending — more = better)
+_NO_SUBMISSION: dict = {
+    "solved": False,
+    "char_count": float("inf"),
+    "submit_time": float("inf"),
+    "passed": 0,
+    "total": 0,
+    "error": None,
+}
 
-    Returns a list of dicts with position and player info.
+
+def rank_players(players: dict[str, Player]) -> list[dict]:
+    """Rank players for the scoreboard.
+
+    Sort order (best first):
+      1. Solved (True before False)
+      2. More tests passed (descending)
+      3. Fewer characters (ascending, only meaningful when solved)
+      4. Earlier lock-in time (ascending)
+
+    Returns a list of dicts with ``position`` and player stats.
     """
     entries = []
     for name, player in players.items():
-        sub = player.best_submission
-        if sub:
-            entries.append({
-                "name": name,
-                "solved": sub.get("solved", False),
-                "char_count": sub.get("char_count", 999999),
-                "submit_time": sub.get("submit_time", 999999),
-                "locked_at": player.locked_at,
-                "tests_passed": sub.get("passed", 0),
-                "tests_total": sub.get("total", 0),
-                "error": sub.get("error"),
-            })
-        else:
-            entries.append({
-                "name": name,
-                "solved": False,
-                "char_count": 999999,
-                "submit_time": 999999,
-                "locked_at": None,
-                "tests_passed": 0,
-                "tests_total": 0,
-                "error": None,
-            })
+        sub = player.best_submission or _NO_SUBMISSION
+        entries.append({
+            "name": name,
+            "solved": sub.get("solved", False),
+            "char_count": sub.get("char_count", float("inf")),
+            "submit_time": sub.get("submit_time", float("inf")),
+            "locked_at": player.locked_at,
+            "tests_passed": sub.get("passed", 0),
+            "tests_total": sub.get("total", 0),
+            "error": sub.get("error"),
+        })
 
     entries.sort(key=lambda e: (
         not e["solved"],                        # solved=True first
