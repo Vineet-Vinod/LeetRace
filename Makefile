@@ -53,4 +53,4 @@ clean:
 
 ## cloc: Count lines of code
 cloc:
-	cloc 
+	cloc server scripts static tests

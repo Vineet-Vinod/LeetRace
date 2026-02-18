@@ -28,7 +28,7 @@ export default function Lobby({ roomInfo, playerName, onStart }) {
   if (!roomInfo) return null;
 
   const isHost = playerName === roomInfo.host;
-  const canStart = isHost && roomInfo.players.length >= 2;
+  const canStart = isHost && roomInfo.players.length >= 1;
 
   const copyCode = () => {
     navigator.clipboard.writeText(roomInfo.room_id).then(() => {
@@ -118,9 +118,9 @@ export default function Lobby({ roomInfo, playerName, onStart }) {
         transition={{ delay: 0.45, duration: 0.4 }}
         className="flex flex-col items-center gap-3"
       >
-        {roomInfo.players.length < 2 && (
+        {roomInfo.players.length < 1 && (
           <p className="font-body text-[0.85rem] text-dim italic">
-            Waiting for at least 2 players...
+            Waiting for at least 1 player...
           </p>
         )}
         {isHost ? (

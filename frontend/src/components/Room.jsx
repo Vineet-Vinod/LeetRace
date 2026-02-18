@@ -140,8 +140,13 @@ export default function Room() {
         break;
 
       case 'error':
-        setError(msg.message);
-        setTimeout(() => setError(null), 5000);
+        if (msg.message === 'Room not found') {
+          // Room doesn't exist, redirect to home
+          window.location.href = '/';
+        } else {
+          setError(msg.message);
+          setTimeout(() => setError(null), 5000);
+        }
         break;
 
       default:

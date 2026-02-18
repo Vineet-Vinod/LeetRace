@@ -9,3 +9,4 @@
 - Ability to disable character counting in favor of fastest solve.
 - Make sure that content always displays correctly on the screen.
 - Generate some color scheeme and theming that is like a cousin of leetcode, with an emphasis on competition and racing.
+- Allow the host to edit the room config mid-game.
