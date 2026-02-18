@@ -31,6 +31,11 @@ async def _gc_loop() -> None:
 
     Runs every ``_GC_INTERVAL_SECONDS`` seconds.  Errors are caught and logged
     so a transient bug cannot permanently stop the GC loop.
+
+    Safety note: ``get_expired_rooms`` iterates the ``rooms`` dict and returns a
+    list of IDs.  ``remove_room`` then mutates the dict.  This is safe because
+    there is no ``await`` between the two calls, so no other coroutine can modify
+    the dict concurrently within the same event-loop tick.
     """
     while True:
         await asyncio.sleep(_GC_INTERVAL_SECONDS)

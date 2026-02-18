@@ -400,6 +400,7 @@ function renderDescription(container, rawText) {
 function buildCodeTabs(rankings) {
     const tabBar = document.getElementById('code-tabs');
     tabBar.innerHTML = '';
+    tabBar.setAttribute('role', 'tablist');
 
     if (rankings.length === 0) {
         tabBar.hidden = true;
@@ -409,6 +410,8 @@ function buildCodeTabs(rankings) {
     rankings.forEach((entry, idx) => {
         const btn = document.createElement('button');
         btn.className = 'code-tab';
+        btn.setAttribute('role', 'tab');
+        btn.setAttribute('aria-selected', 'false');
         // Indicate solve status with a visual class so players can spot
         // who solved the problem at a glance without reading the rankings.
         if (entry.solved) {
@@ -447,6 +450,7 @@ function showCodeTab(rankings, idx, tabBar) {
     // Mark the clicked tab active, clear all others.
     tabBar.querySelectorAll('.code-tab').forEach((btn, i) => {
         btn.classList.toggle('code-tab-active', i === idx);
+        btn.setAttribute('aria-selected', i === idx ? 'true' : 'false');
     });
 
     const NO_SUBMISSION_PLACEHOLDER = '# No submission';
@@ -553,6 +557,7 @@ document.getElementById('back-to-results-btn').addEventListener('click', () => {
 // === Chat ===
 
 let chatCollapsed = false;
+const MAX_CHAT_MESSAGES = 200;
 
 /**
  * Append a chat message bubble to #chat-messages and auto-scroll to the bottom.
@@ -579,6 +584,11 @@ function appendChatMessage(sender, text) {
     bubble.appendChild(textEl);
     container.appendChild(bubble);
 
+    // Cap DOM size to prevent memory growth in long sessions.
+    while (container.children.length > MAX_CHAT_MESSAGES) {
+        container.removeChild(container.firstChild);
+    }
+
     // Only auto-scroll when the panel is open so we don't silently consume scroll
     // state while collapsed. The unread badge (below) covers the collapsed case.
     if (!chatCollapsed) {
@@ -590,13 +600,18 @@ function appendChatMessage(sender, text) {
     }
 }
 
+let chatCooldown = false;
+
 function sendChatMessage() {
     const input = document.getElementById('chat-input');
     const text = input.value.trim();
-    if (!text) return;
+    if (!text || chatCooldown) return;
 
     ws.send(JSON.stringify({ type: 'chat', message: text }));
     input.value = '';
+
+    chatCooldown = true;
+    setTimeout(() => { chatCooldown = false; }, 500);
 }
 
 document.getElementById('chat-send').addEventListener('click', sendChatMessage);

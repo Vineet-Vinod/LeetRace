@@ -99,7 +99,7 @@ async def end_game(room: Room) -> None:
     if room.state == RoomState.FINISHED:
         return
 
-    rankings = rank_players(room.players)
+    rankings = rank_players(room.players, include_code=True)
 
     if room.current_round < room.total_rounds:
         # More rounds to play — show round results with a break
@@ -213,6 +213,9 @@ async def _begin_round(room: Room, problem: dict, round_number: int) -> None:
     room.state = RoomState.PLAYING
     room.start_time = time.time()
     room.current_round = round_number
+    # Refresh created_at so multi-round games that span hours are not
+    # mistakenly reaped by the GC catch-all during inter-round breaks.
+    room.created_at = time.time()
 
     await broadcast(
         room,
@@ -358,11 +361,17 @@ async def handle_chat(room: Room, player_name: str, data: dict) -> None:
     """
     text = data.get("message", "")
 
+    # Reject non-string payloads so a malicious client sending e.g. an int or
+    # list cannot crash re.sub() and trigger the connection error handler.
+    if not isinstance(text, str):
+        return
+
     # Strip HTML tags so injected markup cannot execute in other clients' browsers.
     # A simple regex is sufficient here because we never trust or render the raw
     # text as HTML — the frontend always assigns via textContent — but stripping on
     # the server provides defense-in-depth.
     text = re.sub(r"<[^>]*>", "", text)
+    text = text.replace("<", "")  # catch unclosed tags like "<script"
 
     # Normalise whitespace: collapse runs and strip leading/trailing spaces.
     text = " ".join(text.split())

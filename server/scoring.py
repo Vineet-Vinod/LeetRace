@@ -17,7 +17,9 @@ _NO_SUBMISSION: dict = {
 }
 
 
-def rank_players(players: dict[str, Player]) -> list[dict]:
+def rank_players(
+    players: dict[str, Player], include_code: bool = False
+) -> list[dict]:
     """Rank players for the scoreboard.
 
     Sort order (best first):
@@ -25,6 +27,12 @@ def rank_players(players: dict[str, Player]) -> list[dict]:
       2. More tests passed (descending)
       3. Fewer characters (ascending, only meaningful when solved)
       4. Earlier lock-in time (ascending)
+
+    Args:
+        players: Map of player name to Player instance.
+        include_code: If True, include the ``code`` field from each player's
+            best submission. Only pass True for end-of-game payloads — live
+            scoreboard updates during gameplay must NOT leak opponent code.
 
     Returns a list of dicts with ``position`` and player stats.
     """
@@ -41,10 +49,9 @@ def rank_players(players: dict[str, Player]) -> list[dict]:
                 "tests_passed": sub.get("passed", 0),
                 "tests_total": sub.get("total", 0),
                 "error": sub.get("error"),
-                # Include the player's best submitted code so the frontend can
-                # show opponent solutions after the game ends. None when the
-                # player never submitted.
-                "code": sub.get("code"),
+                # Only include code in end-of-game payloads so opponents
+                # cannot inspect WebSocket messages mid-game to cheat.
+                "code": sub.get("code") if include_code else None,
             }
         )
 

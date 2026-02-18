@@ -246,8 +246,12 @@ class TestRankPlayersNoSubmission:
 
 
 class TestRankPlayersCodeField:
-    """rank_players() must include a ``code`` key in every entry so the
-    frontend can display opponent solutions after the game ends."""
+    """rank_players() must include a ``code`` key in every entry.
+
+    Code is only populated when ``include_code=True`` (end-of-game payloads).
+    During live gameplay the default ``include_code=False`` ensures opponent
+    code is not leaked via WebSocket scoreboard messages.
+    """
 
     def test_code_field_present_for_player_with_submission(self):
         players = {
@@ -256,15 +260,26 @@ class TestRankPlayersCodeField:
                 code="def f(x): return x"
             )
         }
-        result = rank_players(players)
+        result = rank_players(players, include_code=True)
         assert "code" in result[0]
         assert result[0]["code"] == "def f(x): return x"
+
+    def test_code_field_hidden_by_default(self):
+        """Without include_code, code must be None to prevent mid-game leaking."""
+        players = {
+            "Alice": make_player(
+                "Alice", solved=True, char_count=50, passed=3, total=3,
+                code="def f(x): return x"
+            )
+        }
+        result = rank_players(players)
+        assert result[0]["code"] is None
 
     def test_code_field_is_none_when_no_submission(self):
         # A Player with no best_submission should yield code=None so the
         # frontend can show a "No submission" placeholder.
         players = {"Ghost": Player(name="Ghost")}
-        result = rank_players(players)
+        result = rank_players(players, include_code=True)
         assert "code" in result[0]
         assert result[0]["code"] is None
 
@@ -275,7 +290,7 @@ class TestRankPlayersCodeField:
                 "Alice", solved=True, char_count=50, passed=3, total=3
             )
         }
-        result = rank_players(players)
+        result = rank_players(players, include_code=True)
         entry = result[0]
         required = {
             "name", "solved", "char_count", "submit_time", "locked_at",
@@ -289,5 +304,5 @@ class TestRankPlayersCodeField:
                 "Bob", solved=False, passed=2, total=5, code="def g(): pass"
             )
         }
-        result = rank_players(players)
+        result = rank_players(players, include_code=True)
         assert result[0]["code"] == "def g(): pass"

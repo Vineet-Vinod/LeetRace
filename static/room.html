@@ -88,7 +88,7 @@
             <span class="chat-title">Chat</span>
             <button id="chat-toggle" class="chat-toggle" aria-label="Toggle chat">&#x25BC;</button>
         </div>
-        <div id="chat-messages" class="chat-messages"></div>
+        <div id="chat-messages" class="chat-messages" role="log" aria-live="polite"></div>
         <div class="chat-input-row">
             <input
                 id="chat-input"
@@ -97,6 +97,7 @@
                 placeholder="Say something..."
                 maxlength="200"
                 autocomplete="off"
+                aria-label="Chat message"
             >
             <button id="chat-send" class="chat-send btn">Send</button>
         </div>
