@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 
 function formatTime(seconds) {
-  if (seconds == null) return '—';
+  if (seconds == null || seconds >= 999_999) return '—';
   return `${seconds.toFixed(1)}s`;
 }
 

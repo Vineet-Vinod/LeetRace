@@ -143,7 +143,10 @@ export default function Room() {
         break;
 
       case 'chat':
-        setChatMessages(prev => [...prev, { id: chatIdRef.current++, sender: msg.sender, message: msg.message }]);
+        setChatMessages(prev => {
+          const next = [...prev, { id: chatIdRef.current++, sender: msg.sender, message: msg.message }];
+          return next.length > 200 ? next.slice(-200) : next;
+        });
         break;
 
       case 'error':

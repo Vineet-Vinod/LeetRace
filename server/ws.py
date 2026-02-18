@@ -39,7 +39,9 @@ async def broadcast(room: Room, message: dict) -> None:
             except Exception:
                 disconnected.append(name)
     for name in disconnected:
-        room.players.pop(name, None)
+        player = room.players.get(name)
+        if player:
+            player.websocket = None
 
 
 def room_state_msg(room: Room) -> dict:

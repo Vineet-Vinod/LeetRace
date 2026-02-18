@@ -3,10 +3,9 @@ name = "leetrace"
 version = "0.1.0"
 description = "Multiplayer LeetCode racing webapp"
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.115.0",
-    "ruff>=0.15.1",
     "uvicorn[standard]>=0.34.0",
 ]
 

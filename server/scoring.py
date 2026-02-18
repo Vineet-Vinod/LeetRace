@@ -7,8 +7,8 @@ from server.rooms import Player
 
 _NO_SUBMISSION: dict = {
     "solved": False,
-    "char_count": float("inf"),
-    "submit_time": float("inf"),
+    "char_count": 999_999,
+    "submit_time": 999_999,
     "passed": 0,
     "total": 0,
     "error": None,
@@ -43,8 +43,8 @@ def rank_players(
             {
                 "name": name,
                 "solved": sub.get("solved", False),
-                "char_count": sub.get("char_count", float("inf")),
-                "submit_time": sub.get("submit_time", float("inf")),
+                "char_count": sub.get("char_count", 999_999),
+                "submit_time": sub.get("submit_time", 999_999),
                 "locked_at": player.locked_at,
                 "tests_passed": sub.get("passed", 0),
                 "tests_total": sub.get("total", 0),

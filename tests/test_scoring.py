@@ -217,7 +217,7 @@ class TestRankPlayersNoSubmission:
         result = rank_players({"Ghost": p})
         entry = result[0]
         assert entry["solved"] is False
-        assert entry["char_count"] == float("inf")
+        assert entry["char_count"] == 999_999
         assert entry["tests_passed"] == 0
         assert entry["locked_at"] is None
 
