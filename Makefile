@@ -1,4 +1,13 @@
-.PHONY: help format lint test serve
+.PHONY: help format lint test serve dev dev-backend dev-frontend
+
+# Load environment variables from .env if it exists
+ifneq (,$(wildcard .env))
+include .env
+endif
+
+# Default ports if not set in .env
+FRONTEND_PORT ?= 3000
+BACKEND_PORT ?= 8000
 
 ## help: Display this help message
 help:
@@ -16,9 +25,21 @@ lint:
 test:
 	uv run pytest
 
-## serve: Start the FastAPI server on http://localhost:8000
+## serve: Start the FastAPI backend server
 serve:
-	uv run python main.py
+	BACKEND_PORT=$(BACKEND_PORT) uv run python main.py
+
+## dev-backend: Start the FastAPI backend server (alias for serve)
+dev-backend:
+	BACKEND_PORT=$(BACKEND_PORT) uv run python main.py
+
+## dev-frontend: Start the Vite frontend dev server
+dev-frontend:
+	cd frontend && FRONTEND_PORT=$(FRONTEND_PORT) BACKEND_PORT=$(BACKEND_PORT) pnpm dev
+
+## dev: Start both backend and frontend servers together
+dev:
+	@command -v tmux >/dev/null 2>&1 && ./tmux-dev.sh || (echo "tmux not found, using dev.sh instead..." && ./dev.sh)
 
 ## cloc: Count lines of code
 cloc:

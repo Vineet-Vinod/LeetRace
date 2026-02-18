@@ -8,19 +8,39 @@ LeetRace is a multiplayer LeetCode racing webapp built with FastAPI and vanilla 
 
 ## Development Commands
 
-### Quick Start with Makefile
+### Configuration
+Create a `.env` file in the root directory (copy from `.env.example`) to customize ports:
 ```bash
-make help    # Display all available targets
-make format  # Format code with ruff
-make lint    # Lint code with ruff (auto-fix)
-make test    # Run all tests
-make serve   # Start the FastAPI server
+cp .env.example .env
+# Edit .env to change FRONTEND_PORT and BACKEND_PORT if desired
 ```
 
-### Setup
+### Quick Start with Makefile
 ```bash
-uv sync                      # Install dependencies (requires Python 3.14+ and uv)
-python main.py               # Start the FastAPI server on http://localhost:8000
+make help              # Display all available targets
+make format            # Format code with ruff
+make lint              # Lint code with ruff (auto-fix)
+make test              # Run all tests
+make dev               # Start both backend and frontend
+make dev-backend       # Start only the FastAPI server
+make dev-frontend      # Start only the Vite frontend dev server
+```
+
+`make dev` intelligently chooses:
+- **With tmux installed**: Runs `./tmux-dev.sh` which opens side-by-side panes and properly cleans up on exit
+- **Without tmux**: Runs `./dev.sh` which starts both in the same terminal
+
+### Manual Setup
+```bash
+uv sync                                    # Install Python dependencies
+cd frontend && pnpm install                # Install frontend dependencies
+python main.py                             # Start backend on http://localhost:8000
+cd frontend && FRONTEND_PORT=3000 pnpm dev # Start frontend on http://localhost:3000
+```
+
+### Alternative: Run Script Directly
+```bash
+./dev.sh  # Starts both servers with environment variables from .env
 ```
 
 ### Testing
