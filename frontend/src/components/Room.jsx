@@ -5,6 +5,7 @@ import useWebSocket from '../hooks/useWebSocket';
 import Lobby from './Lobby';
 import Playing from './Playing';
 import Finished from './Finished';
+import Chat from './Chat';
 
 const initialState = {
   roomState: null,
@@ -94,6 +95,8 @@ export default function Room() {
   const [reviewMode, setReviewMode] = useState(false);
   const [error, setError] = useState(null);
   const joinedRef = useRef(false);
+  const [chatMessages, setChatMessages] = useState([]);
+  const chatIdRef = useRef(0);
 
   // Message handler
   const handleMessage = useCallback((msg) => {
@@ -137,6 +140,10 @@ export default function Room() {
 
       case 'game_over':
         dispatch({ type: 'GAME_OVER', payload: msg });
+        break;
+
+      case 'chat':
+        setChatMessages(prev => [...prev, { id: chatIdRef.current++, sender: msg.sender, message: msg.message }]);
         break;
 
       case 'error':
@@ -197,6 +204,10 @@ export default function Room() {
     </motion.div>
   );
 
+  const sendChat = useCallback((text) => {
+    send({ type: 'chat', message: text });
+  }, [send]);
+
   // Review mode: show Playing in read-only
   if (reviewMode && state.problem) {
     return (
@@ -219,6 +230,7 @@ export default function Room() {
           reviewMode={true}
           onExitReview={() => setReviewMode(false)}
         />
+        <Chat messages={chatMessages} onSend={sendChat} playerName={playerName} />
       </div>
     );
   }
@@ -281,6 +293,8 @@ export default function Room() {
           roundOver={state.roundOver}
         />
       )}
+
+      <Chat messages={chatMessages} onSend={sendChat} playerName={playerName} />
     </div>
   );
 }
