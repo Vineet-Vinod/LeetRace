@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import re
 import time
 
 from fastapi import WebSocket, WebSocketDisconnect
@@ -17,6 +18,7 @@ from server.utils import fix_exponents
 logger = logging.getLogger(__name__)
 
 BREAK_DURATION_SECONDS = 30
+MAX_CHAT_LENGTH = 200
 
 
 def _reset_players(room: Room) -> None:
@@ -347,6 +349,40 @@ async def handle_submit(room: Room, player_name: str, data: dict) -> None:
     await broadcast(room, scoreboard_msg(room))
 
 
+async def handle_chat(room: Room, player_name: str, data: dict) -> None:
+    """Handle a chat message from a player and broadcast it to the room.
+
+    Validates that the message is non-empty and within the character limit, then
+    strips HTML tags to prevent XSS before broadcasting to all connected players.
+    Chat is allowed in all game states so players can talk in lobby and after games.
+    """
+    text = data.get("message", "")
+
+    # Strip HTML tags so injected markup cannot execute in other clients' browsers.
+    # A simple regex is sufficient here because we never trust or render the raw
+    # text as HTML — the frontend always assigns via textContent — but stripping on
+    # the server provides defense-in-depth.
+    text = re.sub(r"<[^>]*>", "", text)
+
+    # Normalise whitespace: collapse runs and strip leading/trailing spaces.
+    text = " ".join(text.split())
+
+    if not text:
+        return
+
+    if len(text) > MAX_CHAT_LENGTH:
+        text = text[:MAX_CHAT_LENGTH]
+
+    await broadcast(
+        room,
+        {
+            "type": "chat",
+            "sender": player_name,
+            "message": text,
+        },
+    )
+
+
 async def handle_restart(ws: WebSocket, room: Room, player_name: str) -> None:
     """Handle the host restarting the game with a new problem."""
     if player_name != room.host:
@@ -396,6 +432,9 @@ async def websocket_handler(ws: WebSocket, room_id: str) -> None:
 
             elif msg_type == "restart" and player_name:
                 await handle_restart(ws, room, player_name)
+
+            elif msg_type == "chat" and player_name:
+                await handle_chat(room, player_name, data)
 
     except WebSocketDisconnect:
         pass

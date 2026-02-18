@@ -760,6 +760,144 @@ class TestHandleRestartDirect:
 
 
 # ===========================================================================
+# Direct async unit tests — handle_chat
+# ===========================================================================
+
+
+class TestHandleChatDirect:
+    """Unit tests for handle_chat using mocked WebSocket objects.
+
+    Each test constructs a room with players that have AsyncMock websockets so
+    we can inspect exactly what was sent without a real network connection.
+    """
+
+    def _room_with_two_players(self):
+        """Return a room in PLAYING state with Alice and Bob connected."""
+        room = create_room(host_name="Alice")
+        room.state = RoomState.PLAYING
+        mock_ws_alice = AsyncMock()
+        mock_ws_bob = AsyncMock()
+        room.players["Alice"] = Player(name="Alice", websocket=mock_ws_alice)
+        room.players["Bob"] = Player(name="Bob", websocket=mock_ws_bob)
+        return room, mock_ws_alice, mock_ws_bob
+
+    @pytest.mark.asyncio
+    async def test_chat_broadcast_to_all_players(self):
+        """A chat message from one player is broadcast to every player in the room."""
+        room, mock_ws_alice, mock_ws_bob = self._room_with_two_players()
+
+        await ws_module.handle_chat(room, "Alice", {"message": "Hello!"})
+
+        # Both players' websockets should have received the chat message
+        alice_types = [c[0][0]["type"] for c in mock_ws_alice.send_json.call_args_list]
+        bob_types = [c[0][0]["type"] for c in mock_ws_bob.send_json.call_args_list]
+        assert "chat" in alice_types
+        assert "chat" in bob_types
+
+    @pytest.mark.asyncio
+    async def test_chat_message_contains_sender_and_message(self):
+        """The broadcast payload includes 'sender' and 'message' fields."""
+        room, mock_ws_alice, mock_ws_bob = self._room_with_two_players()
+
+        await ws_module.handle_chat(room, "Alice", {"message": "gg wp"})
+
+        # Inspect what Bob received (Alice also gets it, but Bob is a clean observer)
+        msg = mock_ws_bob.send_json.call_args[0][0]
+        assert msg["type"] == "chat"
+        assert msg["sender"] == "Alice"
+        assert msg["message"] == "gg wp"
+
+    @pytest.mark.asyncio
+    async def test_empty_message_is_not_broadcast(self):
+        """A whitespace-only message should be dropped silently."""
+        room, mock_ws_alice, mock_ws_bob = self._room_with_two_players()
+
+        await ws_module.handle_chat(room, "Alice", {"message": "   "})
+
+        mock_ws_alice.send_json.assert_not_called()
+        mock_ws_bob.send_json.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_missing_message_key_is_not_broadcast(self):
+        """If the client omits the 'message' key entirely the handler is a no-op."""
+        room, mock_ws_alice, mock_ws_bob = self._room_with_two_players()
+
+        await ws_module.handle_chat(room, "Alice", {})
+
+        mock_ws_alice.send_json.assert_not_called()
+        mock_ws_bob.send_json.assert_not_called()
+
+    @pytest.mark.asyncio
+    async def test_message_exceeding_max_length_is_truncated(self):
+        """Messages longer than MAX_CHAT_LENGTH chars are truncated, not rejected."""
+        room, _, mock_ws_bob = self._room_with_two_players()
+        long_msg = "x" * 300
+
+        await ws_module.handle_chat(room, "Alice", {"message": long_msg})
+
+        msg = mock_ws_bob.send_json.call_args[0][0]
+        assert len(msg["message"]) == ws_module.MAX_CHAT_LENGTH
+
+    @pytest.mark.asyncio
+    async def test_html_tags_are_stripped(self):
+        """HTML tags in the message body are removed before broadcasting."""
+        room, _, mock_ws_bob = self._room_with_two_players()
+
+        await ws_module.handle_chat(
+            room, "Alice", {"message": "<script>alert(1)</script>hello"}
+        )
+
+        msg = mock_ws_bob.send_json.call_args[0][0]
+        assert "<" not in msg["message"]
+        assert "hello" in msg["message"]
+
+    @pytest.mark.asyncio
+    async def test_chat_works_in_lobby_state(self):
+        """Chat is allowed before the game starts (LOBBY state)."""
+        room = create_room(host_name="Alice")
+        room.state = RoomState.LOBBY
+        mock_ws = AsyncMock()
+        room.players["Alice"] = Player(name="Alice", websocket=mock_ws)
+
+        await ws_module.handle_chat(room, "Alice", {"message": "ready?"})
+
+        mock_ws.send_json.assert_called_once()
+        assert mock_ws.send_json.call_args[0][0]["type"] == "chat"
+
+    @pytest.mark.asyncio
+    async def test_chat_works_in_finished_state(self):
+        """Chat is allowed after the game ends (FINISHED state)."""
+        room = create_room(host_name="Alice")
+        room.state = RoomState.FINISHED
+        mock_ws = AsyncMock()
+        room.players["Alice"] = Player(name="Alice", websocket=mock_ws)
+
+        await ws_module.handle_chat(room, "Alice", {"message": "good game!"})
+
+        mock_ws.send_json.assert_called_once()
+        assert mock_ws.send_json.call_args[0][0]["type"] == "chat"
+
+    @pytest.mark.asyncio
+    async def test_chat_via_websocket_integration(self, client=None):
+        """Integration test: chat message sent over a real WebSocket is echoed back."""
+        from fastapi.testclient import TestClient
+        from server.app import app
+
+        with TestClient(app) as c:
+            room = create_room(host_name="Alice")
+            with c.websocket_connect(f"/ws/{room.id}") as ws:
+                ws.send_json({"type": "join", "name": "Alice"})
+                ws.receive_json()  # room_state
+
+                ws.send_json({"type": "chat", "message": "hello world"})
+                msg = ws.receive_json()
+
+                assert msg["type"] == "chat"
+                assert msg["sender"] == "Alice"
+                assert msg["message"] == "hello world"
+
+
+# ===========================================================================
 # Direct async unit tests — end_game
 # ===========================================================================
 
