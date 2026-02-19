@@ -25,6 +25,7 @@ FAKE_INDEX = [
         "difficulty": "Easy",
         "tags": [],
         "test_count": 5,
+        "verified": True,
     },
     {
         "id": "merge-sort",
@@ -32,6 +33,7 @@ FAKE_INDEX = [
         "difficulty": "Medium",
         "tags": [],
         "test_count": 3,
+        "verified": True,
     },
     {
         "id": "trapping",
@@ -39,6 +41,7 @@ FAKE_INDEX = [
         "difficulty": "Hard",
         "tags": [],
         "test_count": 4,
+        "verified": True,
     },
 ]
 
@@ -169,13 +172,31 @@ class TestLoadProblem:
 
 
 class TestPickRandom:
-    def test_returns_a_problem_dict(self):
-        result = pick_random()
+    def _write_all_fake_problems(self, tmp_path):
+        """Write index and all fake problem files to tmp_path."""
+        (tmp_path / "index.json").write_text(json.dumps(FAKE_INDEX))
+        for entry in FAKE_INDEX:
+            prob = {
+                **FAKE_PROBLEM,
+                "id": entry["id"],
+                "difficulty": entry["difficulty"],
+            }
+            (tmp_path / f"{entry['id']}.json").write_text(json.dumps(prob))
+
+    def test_returns_a_problem_dict(self, tmp_path):
+        self._write_all_fake_problems(tmp_path)
+        with patch.object(problems_module, "PROBLEMS_DIR", tmp_path):
+            problems_module._index = None
+            result = pick_random()
         assert result is not None
         assert isinstance(result, dict)
 
-    def test_returned_problem_has_required_fields(self):
-        result = pick_random()
+    def test_returned_problem_has_required_fields(self, tmp_path):
+        self._write_all_fake_problems(tmp_path)
+        with patch.object(problems_module, "PROBLEMS_DIR", tmp_path):
+            problems_module._index = None
+            result = pick_random()
+        assert result is not None
         assert "id" in result
         assert "title" in result
         assert "difficulty" in result
@@ -187,27 +208,48 @@ class TestPickRandom:
             result = pick_random()
         assert result is None
 
-    def test_difficulty_easy_filter_returns_easy_problems(self):
+    def test_difficulty_easy_filter_returns_easy_problems(self, tmp_path):
         """All picks filtered by 'easy' should have Easy difficulty."""
-        for _ in range(5):
-            result = pick_random(difficulty="easy")
-            if result is not None:
-                assert result["difficulty"].lower() == "easy"
+        (tmp_path / "index.json").write_text(json.dumps(FAKE_INDEX))
+        (tmp_path / "two-sum.json").write_text(json.dumps(FAKE_PROBLEM))
+        with patch.object(problems_module, "PROBLEMS_DIR", tmp_path):
+            problems_module._index = None
+            for _ in range(5):
+                result = pick_random(difficulty="easy")
+                if result is not None:
+                    assert result["difficulty"].lower() == "easy"
 
-    def test_difficulty_hard_filter_returns_hard_problems(self):
-        for _ in range(5):
-            result = pick_random(difficulty="hard")
-            if result is not None:
-                assert result["difficulty"].lower() == "hard"
+    def test_difficulty_hard_filter_returns_hard_problems(self, tmp_path):
+        fake_hard_problem = {**FAKE_PROBLEM, "id": "trapping", "difficulty": "Hard"}
+        (tmp_path / "index.json").write_text(json.dumps(FAKE_INDEX))
+        (tmp_path / "trapping.json").write_text(json.dumps(fake_hard_problem))
+        with patch.object(problems_module, "PROBLEMS_DIR", tmp_path):
+            problems_module._index = None
+            for _ in range(5):
+                result = pick_random(difficulty="hard")
+                if result is not None:
+                    assert result["difficulty"].lower() == "hard"
 
-    def test_difficulty_medium_filter_returns_medium_problems(self):
-        for _ in range(5):
-            result = pick_random(difficulty="medium")
-            if result is not None:
-                assert result["difficulty"].lower() == "medium"
+    def test_difficulty_medium_filter_returns_medium_problems(self, tmp_path):
+        fake_medium_problem = {
+            **FAKE_PROBLEM,
+            "id": "merge-sort",
+            "difficulty": "Medium",
+        }
+        (tmp_path / "index.json").write_text(json.dumps(FAKE_INDEX))
+        (tmp_path / "merge-sort.json").write_text(json.dumps(fake_medium_problem))
+        with patch.object(problems_module, "PROBLEMS_DIR", tmp_path):
+            problems_module._index = None
+            for _ in range(5):
+                result = pick_random(difficulty="medium")
+                if result is not None:
+                    assert result["difficulty"].lower() == "medium"
 
-    def test_no_filter_returns_a_problem(self):
-        result = pick_random(difficulty=None)
+    def test_no_filter_returns_a_problem(self, tmp_path):
+        self._write_all_fake_problems(tmp_path)
+        with patch.object(problems_module, "PROBLEMS_DIR", tmp_path):
+            problems_module._index = None
+            result = pick_random(difficulty=None)
         assert result is not None
 
     def test_unknown_difficulty_returns_none(self, tmp_path):
@@ -229,8 +271,18 @@ class TestPickRandom:
         assert result is not None
         assert result["difficulty"] == "Easy"
 
-    def test_successive_calls_may_return_different_problems(self):
-        """With a large index, two picks are unlikely to both be identical (probabilistic)."""
-        results = {pick_random()["id"] for _ in range(20)}
-        # With hundreds of problems, we'd expect more than 1 unique result in 20 tries
+    def test_successive_calls_may_return_different_problems(self, tmp_path):
+        """With multiple verified entries, picks should vary."""
+        (tmp_path / "index.json").write_text(json.dumps(FAKE_INDEX))
+        for entry in FAKE_INDEX:
+            prob = {
+                **FAKE_PROBLEM,
+                "id": entry["id"],
+                "difficulty": entry["difficulty"],
+            }
+            (tmp_path / f"{entry['id']}.json").write_text(json.dumps(prob))
+        with patch.object(problems_module, "PROBLEMS_DIR", tmp_path):
+            problems_module._index = None
+            results = {pick_random()["id"] for _ in range(20)}
+        # With 3 verified problems, we'd expect more than 1 unique result in 20 tries
         assert len(results) >= 1  # at minimum it shouldn't crash

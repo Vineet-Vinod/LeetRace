@@ -258,7 +258,7 @@ async def handle_start(ws: WebSocket, room: Room, player_name: str) -> None:
             room,
             {
                 "type": "error",
-                "message": "No problems available. Run build_problems.py first.",
+                "message": "No problems available. Run `make rebuild` first.",
             },
         )
         return
