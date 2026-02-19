@@ -251,19 +251,6 @@
     "verified": true
   },
   {
-    "id": "merge-k-sorted-lists",
-    "title": "Merge K Sorted Lists",
-    "difficulty": "Hard",
-    "tags": [
-      "Linked List",
-      "Divide and Conquer",
-      "Heap (Priority Queue)",
-      "Merge Sort"
-    ],
-    "test_count": 3,
-    "verified": false
-  },
-  {
     "id": "swap-nodes-in-pairs",
     "title": "Swap Nodes In Pairs",
     "difficulty": "Medium",
@@ -343,17 +330,6 @@
     "verified": true
   },
   {
-    "id": "next-permutation",
-    "title": "Next Permutation",
-    "difficulty": "Medium",
-    "tags": [
-      "Array",
-      "Two Pointers"
-    ],
-    "test_count": 98,
-    "verified": false
-  },
-  {
     "id": "longest-valid-parentheses",
     "title": "Longest Valid Parentheses",
     "difficulty": "Hard",
@@ -409,19 +385,6 @@
     ],
     "test_count": 19,
     "verified": true
-  },
-  {
-    "id": "sudoku-solver",
-    "title": "Sudoku Solver",
-    "difficulty": "Hard",
-    "tags": [
-      "Array",
-      "Hash Table",
-      "Backtracking",
-      "Matrix"
-    ],
-    "test_count": 22,
-    "verified": false
   },
   {
     "id": "count-and-say",
@@ -539,18 +502,6 @@
     ],
     "test_count": 73,
     "verified": true
-  },
-  {
-    "id": "rotate-image",
-    "title": "Rotate Image",
-    "difficulty": "Medium",
-    "tags": [
-      "Array",
-      "Math",
-      "Matrix"
-    ],
-    "test_count": 41,
-    "verified": false
   },
   {
     "id": "group-anagrams",
@@ -826,18 +777,6 @@
     "verified": true
   },
   {
-    "id": "set-matrix-zeroes",
-    "title": "Set Matrix Zeroes",
-    "difficulty": "Medium",
-    "tags": [
-      "Array",
-      "Hash Table",
-      "Matrix"
-    ],
-    "test_count": 102,
-    "verified": false
-  },
-  {
     "id": "search-a-2d-matrix",
     "title": "Search A 2d Matrix",
     "difficulty": "Medium",
@@ -848,18 +787,6 @@
     ],
     "test_count": 143,
     "verified": true
-  },
-  {
-    "id": "sort-colors",
-    "title": "Sort Colors",
-    "difficulty": "Medium",
-    "tags": [
-      "Array",
-      "Two Pointers",
-      "Sorting"
-    ],
-    "test_count": 128,
-    "verified": false
   },
   {
     "id": "minimum-window-substring",
@@ -1001,18 +928,6 @@
     "verified": true
   },
   {
-    "id": "merge-sorted-array",
-    "title": "Merge Sorted Array",
-    "difficulty": "Easy",
-    "tags": [
-      "Array",
-      "Two Pointers",
-      "Sorting"
-    ],
-    "test_count": 80,
-    "verified": false
-  },
-  {
     "id": "gray-code",
     "title": "Gray Code",
     "difficulty": "Medium",
@@ -1118,19 +1033,6 @@
     ],
     "test_count": 97,
     "verified": true
-  },
-  {
-    "id": "recover-binary-search-tree",
-    "title": "Recover Binary Search Tree",
-    "difficulty": "Medium",
-    "tags": [
-      "Tree",
-      "Depth-First Search",
-      "Binary Search Tree",
-      "Binary Tree"
-    ],
-    "test_count": 66,
-    "verified": false
   },
   {
     "id": "same-tree",
@@ -1315,20 +1217,6 @@
     "verified": true
   },
   {
-    "id": "flatten-binary-tree-to-linked-list",
-    "title": "Flatten Binary Tree To Linked List",
-    "difficulty": "Medium",
-    "tags": [
-      "Stack",
-      "Tree",
-      "Depth-First Search",
-      "Linked List",
-      "Binary Tree"
-    ],
-    "test_count": 84,
-    "verified": false
-  },
-  {
     "id": "distinct-subsequences",
     "title": "Distinct Subsequences",
     "difficulty": "Hard",
@@ -1467,20 +1355,6 @@
     "verified": true
   },
   {
-    "id": "surrounded-regions",
-    "title": "Surrounded Regions",
-    "difficulty": "Medium",
-    "tags": [
-      "Depth-First Search",
-      "Breadth-First Search",
-      "Union Find",
-      "Array",
-      "Matrix"
-    ],
-    "test_count": 65,
-    "verified": false
-  },
-  {
     "id": "palindrome-partitioning",
     "title": "Palindrome Partitioning",
     "difficulty": "Medium",
@@ -1524,17 +1398,6 @@
     ],
     "test_count": 112,
     "verified": true
-  },
-  {
-    "id": "single-number",
-    "title": "Single Number",
-    "difficulty": "Easy",
-    "tags": [
-      "Bit Manipulation",
-      "Array"
-    ],
-    "test_count": 108,
-    "verified": false
   },
   {
     "id": "single-number-ii",
@@ -1589,19 +1452,6 @@
     ],
     "test_count": 6,
     "verified": true
-  },
-  {
-    "id": "reorder-list",
-    "title": "Reorder List",
-    "difficulty": "Medium",
-    "tags": [
-      "Stack",
-      "Recursion",
-      "Linked List",
-      "Two Pointers"
-    ],
-    "test_count": 67,
-    "verified": false
   },
   {
     "id": "binary-tree-preorder-traversal",
@@ -1746,18 +1596,6 @@
     ],
     "test_count": 80,
     "verified": true
-  },
-  {
-    "id": "intersection-of-two-linked-lists",
-    "title": "Intersection Of Two Linked Lists",
-    "difficulty": "Easy",
-    "tags": [
-      "Hash Table",
-      "Linked List",
-      "Two Pointers"
-    ],
-    "test_count": 10,
-    "verified": false
   },
   {
     "id": "one-edit-distance",
@@ -1911,17 +1749,6 @@
     "verified": true
   },
   {
-    "id": "reverse-words-in-a-string-ii",
-    "title": "Reverse Words In A String II",
-    "difficulty": "Medium",
-    "tags": [
-      "Two Pointers",
-      "String"
-    ],
-    "test_count": 59,
-    "verified": false
-  },
-  {
     "id": "repeated-dna-sequences",
     "title": "Repeated Dna Sequences",
     "difficulty": "Medium",
@@ -1946,18 +1773,6 @@
     ],
     "test_count": 97,
     "verified": true
-  },
-  {
-    "id": "rotate-array",
-    "title": "Rotate Array",
-    "difficulty": "Medium",
-    "tags": [
-      "Array",
-      "Math",
-      "Two Pointers"
-    ],
-    "test_count": 118,
-    "verified": false
   },
   {
     "id": "reverse-bits",
@@ -2051,19 +1866,6 @@
     ],
     "test_count": 116,
     "verified": true
-  },
-  {
-    "id": "count-primes",
-    "title": "Count Primes",
-    "difficulty": "Medium",
-    "tags": [
-      "Array",
-      "Math",
-      "Enumeration",
-      "Number Theory"
-    ],
-    "test_count": 33,
-    "verified": false
   },
   {
     "id": "isomorphic-strings",
@@ -2391,18 +2193,6 @@
     "verified": true
   },
   {
-    "id": "lowest-common-ancestor-of-a-binary-tree",
-    "title": "Lowest Common Ancestor Of A Binary Tree",
-    "difficulty": "Medium",
-    "tags": [
-      "Tree",
-      "Depth-First Search",
-      "Binary Tree"
-    ],
-    "test_count": 20,
-    "verified": false
-  },
-  {
     "id": "product-of-array-except-self",
     "title": "Product Of Array Except Self",
     "difficulty": "Medium",
@@ -2651,17 +2441,6 @@
     "verified": true
   },
   {
-    "id": "single-number-iii",
-    "title": "Single Number III",
-    "difficulty": "Medium",
-    "tags": [
-      "Bit Manipulation",
-      "Array"
-    ],
-    "test_count": 102,
-    "verified": false
-  },
-  {
     "id": "graph-valid-tree",
     "title": "Graph Valid Tree",
     "difficulty": "Medium",
@@ -2731,21 +2510,6 @@
     ],
     "test_count": 106,
     "verified": true
-  },
-  {
-    "id": "missing-number",
-    "title": "Missing Number",
-    "difficulty": "Easy",
-    "tags": [
-      "Bit Manipulation",
-      "Array",
-      "Hash Table",
-      "Math",
-      "Binary Search",
-      "Sorting"
-    ],
-    "test_count": 47,
-    "verified": false
   },
   {
     "id": "alien-dictionary",
@@ -2850,18 +2614,6 @@
     "verified": true
   },
   {
-    "id": "wiggle-sort",
-    "title": "Wiggle Sort",
-    "difficulty": "Medium",
-    "tags": [
-      "Greedy",
-      "Array",
-      "Sorting"
-    ],
-    "test_count": 133,
-    "verified": false
-  },
-  {
     "id": "expression-add-operators",
     "title": "Expression Add Operators",
     "difficulty": "Hard",
@@ -2872,29 +2624,6 @@
     ],
     "test_count": 67,
     "verified": true
-  },
-  {
-    "id": "move-zeroes",
-    "title": "Move Zeroes",
-    "difficulty": "Easy",
-    "tags": [
-      "Array",
-      "Two Pointers"
-    ],
-    "test_count": 126,
-    "verified": false
-  },
-  {
-    "id": "walls-and-gates",
-    "title": "Walls And Gates",
-    "difficulty": "Medium",
-    "tags": [
-      "Breadth-First Search",
-      "Array",
-      "Matrix"
-    ],
-    "test_count": 65,
-    "verified": false
   },
   {
     "id": "find-the-duplicate-number",
@@ -2908,18 +2637,6 @@
     ],
     "test_count": 87,
     "verified": true
-  },
-  {
-    "id": "game-of-life",
-    "title": "Game Of Life",
-    "difficulty": "Medium",
-    "tags": [
-      "Array",
-      "Matrix",
-      "Simulation"
-    ],
-    "test_count": 76,
-    "verified": false
   },
   {
     "id": "word-pattern",
@@ -2965,20 +2682,6 @@
     ],
     "test_count": 129,
     "verified": true
-  },
-  {
-    "id": "flip-game-ii",
-    "title": "Flip Game II",
-    "difficulty": "Medium",
-    "tags": [
-      "Memoization",
-      "Math",
-      "Dynamic Programming",
-      "Backtracking",
-      "Game Theory"
-    ],
-    "test_count": 137,
-    "verified": false
   },
   {
     "id": "best-meeting-point",
@@ -3054,17 +2757,6 @@
     ],
     "test_count": 81,
     "verified": true
-  },
-  {
-    "id": "additive-number",
-    "title": "Additive Number",
-    "difficulty": "Medium",
-    "tags": [
-      "String",
-      "Backtracking"
-    ],
-    "test_count": 93,
-    "verified": false
   },
   {
     "id": "best-time-to-buy-and-sell-stock-with-cooldown",
@@ -3231,18 +2923,6 @@
     "verified": true
   },
   {
-    "id": "coin-change",
-    "title": "Coin Change",
-    "difficulty": "Medium",
-    "tags": [
-      "Breadth-First Search",
-      "Array",
-      "Dynamic Programming"
-    ],
-    "test_count": 127,
-    "verified": false
-  },
-  {
     "id": "number-of-connected-components-in-an-undirected-graph",
     "title": "Number Of Connected Components In An Undirected Graph",
     "difficulty": "Medium",
@@ -3254,20 +2934,6 @@
     ],
     "test_count": 71,
     "verified": true
-  },
-  {
-    "id": "wiggle-sort-ii",
-    "title": "Wiggle Sort II",
-    "difficulty": "Medium",
-    "tags": [
-      "Greedy",
-      "Array",
-      "Divide and Conquer",
-      "Quickselect",
-      "Sorting"
-    ],
-    "test_count": 113,
-    "verified": false
   },
   {
     "id": "maximum-size-subarray-sum-equals-k",
@@ -3479,17 +3145,6 @@
     ],
     "test_count": 30,
     "verified": true
-  },
-  {
-    "id": "reverse-string",
-    "title": "Reverse String",
-    "difficulty": "Easy",
-    "tags": [
-      "Two Pointers",
-      "String"
-    ],
-    "test_count": 39,
-    "verified": false
   },
   {
     "id": "reverse-vowels-of-a-string",
@@ -6077,18 +5732,6 @@
     "verified": true
   },
   {
-    "id": "sum-of-square-numbers",
-    "title": "Sum Of Square Numbers",
-    "difficulty": "Medium",
-    "tags": [
-      "Math",
-      "Two Pointers",
-      "Binary Search"
-    ],
-    "test_count": 52,
-    "verified": false
-  },
-  {
     "id": "find-the-derangement-of-an-array",
     "title": "Find The Derangement Of An Array",
     "difficulty": "Medium",
@@ -6702,23 +6345,6 @@
     "verified": true
   },
   {
-    "id": "stickers-to-spell-word",
-    "title": "Stickers To Spell Word",
-    "difficulty": "Hard",
-    "tags": [
-      "Bit Manipulation",
-      "Memoization",
-      "Array",
-      "Hash Table",
-      "String",
-      "Dynamic Programming",
-      "Backtracking",
-      "Bitmask"
-    ],
-    "test_count": 146,
-    "verified": false
-  },
-  {
     "id": "top-k-frequent-words",
     "title": "Top K Frequent Words",
     "difficulty": "Medium",
@@ -6984,17 +6610,6 @@
     ],
     "test_count": 85,
     "verified": true
-  },
-  {
-    "id": "remove-comments",
-    "title": "Remove Comments",
-    "difficulty": "Medium",
-    "tags": [
-      "Array",
-      "String"
-    ],
-    "test_count": 102,
-    "verified": false
   },
   {
     "id": "candy-crush",
@@ -7976,20 +7591,6 @@
     "verified": true
   },
   {
-    "id": "chalkboard-xor-game",
-    "title": "Chalkboard Xor Game",
-    "difficulty": "Hard",
-    "tags": [
-      "Bit Manipulation",
-      "Brainteaser",
-      "Array",
-      "Math",
-      "Game Theory"
-    ],
-    "test_count": 122,
-    "verified": false
-  },
-  {
     "id": "subdomain-visit-count",
     "title": "Subdomain Visit Count",
     "difficulty": "Medium",
@@ -8417,18 +8018,6 @@
     ],
     "test_count": 63,
     "verified": true
-  },
-  {
-    "id": "shifting-letters",
-    "title": "Shifting Letters",
-    "difficulty": "Medium",
-    "tags": [
-      "Array",
-      "String",
-      "Prefix Sum"
-    ],
-    "test_count": 88,
-    "verified": false
   },
   {
     "id": "maximize-distance-to-closest-person",
@@ -9053,18 +8642,6 @@
     ],
     "test_count": 98,
     "verified": true
-  },
-  {
-    "id": "super-palindromes",
-    "title": "Super Palindromes",
-    "difficulty": "Hard",
-    "tags": [
-      "Math",
-      "String",
-      "Enumeration"
-    ],
-    "test_count": 86,
-    "verified": false
   },
   {
     "id": "sum-of-subarray-minimums",
@@ -9943,19 +9520,6 @@
     "verified": true
   },
   {
-    "id": "unique-paths-iii",
-    "title": "Unique Paths III",
-    "difficulty": "Hard",
-    "tags": [
-      "Bit Manipulation",
-      "Array",
-      "Backtracking",
-      "Matrix"
-    ],
-    "test_count": 85,
-    "verified": false
-  },
-  {
     "id": "triples-with-bitwise-and-equal-to-zero",
     "title": "Triples With Bitwise And Equal To Zero",
     "difficulty": "Hard",
@@ -10051,19 +9615,6 @@
     ],
     "test_count": 75,
     "verified": true
-  },
-  {
-    "id": "satisfiability-of-equality-equations",
-    "title": "Satisfiability Of Equality Equations",
-    "difficulty": "Medium",
-    "tags": [
-      "Union Find",
-      "Graph",
-      "Array",
-      "String"
-    ],
-    "test_count": 83,
-    "verified": false
   },
   {
     "id": "broken-calculator",
@@ -10353,17 +9904,6 @@
     ],
     "test_count": 106,
     "verified": true
-  },
-  {
-    "id": "smallest-integer-divisible-by-k",
-    "title": "Smallest Integer Divisible By K",
-    "difficulty": "Medium",
-    "tags": [
-      "Hash Table",
-      "Math"
-    ],
-    "test_count": 90,
-    "verified": false
   },
   {
     "id": "binary-string-with-substrings-representing-1-to-n",
@@ -10746,17 +10286,6 @@
     "verified": true
   },
   {
-    "id": "last-stone-weight-ii",
-    "title": "Last Stone Weight II",
-    "difficulty": "Medium",
-    "tags": [
-      "Array",
-      "Dynamic Programming"
-    ],
-    "test_count": 99,
-    "verified": false
-  },
-  {
     "id": "height-checker",
     "title": "Height Checker",
     "difficulty": "Easy",
@@ -11021,19 +10550,6 @@
     "verified": true
   },
   {
-    "id": "letter-tile-possibilities",
-    "title": "Letter Tile Possibilities",
-    "difficulty": "Medium",
-    "tags": [
-      "Hash Table",
-      "String",
-      "Backtracking",
-      "Counting"
-    ],
-    "test_count": 74,
-    "verified": false
-  },
-  {
     "id": "insufficient-nodes-in-root-to-leaf-paths",
     "title": "Insufficient Nodes In Root To Leaf Paths",
     "difficulty": "Medium",
@@ -11093,28 +10609,6 @@
     ],
     "test_count": 96,
     "verified": true
-  },
-  {
-    "id": "confusing-number-ii",
-    "title": "Confusing Number II",
-    "difficulty": "Hard",
-    "tags": [
-      "Math",
-      "Backtracking"
-    ],
-    "test_count": 60,
-    "verified": false
-  },
-  {
-    "id": "duplicate-zeros",
-    "title": "Duplicate Zeros",
-    "difficulty": "Easy",
-    "tags": [
-      "Array",
-      "Two Pointers"
-    ],
-    "test_count": 96,
-    "verified": false
   },
   {
     "id": "largest-values-from-labels",
@@ -11790,20 +11284,6 @@
     "verified": true
   },
   {
-    "id": "compare-strings-by-frequency-of-the-smallest-character",
-    "title": "Compare Strings By Frequency Of The Smallest Character",
-    "difficulty": "Medium",
-    "tags": [
-      "Array",
-      "Hash Table",
-      "String",
-      "Binary Search",
-      "Sorting"
-    ],
-    "test_count": 100,
-    "verified": false
-  },
-  {
     "id": "remove-zero-sum-consecutive-nodes-from-linked-list",
     "title": "Remove Zero Sum Consecutive Nodes From Linked List",
     "difficulty": "Medium",
@@ -11848,20 +11328,6 @@
     ],
     "test_count": 93,
     "verified": true
-  },
-  {
-    "id": "number-of-valid-words-for-each-puzzle",
-    "title": "Number Of Valid Words For Each Puzzle",
-    "difficulty": "Hard",
-    "tags": [
-      "Bit Manipulation",
-      "Trie",
-      "Array",
-      "Hash Table",
-      "String"
-    ],
-    "test_count": 68,
-    "verified": false
   },
   {
     "id": "count-substrings-with-only-one-distinct-letter",
@@ -11921,16 +11387,6 @@
     ],
     "test_count": 68,
     "verified": true
-  },
-  {
-    "id": "day-of-the-week",
-    "title": "Day Of The Week",
-    "difficulty": "Easy",
-    "tags": [
-      "Math"
-    ],
-    "test_count": 19,
-    "verified": false
   },
   {
     "id": "maximum-subarray-sum-with-one-deletion",
@@ -12013,16 +11469,6 @@
     ],
     "test_count": 59,
     "verified": true
-  },
-  {
-    "id": "minimum-knight-moves",
-    "title": "Minimum Knight Moves",
-    "difficulty": "Medium",
-    "tags": [
-      "Breadth-First Search"
-    ],
-    "test_count": 121,
-    "verified": false
   },
   {
     "id": "find-smallest-common-element-in-all-rows",
@@ -12228,18 +11674,6 @@
     "verified": true
   },
   {
-    "id": "path-with-maximum-gold",
-    "title": "Path With Maximum Gold",
-    "difficulty": "Medium",
-    "tags": [
-      "Array",
-      "Backtracking",
-      "Matrix"
-    ],
-    "test_count": 99,
-    "verified": false
-  },
-  {
     "id": "count-vowels-permutation",
     "title": "Count Vowels Permutation",
     "difficulty": "Hard",
@@ -12415,29 +11849,6 @@
     ],
     "test_count": 55,
     "verified": true
-  },
-  {
-    "id": "maximum-length-of-a-concatenated-string-with-unique-characters",
-    "title": "Maximum Length Of A Concatenated String With Unique Characters",
-    "difficulty": "Medium",
-    "tags": [
-      "Bit Manipulation",
-      "Array",
-      "String",
-      "Backtracking"
-    ],
-    "test_count": 87,
-    "verified": false
-  },
-  {
-    "id": "tiling-a-rectangle-with-the-fewest-squares",
-    "title": "Tiling A Rectangle With The Fewest Squares",
-    "difficulty": "Hard",
-    "tags": [
-      "Backtracking"
-    ],
-    "test_count": 66,
-    "verified": false
   },
   {
     "id": "web-crawler-multithreaded",
@@ -13083,28 +12494,6 @@
     "verified": true
   },
   {
-    "id": "decrypt-string-from-alphabet-to-integer-mapping",
-    "title": "Decrypt String From Alphabet To Integer Mapping",
-    "difficulty": "Easy",
-    "tags": [
-      "String"
-    ],
-    "test_count": 43,
-    "verified": false
-  },
-  {
-    "id": "xor-queries-of-a-subarray",
-    "title": "Xor Queries Of A Subarray",
-    "difficulty": "Medium",
-    "tags": [
-      "Bit Manipulation",
-      "Array",
-      "Prefix Sum"
-    ],
-    "test_count": 77,
-    "verified": false
-  },
-  {
     "id": "get-watched-videos-by-your-friends",
     "title": "Get Watched Videos By Your Friends",
     "difficulty": "Medium",
@@ -13664,18 +13053,6 @@
     "verified": true
   },
   {
-    "id": "increasing-decreasing-string",
-    "title": "Increasing Decreasing String",
-    "difficulty": "Easy",
-    "tags": [
-      "Hash Table",
-      "String",
-      "Counting"
-    ],
-    "test_count": 69,
-    "verified": false
-  },
-  {
     "id": "find-the-longest-substring-containing-vowels-in-even-counts",
     "title": "Find The Longest Substring Containing Vowels In Even Counts",
     "difficulty": "Medium",
@@ -13759,19 +13136,6 @@
     ],
     "test_count": 64,
     "verified": true
-  },
-  {
-    "id": "find-a-corresponding-node-of-a-binary-tree-in-a-clone-of-that-tree",
-    "title": "Find A Corresponding Node Of A Binary Tree In A Clone Of That Tree",
-    "difficulty": "Easy",
-    "tags": [
-      "Tree",
-      "Depth-First Search",
-      "Breadth-First Search",
-      "Binary Tree"
-    ],
-    "test_count": 59,
-    "verified": false
   },
   {
     "id": "lucky-numbers-in-a-matrix",
@@ -14170,17 +13534,6 @@
     "verified": true
   },
   {
-    "id": "build-array-where-you-can-find-the-maximum-exactly-k-comparisons",
-    "title": "Build Array Where You Can Find The Maximum Exactly K Comparisons",
-    "difficulty": "Hard",
-    "tags": [
-      "Dynamic Programming",
-      "Prefix Sum"
-    ],
-    "test_count": 109,
-    "verified": false
-  },
-  {
     "id": "maximum-score-after-splitting-a-string",
     "title": "Maximum Score After Splitting A String",
     "difficulty": "Easy",
@@ -14300,19 +13653,6 @@
     "verified": true
   },
   {
-    "id": "number-of-ways-to-wear-different-hats-to-each-other",
-    "title": "Number Of Ways To Wear Different Hats To Each Other",
-    "difficulty": "Hard",
-    "tags": [
-      "Bit Manipulation",
-      "Array",
-      "Dynamic Programming",
-      "Bitmask"
-    ],
-    "test_count": 83,
-    "verified": false
-  },
-  {
     "id": "destination-city",
     "title": "Destination City",
     "difficulty": "Easy",
@@ -14333,21 +13673,6 @@
     ],
     "test_count": 104,
     "verified": true
-  },
-  {
-    "id": "longest-continuous-subarray-with-absolute-diff-less-than-or-equal-to-limit",
-    "title": "Longest Continuous Subarray With Absolute Diff Less Than Or Equal To Limit",
-    "difficulty": "Medium",
-    "tags": [
-      "Queue",
-      "Array",
-      "Ordered Set",
-      "Sliding Window",
-      "Monotonic Queue",
-      "Heap (Priority Queue)"
-    ],
-    "test_count": 184,
-    "verified": false
   },
   {
     "id": "find-the-kth-smallest-sum-of-a-matrix-with-sorted-rows",
@@ -14761,17 +14086,6 @@
     "verified": true
   },
   {
-    "id": "xor-operation-in-an-array",
-    "title": "Xor Operation In An Array",
-    "difficulty": "Easy",
-    "tags": [
-      "Bit Manipulation",
-      "Math"
-    ],
-    "test_count": 92,
-    "verified": false
-  },
-  {
     "id": "making-file-names-unique",
     "title": "Making File Names Unique",
     "difficulty": "Medium",
@@ -14782,20 +14096,6 @@
     ],
     "test_count": 66,
     "verified": true
-  },
-  {
-    "id": "avoid-flood-in-the-city",
-    "title": "Avoid Flood In The City",
-    "difficulty": "Medium",
-    "tags": [
-      "Greedy",
-      "Array",
-      "Hash Table",
-      "Binary Search",
-      "Heap (Priority Queue)"
-    ],
-    "test_count": 242,
-    "verified": false
   },
   {
     "id": "find-critical-and-pseudo-critical-edges-in-minimum-spanning-tree",
@@ -15787,18 +15087,6 @@
     "verified": true
   },
   {
-    "id": "split-a-string-into-the-max-number-of-unique-substrings",
-    "title": "Split A String Into The Max Number Of Unique Substrings",
-    "difficulty": "Medium",
-    "tags": [
-      "Hash Table",
-      "String",
-      "Backtracking"
-    ],
-    "test_count": 102,
-    "verified": false
-  },
-  {
     "id": "maximum-non-negative-product-in-a-matrix",
     "title": "Maximum Non Negative Product In A Matrix",
     "difficulty": "Medium",
@@ -15848,31 +15136,6 @@
     "verified": true
   },
   {
-    "id": "maximum-number-of-achievable-transfer-requests",
-    "title": "Maximum Number Of Achievable Transfer Requests",
-    "difficulty": "Hard",
-    "tags": [
-      "Bit Manipulation",
-      "Array",
-      "Backtracking",
-      "Enumeration"
-    ],
-    "test_count": 71,
-    "verified": false
-  },
-  {
-    "id": "find-nearest-right-node-in-binary-tree",
-    "title": "Find Nearest Right Node In Binary Tree",
-    "difficulty": "Medium",
-    "tags": [
-      "Tree",
-      "Breadth-First Search",
-      "Binary Tree"
-    ],
-    "test_count": 38,
-    "verified": false
-  },
-  {
     "id": "alert-using-same-key-card-three-or-more-times-in-a-one-hour-period",
     "title": "Alert Using Same Key Card Three Or More Times In A One Hour Period",
     "difficulty": "Medium",
@@ -15896,19 +15159,6 @@
     ],
     "test_count": 113,
     "verified": true
-  },
-  {
-    "id": "find-servers-that-handled-most-number-of-requests",
-    "title": "Find Servers That Handled Most Number Of Requests",
-    "difficulty": "Hard",
-    "tags": [
-      "Greedy",
-      "Array",
-      "Ordered Set",
-      "Heap (Priority Queue)"
-    ],
-    "test_count": 177,
-    "verified": false
   },
   {
     "id": "special-array-with-x-elements-greater-than-or-equal-x",
@@ -16240,18 +15490,6 @@
     "verified": true
   },
   {
-    "id": "lowest-common-ancestor-of-a-binary-tree-ii",
-    "title": "Lowest Common Ancestor Of A Binary Tree II",
-    "difficulty": "Medium",
-    "tags": [
-      "Tree",
-      "Depth-First Search",
-      "Binary Tree"
-    ],
-    "test_count": 154,
-    "verified": false
-  },
-  {
     "id": "get-maximum-in-generated-array",
     "title": "Get Maximum In Generated Array",
     "difficulty": "Easy",
@@ -16558,19 +15796,6 @@
     ],
     "test_count": 28,
     "verified": true
-  },
-  {
-    "id": "minimum-incompatibility",
-    "title": "Minimum Incompatibility",
-    "difficulty": "Hard",
-    "tags": [
-      "Bit Manipulation",
-      "Array",
-      "Dynamic Programming",
-      "Bitmask"
-    ],
-    "test_count": 91,
-    "verified": false
   },
   {
     "id": "longest-palindromic-subsequence-ii",
@@ -17323,21 +16548,6 @@
     "verified": true
   },
   {
-    "id": "closest-subsequence-sum",
-    "title": "Closest Subsequence Sum",
-    "difficulty": "Hard",
-    "tags": [
-      "Bit Manipulation",
-      "Array",
-      "Two Pointers",
-      "Dynamic Programming",
-      "Bitmask",
-      "Sorting"
-    ],
-    "test_count": 98,
-    "verified": false
-  },
-  {
     "id": "minimum-changes-to-make-alternating-binary-string",
     "title": "Minimum Changes To Make Alternating Binary String",
     "difficulty": "Easy",
@@ -18016,18 +17226,6 @@
     "verified": true
   },
   {
-    "id": "maximum-xor-for-each-query",
-    "title": "Maximum Xor For Each Query",
-    "difficulty": "Medium",
-    "tags": [
-      "Bit Manipulation",
-      "Array",
-      "Prefix Sum"
-    ],
-    "test_count": 81,
-    "verified": false
-  },
-  {
     "id": "check-if-the-sentence-is-pangram",
     "title": "Check If The Sentence Is Pangram",
     "difficulty": "Easy",
@@ -18062,18 +17260,6 @@
     ],
     "test_count": 109,
     "verified": true
-  },
-  {
-    "id": "find-xor-sum-of-all-pairs-bitwise-and",
-    "title": "Find Xor Sum Of All Pairs Bitwise And",
-    "difficulty": "Hard",
-    "tags": [
-      "Bit Manipulation",
-      "Array",
-      "Math"
-    ],
-    "test_count": 103,
-    "verified": false
   },
   {
     "id": "remove-duplicates-from-an-unsorted-linked-list",
@@ -18166,19 +17352,6 @@
     ],
     "test_count": 135,
     "verified": true
-  },
-  {
-    "id": "closest-room",
-    "title": "Closest Room",
-    "difficulty": "Hard",
-    "tags": [
-      "Array",
-      "Binary Search",
-      "Ordered Set",
-      "Sorting"
-    ],
-    "test_count": 213,
-    "verified": false
   },
   {
     "id": "minimum-distance-to-the-target-element",
@@ -18498,19 +17671,6 @@
     ],
     "test_count": 118,
     "verified": true
-  },
-  {
-    "id": "minimum-xor-sum-of-two-arrays",
-    "title": "Minimum Xor Sum Of Two Arrays",
-    "difficulty": "Hard",
-    "tags": [
-      "Bit Manipulation",
-      "Array",
-      "Dynamic Programming",
-      "Bitmask"
-    ],
-    "test_count": 93,
-    "verified": false
   },
   {
     "id": "check-if-word-equals-summation-of-two-words",
@@ -19040,19 +18200,6 @@
     "verified": true
   },
   {
-    "id": "unique-length-3-palindromic-subsequences",
-    "title": "Unique Length 3 Palindromic Subsequences",
-    "difficulty": "Medium",
-    "tags": [
-      "Bit Manipulation",
-      "Hash Table",
-      "String",
-      "Prefix Sum"
-    ],
-    "test_count": 75,
-    "verified": false
-  },
-  {
     "id": "painting-a-grid-with-three-different-colors",
     "title": "Painting A Grid With Three Different Colors",
     "difficulty": "Hard",
@@ -19557,17 +18704,6 @@
     "verified": true
   },
   {
-    "id": "find-array-given-subset-sums",
-    "title": "Find Array Given Subset Sums",
-    "difficulty": "Hard",
-    "tags": [
-      "Array",
-      "Divide and Conquer"
-    ],
-    "test_count": 89,
-    "verified": false
-  },
-  {
     "id": "widest-pair-of-indices-with-equal-range-sum",
     "title": "Widest Pair Of Indices With Equal Range Sum",
     "difficulty": "Medium",
@@ -19605,20 +18741,6 @@
     ],
     "test_count": 113,
     "verified": true
-  },
-  {
-    "id": "minimum-number-of-work-sessions-to-finish-the-tasks",
-    "title": "Minimum Number Of Work Sessions To Finish The Tasks",
-    "difficulty": "Medium",
-    "tags": [
-      "Bit Manipulation",
-      "Array",
-      "Dynamic Programming",
-      "Backtracking",
-      "Bitmask"
-    ],
-    "test_count": 123,
-    "verified": false
   },
   {
     "id": "number-of-unique-good-subsequences",
@@ -19767,20 +18889,6 @@
     ],
     "test_count": 84,
     "verified": true
-  },
-  {
-    "id": "maximum-product-of-the-length-of-two-palindromic-subsequences",
-    "title": "Maximum Product Of The Length Of Two Palindromic Subsequences",
-    "difficulty": "Medium",
-    "tags": [
-      "Bit Manipulation",
-      "String",
-      "Dynamic Programming",
-      "Backtracking",
-      "Bitmask"
-    ],
-    "test_count": 81,
-    "verified": false
   },
   {
     "id": "smallest-missing-genetic-value-in-each-subtree",
@@ -20249,20 +19357,6 @@
     "verified": true
   },
   {
-    "id": "next-greater-numerically-balanced-number",
-    "title": "Next Greater Numerically Balanced Number",
-    "difficulty": "Medium",
-    "tags": [
-      "Hash Table",
-      "Math",
-      "Backtracking",
-      "Counting",
-      "Enumeration"
-    ],
-    "test_count": 58,
-    "verified": false
-  },
-  {
     "id": "count-nodes-with-the-highest-score",
     "title": "Count Nodes With The Highest Score",
     "difficulty": "Medium",
@@ -20384,17 +19478,6 @@
     "verified": true
   },
   {
-    "id": "check-if-an-original-string-exists-given-two-encoded-strings",
-    "title": "Check If An Original String Exists Given Two Encoded Strings",
-    "difficulty": "Hard",
-    "tags": [
-      "String",
-      "Dynamic Programming"
-    ],
-    "test_count": 195,
-    "verified": false
-  },
-  {
     "id": "number-of-spaces-cleaning-robot-cleaned",
     "title": "Number Of Spaces Cleaning Robot Cleaned",
     "difficulty": "Medium",
@@ -20441,18 +19524,6 @@
     ],
     "test_count": 108,
     "verified": true
-  },
-  {
-    "id": "maximum-path-quality-of-a-graph",
-    "title": "Maximum Path Quality Of A Graph",
-    "difficulty": "Hard",
-    "tags": [
-      "Graph",
-      "Array",
-      "Backtracking"
-    ],
-    "test_count": 89,
-    "verified": false
   },
   {
     "id": "number-of-equal-count-substrings",
@@ -21574,19 +20645,6 @@
     "verified": true
   },
   {
-    "id": "maximum-and-sum-of-array",
-    "title": "Maximum And Sum Of Array",
-    "difficulty": "Hard",
-    "tags": [
-      "Bit Manipulation",
-      "Array",
-      "Dynamic Programming",
-      "Bitmask"
-    ],
-    "test_count": 89,
-    "verified": false
-  },
-  {
     "id": "remove-all-ones-with-row-and-column-flips-ii",
     "title": "Remove All Ones With Row And Column Flips II",
     "difficulty": "Medium",
@@ -21669,20 +20727,6 @@
     ],
     "test_count": 93,
     "verified": true
-  },
-  {
-    "id": "construct-string-with-repeat-limit",
-    "title": "Construct String With Repeat Limit",
-    "difficulty": "Medium",
-    "tags": [
-      "Greedy",
-      "Hash Table",
-      "String",
-      "Counting",
-      "Heap (Priority Queue)"
-    ],
-    "test_count": 66,
-    "verified": false
   },
   {
     "id": "count-array-pairs-divisible-by-k",
@@ -22639,17 +21683,6 @@
     "verified": true
   },
   {
-    "id": "substring-with-largest-variance",
-    "title": "Substring With Largest Variance",
-    "difficulty": "Hard",
-    "tags": [
-      "Array",
-      "Dynamic Programming"
-    ],
-    "test_count": 25,
-    "verified": false
-  },
-  {
     "id": "find-resultant-array-after-removing-anagrams",
     "title": "Find Resultant Array After Removing Anagrams",
     "difficulty": "Easy",
@@ -23024,18 +22057,6 @@
     "verified": true
   },
   {
-    "id": "greatest-english-letter-in-upper-and-lower-case",
-    "title": "Greatest English Letter In Upper And Lower Case",
-    "difficulty": "Easy",
-    "tags": [
-      "Hash Table",
-      "String",
-      "Enumeration"
-    ],
-    "test_count": 117,
-    "verified": false
-  },
-  {
     "id": "sum-of-numbers-with-units-digit-k",
     "title": "Sum Of Numbers With Units Digit K",
     "difficulty": "Medium",
@@ -23062,18 +22083,6 @@
     "verified": true
   },
   {
-    "id": "selling-pieces-of-wood",
-    "title": "Selling Pieces Of Wood",
-    "difficulty": "Hard",
-    "tags": [
-      "Memoization",
-      "Array",
-      "Dynamic Programming"
-    ],
-    "test_count": 88,
-    "verified": false
-  },
-  {
     "id": "count-asterisks",
     "title": "Count Asterisks",
     "difficulty": "Easy",
@@ -23095,18 +22104,6 @@
     ],
     "test_count": 55,
     "verified": true
-  },
-  {
-    "id": "maximum-xor-after-operations",
-    "title": "Maximum Xor After Operations",
-    "difficulty": "Medium",
-    "tags": [
-      "Bit Manipulation",
-      "Array",
-      "Math"
-    ],
-    "test_count": 117,
-    "verified": false
   },
   {
     "id": "number-of-distinct-roll-sequences",
@@ -23177,17 +22174,6 @@
     "verified": true
   },
   {
-    "id": "decode-the-message",
-    "title": "Decode The Message",
-    "difficulty": "Easy",
-    "tags": [
-      "Hash Table",
-      "String"
-    ],
-    "test_count": 204,
-    "verified": false
-  },
-  {
     "id": "spiral-matrix-iv",
     "title": "Spiral Matrix IV",
     "difficulty": "Medium",
@@ -23239,18 +22225,6 @@
     ],
     "test_count": 141,
     "verified": true
-  },
-  {
-    "id": "evaluate-boolean-binary-tree",
-    "title": "Evaluate Boolean Binary Tree",
-    "difficulty": "Easy",
-    "tags": [
-      "Tree",
-      "Depth-First Search",
-      "Binary Tree"
-    ],
-    "test_count": 80,
-    "verified": false
   },
   {
     "id": "the-latest-time-to-catch-a-bus",
@@ -23649,18 +22623,6 @@
     "verified": true
   },
   {
-    "id": "longest-ideal-subsequence",
-    "title": "Longest Ideal Subsequence",
-    "difficulty": "Medium",
-    "tags": [
-      "Hash Table",
-      "String",
-      "Dynamic Programming"
-    ],
-    "test_count": 85,
-    "verified": false
-  },
-  {
     "id": "minimize-maximum-value-in-a-grid",
     "title": "Minimize Maximum Value In A Grid",
     "difficulty": "Hard",
@@ -23930,20 +22892,6 @@
     "verified": true
   },
   {
-    "id": "maximum-rows-covered-by-columns",
-    "title": "Maximum Rows Covered By Columns",
-    "difficulty": "Medium",
-    "tags": [
-      "Bit Manipulation",
-      "Array",
-      "Backtracking",
-      "Enumeration",
-      "Matrix"
-    ],
-    "test_count": 99,
-    "verified": false
-  },
-  {
     "id": "maximum-number-of-robots-within-budget",
     "title": "Maximum Number Of Robots Within Budget",
     "difficulty": "Hard",
@@ -24008,19 +22956,6 @@
     ],
     "test_count": 92,
     "verified": true
-  },
-  {
-    "id": "minimum-time-to-kill-all-monsters",
-    "title": "Minimum Time To Kill All Monsters",
-    "difficulty": "Hard",
-    "tags": [
-      "Bit Manipulation",
-      "Array",
-      "Dynamic Programming",
-      "Bitmask"
-    ],
-    "test_count": 92,
-    "verified": false
   },
   {
     "id": "most-frequent-even-element",
@@ -24617,21 +23552,6 @@
     ],
     "test_count": 127,
     "verified": true
-  },
-  {
-    "id": "next-greater-element-iv",
-    "title": "Next Greater Element IV",
-    "difficulty": "Hard",
-    "tags": [
-      "Stack",
-      "Array",
-      "Binary Search",
-      "Sorting",
-      "Monotonic Stack",
-      "Heap (Priority Queue)"
-    ],
-    "test_count": 224,
-    "verified": false
   },
   {
     "id": "average-value-of-even-numbers-that-are-divisible-by-three",
@@ -25422,18 +24342,6 @@
     "verified": true
   },
   {
-    "id": "find-xor-beauty-of-array",
-    "title": "Find Xor Beauty Of Array",
-    "difficulty": "Medium",
-    "tags": [
-      "Bit Manipulation",
-      "Array",
-      "Math"
-    ],
-    "test_count": 97,
-    "verified": false
-  },
-  {
     "id": "maximize-the-minimum-powered-city",
     "title": "Maximize The Minimum Powered City",
     "difficulty": "Hard",
@@ -25957,21 +24865,6 @@
     ],
     "test_count": 103,
     "verified": true
-  },
-  {
-    "id": "find-the-string-with-lcp",
-    "title": "Find The String With Lcp",
-    "difficulty": "Hard",
-    "tags": [
-      "Greedy",
-      "Union Find",
-      "Array",
-      "String",
-      "Dynamic Programming",
-      "Matrix"
-    ],
-    "test_count": 75,
-    "verified": false
   },
   {
     "id": "left-and-right-sum-differences",
@@ -26694,22 +25587,6 @@
     "verified": true
   },
   {
-    "id": "make-array-empty",
-    "title": "Make Array Empty",
-    "difficulty": "Hard",
-    "tags": [
-      "Greedy",
-      "Binary Indexed Tree",
-      "Segment Tree",
-      "Array",
-      "Binary Search",
-      "Ordered Set",
-      "Sorting"
-    ],
-    "test_count": 216,
-    "verified": false
-  },
-  {
     "id": "determine-the-winner-of-a-bowling-game",
     "title": "Determine The Winner Of A Bowling Game",
     "difficulty": "Easy",
@@ -26866,17 +25743,6 @@
     ],
     "test_count": 73,
     "verified": true
-  },
-  {
-    "id": "neighboring-bitwise-xor",
-    "title": "Neighboring Bitwise Xor",
-    "difficulty": "Medium",
-    "tags": [
-      "Bit Manipulation",
-      "Array"
-    ],
-    "test_count": 91,
-    "verified": false
   },
   {
     "id": "maximum-number-of-moves-in-a-grid",
@@ -27257,19 +26123,6 @@
     "verified": true
   },
   {
-    "id": "special-permutations",
-    "title": "Special Permutations",
-    "difficulty": "Medium",
-    "tags": [
-      "Bit Manipulation",
-      "Array",
-      "Dynamic Programming",
-      "Bitmask"
-    ],
-    "test_count": 99,
-    "verified": false
-  },
-  {
     "id": "painting-the-walls",
     "title": "Painting The Walls",
     "difficulty": "Hard",
@@ -27417,33 +26270,6 @@
     ],
     "test_count": 52,
     "verified": true
-  },
-  {
-    "id": "continuous-subarrays",
-    "title": "Continuous Subarrays",
-    "difficulty": "Medium",
-    "tags": [
-      "Queue",
-      "Array",
-      "Ordered Set",
-      "Sliding Window",
-      "Monotonic Queue",
-      "Heap (Priority Queue)"
-    ],
-    "test_count": 234,
-    "verified": false
-  },
-  {
-    "id": "sum-of-imbalance-numbers-of-all-subarrays",
-    "title": "Sum Of Imbalance Numbers Of All Subarrays",
-    "difficulty": "Hard",
-    "tags": [
-      "Array",
-      "Hash Table",
-      "Ordered Set"
-    ],
-    "test_count": 181,
-    "verified": false
   },
   {
     "id": "is-array-a-preorder-of-some-binary-tree",
@@ -27910,18 +26736,6 @@
     "verified": true
   },
   {
-    "id": "minimum-absolute-difference-between-elements-with-constraint",
-    "title": "Minimum Absolute Difference Between Elements With Constraint",
-    "difficulty": "Medium",
-    "tags": [
-      "Array",
-      "Binary Search",
-      "Ordered Set"
-    ],
-    "test_count": 213,
-    "verified": false
-  },
-  {
     "id": "minimum-relative-loss-after-buying-chocolates",
     "title": "Minimum Relative Loss After Buying Chocolates",
     "difficulty": "Hard",
@@ -28297,18 +27111,6 @@
     ],
     "test_count": 121,
     "verified": true
-  },
-  {
-    "id": "count-pairs-of-points-with-distance-k",
-    "title": "Count Pairs Of Points With Distance K",
-    "difficulty": "Medium",
-    "tags": [
-      "Bit Manipulation",
-      "Array",
-      "Hash Table"
-    ],
-    "test_count": 91,
-    "verified": false
   },
   {
     "id": "minimum-edge-reversals-so-every-node-is-reachable",
@@ -29600,17 +28402,6 @@
     "verified": true
   },
   {
-    "id": "minimum-number-of-operations-to-make-array-xor-equal-to-k",
-    "title": "Minimum Number Of Operations To Make Array Xor Equal To K",
-    "difficulty": "Medium",
-    "tags": [
-      "Bit Manipulation",
-      "Array"
-    ],
-    "test_count": 115,
-    "verified": false
-  },
-  {
     "id": "minimum-number-of-operations-to-make-x-and-y-equal",
     "title": "Minimum Number Of Operations To Make X And Y Equal",
     "difficulty": "Medium",
@@ -29796,19 +28587,6 @@
     ],
     "test_count": 136,
     "verified": true
-  },
-  {
-    "id": "divide-an-array-into-subarrays-with-minimum-cost-ii",
-    "title": "Divide An Array Into Subarrays With Minimum Cost II",
-    "difficulty": "Hard",
-    "tags": [
-      "Array",
-      "Hash Table",
-      "Sliding Window",
-      "Heap (Priority Queue)"
-    ],
-    "test_count": 193,
-    "verified": false
   },
   {
     "id": "minimum-number-of-pushes-to-type-word-i",
@@ -30342,17 +29120,6 @@
     "verified": true
   },
   {
-    "id": "maximum-increasing-triplet-value",
-    "title": "Maximum Increasing Triplet Value",
-    "difficulty": "Medium",
-    "tags": [
-      "Array",
-      "Ordered Set"
-    ],
-    "test_count": 252,
-    "verified": false
-  },
-  {
     "id": "apple-redistribution-into-boxes",
     "title": "Apple Redistribution Into Boxes",
     "difficulty": "Easy",
@@ -30438,21 +29205,6 @@
     ],
     "test_count": 111,
     "verified": true
-  },
-  {
-    "id": "replace-question-marks-in-string-to-minimize-its-value",
-    "title": "Replace Question Marks In String To Minimize Its Value",
-    "difficulty": "Medium",
-    "tags": [
-      "Greedy",
-      "Hash Table",
-      "String",
-      "Counting",
-      "Sorting",
-      "Heap (Priority Queue)"
-    ],
-    "test_count": 38,
-    "verified": false
   },
   {
     "id": "find-the-sum-of-the-power-of-all-subsequences",
@@ -30657,20 +29409,6 @@
     "verified": true
   },
   {
-    "id": "minimize-manhattan-distances",
-    "title": "Minimize Manhattan Distances",
-    "difficulty": "Hard",
-    "tags": [
-      "Geometry",
-      "Array",
-      "Math",
-      "Ordered Set",
-      "Sorting"
-    ],
-    "test_count": 155,
-    "verified": false
-  },
-  {
     "id": "find-longest-self-contained-substring",
     "title": "Find Longest Self Contained Substring",
     "difficulty": "Hard",
@@ -30692,17 +29430,6 @@
     ],
     "test_count": 139,
     "verified": true
-  },
-  {
-    "id": "lexicographically-smallest-string-after-operations-with-constraint",
-    "title": "Lexicographically Smallest String After Operations With Constraint",
-    "difficulty": "Medium",
-    "tags": [
-      "Greedy",
-      "String"
-    ],
-    "test_count": 110,
-    "verified": false
   },
   {
     "id": "minimum-operations-to-make-median-of-array-equal-to-k",
@@ -30817,21 +29544,6 @@
     "verified": true
   },
   {
-    "id": "kth-smallest-amount-with-single-denomination-combination",
-    "title": "Kth Smallest Amount With Single Denomination Combination",
-    "difficulty": "Hard",
-    "tags": [
-      "Bit Manipulation",
-      "Array",
-      "Math",
-      "Binary Search",
-      "Combinatorics",
-      "Number Theory"
-    ],
-    "test_count": 110,
-    "verified": false
-  },
-  {
     "id": "minimum-sum-of-values-by-dividing-array",
     "title": "Minimum Sum Of Values By Dividing Array",
     "difficulty": "Hard",
@@ -30857,28 +29569,6 @@
     ],
     "test_count": 128,
     "verified": true
-  },
-  {
-    "id": "count-the-number-of-special-characters-i",
-    "title": "Count The Number Of Special Characters I",
-    "difficulty": "Easy",
-    "tags": [
-      "Hash Table",
-      "String"
-    ],
-    "test_count": 159,
-    "verified": false
-  },
-  {
-    "id": "count-the-number-of-special-characters-ii",
-    "title": "Count The Number Of Special Characters II",
-    "difficulty": "Medium",
-    "tags": [
-      "Hash Table",
-      "String"
-    ],
-    "test_count": 100,
-    "verified": false
   },
   {
     "id": "minimum-number-of-operations-to-satisfy-conditions",
@@ -31157,19 +29847,6 @@
     "verified": true
   },
   {
-    "id": "find-the-minimum-cost-array-permutation",
-    "title": "Find The Minimum Cost Array Permutation",
-    "difficulty": "Hard",
-    "tags": [
-      "Bit Manipulation",
-      "Array",
-      "Dynamic Programming",
-      "Bitmask"
-    ],
-    "test_count": 113,
-    "verified": false
-  },
-  {
     "id": "special-array-i",
     "title": "Special Array I",
     "difficulty": "Easy",
@@ -31244,18 +29921,6 @@
     "verified": true
   },
   {
-    "id": "find-the-xor-of-numbers-which-appear-twice",
-    "title": "Find The Xor Of Numbers Which Appear Twice",
-    "difficulty": "Easy",
-    "tags": [
-      "Bit Manipulation",
-      "Array",
-      "Hash Table"
-    ],
-    "test_count": 120,
-    "verified": false
-  },
-  {
     "id": "find-occurrences-of-an-element-in-an-array",
     "title": "Find Occurrences Of An Element In An Array",
     "difficulty": "Medium",
@@ -31277,19 +29942,6 @@
     ],
     "test_count": 47,
     "verified": true
-  },
-  {
-    "id": "block-placement-queries",
-    "title": "Block Placement Queries",
-    "difficulty": "Hard",
-    "tags": [
-      "Binary Indexed Tree",
-      "Segment Tree",
-      "Array",
-      "Binary Search"
-    ],
-    "test_count": 131,
-    "verified": false
   },
   {
     "id": "find-the-number-of-good-pairs-i",
@@ -31370,20 +30022,6 @@
     ],
     "test_count": 90,
     "verified": true
-  },
-  {
-    "id": "lexicographically-minimum-string-after-removing-stars",
-    "title": "Lexicographically Minimum String After Removing Stars",
-    "difficulty": "Medium",
-    "tags": [
-      "Stack",
-      "Greedy",
-      "Hash Table",
-      "String",
-      "Heap (Priority Queue)"
-    ],
-    "test_count": 70,
-    "verified": false
   },
   {
     "id": "find-subarray-with-bitwise-or-closest-to-k",
