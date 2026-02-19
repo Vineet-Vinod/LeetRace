@@ -168,7 +168,8 @@ RUNNER_SCRIPT = textwrap.dedent("""\
     entry_point = data["entry_point"]
     any_order = data.get("any_order", False)
     transform = use_flex_eq if any_order else use_normalize_eq
-    test_cases = [transform(strip_kwargs(tc)) for tc in data["test_cases"]]
+    orig_test_cases = data["test_cases"]
+    test_cases = [transform(strip_kwargs(tc)) for tc in orig_test_cases]
     preamble = data.get("preamble", "")
 
     import io
@@ -240,20 +241,47 @@ RUNNER_SCRIPT = textwrap.dedent("""\
     passed = 0
     total = len(test_cases)
     first_error = None
+    first_failure = None
 
-    for tc in test_cases:
+    def _parse_raw_tc(raw):
+        \"\"\"Extract the named args and expected value from a raw test case.\"\"\"
+        m = re.match(r'assert\\s+candidate\\((.*)\\)\\s*==\\s*(.+)$', raw)
+        if m:
+            return m.group(1).strip(), m.group(2).strip()
+        # Fallback: try without 'candidate(' wrapper
+        m2 = re.match(r'assert\\s+(.+?)\\s*==\\s*(.+)$', raw)
+        if m2:
+            return m2.group(1).strip(), m2.group(2).strip()
+        return re.sub(r'^assert\\s+', '', raw).strip(), None
+
+    for orig_tc, tc in zip(orig_test_cases, test_cases):
         try:
             exec(tc, test_ns)
             passed += 1
         except AssertionError as e:
             if first_error is None:
-                first_error = str(e)[:200] if str(e) else f"Assertion failed: {tc[:100]}"
+                first_error = str(e)[:200] if str(e) else f"Assertion failed: {orig_tc[:100]}"
+            if first_failure is None:
+                args_str, expected_expr = _parse_raw_tc(orig_tc)
+                first_failure = {
+                    "input": args_str[:500],
+                    "expected": repr(test_ns.get("_expected_"))[:300] if "_expected_" in test_ns else expected_expr,
+                    "actual": repr(test_ns.get("_actual_"))[:300] if "_actual_" in test_ns else None,
+                }
         except Exception as e:
             if first_error is None:
                 first_error = f"Runtime error: {type(e).__name__}: {e}"
+            if first_failure is None:
+                args_str, expected_expr = _parse_raw_tc(orig_tc)
+                first_failure = {
+                    "input": args_str[:500],
+                    "expected": expected_expr,
+                    "actual": f"{type(e).__name__}: {e}"[:300],
+                }
 
     sys.stdout = real_stdout
     result = {"passed": passed, "total": total, "error": first_error,
+              "first_failure": first_failure,
               "stdout": captured_out.getvalue()[:5000], "stderr": captured_err.getvalue()[:5000]}
     print(json.dumps(result))
 """)
@@ -319,6 +347,7 @@ def _run_sync(
                 "passed": 0,
                 "total": len(test_cases),
                 "error": stderr or "Process crashed",
+                "first_failure": None,
                 "time_ms": elapsed_ms,
             }
 
@@ -332,6 +361,7 @@ def _run_sync(
             "passed": 0,
             "total": len(test_cases),
             "error": f"Time limit exceeded ({_SUBPROCESS_TIMEOUT_SECONDS}s)",
+            "first_failure": None,
             "time_ms": elapsed_ms,
         }
     except json.JSONDecodeError as e:
@@ -340,6 +370,7 @@ def _run_sync(
             "passed": 0,
             "total": len(test_cases),
             "error": f"Runner produced invalid output: {e}",
+            "first_failure": None,
             "time_ms": elapsed_ms,
         }
     except Exception as e:
@@ -348,6 +379,7 @@ def _run_sync(
             "passed": 0,
             "total": len(test_cases),
             "error": str(e)[:200],
+            "first_failure": None,
             "time_ms": elapsed_ms,
         }
 

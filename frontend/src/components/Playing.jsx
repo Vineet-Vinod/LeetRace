@@ -21,6 +21,50 @@ function DifficultyBadge({ difficulty }) {
   );
 }
 
+/**
+ * Displays structured details about the first failing test case from a
+ * submission. Shows the test input (with the leading "assert " prefix removed
+ * for readability), the expected value in green, and the actual value in red.
+ *
+ * `expected` and `actual` may be null when the failure originated from a
+ * runtime exception rather than a failed assertion — each section is omitted
+ * if its value is null.
+ *
+ * @param {{ input: string, expected: string|null, actual: string|null }} failure
+ */
+function FirstFailureBlock({ failure }) {
+  return (
+    <div className="mt-2 rounded border border-brd-light bg-elevated px-3 py-2.5 flex flex-col gap-1.5 font-mono text-[0.76rem] leading-[1.55]">
+      {/* Section header */}
+      <div className="font-display text-[0.65rem] font-semibold tracking-[0.1em] uppercase text-dim mb-0.5">
+        Failing Test
+      </div>
+
+      {/* Input: always present */}
+      <div className="flex flex-col gap-0.5">
+        <span className="text-[0.65rem] uppercase tracking-wider text-muted font-semibold">Input</span>
+        <span className="text-light whitespace-pre-wrap break-all">{failure.input}</span>
+      </div>
+
+      {/* Expected: only shown when the sandbox captured a value (assertion failures) */}
+      {failure.expected !== null && failure.expected !== undefined && (
+        <div className="flex flex-col gap-0.5">
+          <span className="text-[0.65rem] uppercase tracking-wider text-muted font-semibold">Expected</span>
+          <span className="text-ok whitespace-pre-wrap break-all">{failure.expected}</span>
+        </div>
+      )}
+
+      {/* Actual: shown for both assertion failures and runtime errors */}
+      {failure.actual !== null && failure.actual !== undefined && (
+        <div className="flex flex-col gap-0.5">
+          <span className="text-[0.65rem] uppercase tracking-wider text-muted font-semibold">Got</span>
+          <span className="text-err whitespace-pre-wrap break-all">{failure.actual}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Playing({
   problem,
   remaining,
@@ -110,7 +154,7 @@ export default function Playing({
     if (!submitResult) {
       return <span className="text-dim italic">Submit your code to see results...</span>;
     }
-    const { passed, total, error, solved, char_count, submit_time, stdout, stderr } = submitResult;
+    const { passed, total, error, solved, char_count, submit_time, stdout, stderr, first_failure } = submitResult;
 
     return (
       <div className="flex flex-col gap-1">
@@ -130,6 +174,15 @@ export default function Playing({
             {passed}/{total} tests passed
           </div>
         )}
+
+        {/* First-failure detail block — shown when a test case assertion failed
+            and the sandbox was able to capture structured input/expected/actual
+            values. Each section is rendered only when its value is non-null,
+            because runtime errors produce no "expected" value. */}
+        {!solved && first_failure && (
+          <FirstFailureBlock failure={first_failure} />
+        )}
+
         {stdout && (
           <div className="mt-2.5 pt-2.5 border-t border-brd text-dim whitespace-pre-wrap break-all text-[0.78rem]">
             <span className="text-muted font-semibold text-[0.7rem] uppercase tracking-wider">stdout:</span>

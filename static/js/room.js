@@ -147,15 +147,23 @@ const handlers = {
             document.getElementById('lock-btn').hidden = true;
         }
 
-        const lines = [];
-        lines.push(`Tests: ${msg.passed}/${msg.total} passed`);
-        if (msg.error) lines.push(`Error: ${msg.error}`);
-        if (msg.stdout) lines.push(`\nStdout:\n${msg.stdout}`);
-        if (msg.stderr) lines.push(`\nStderr:\n${msg.stderr}`);
-
         const panel = document.getElementById('output-panel');
         const content = document.getElementById('output-content');
-        content.textContent = lines.join('\n');
+
+        // Build output content. When first_failure is present we render
+        // structured HTML so the failing test input/expected/actual stand out
+        // visually. For a clean solved result we stay plain-text only.
+        if (!msg.solved && msg.first_failure) {
+            renderOutputWithFailure(content, msg);
+        } else {
+            const lines = [];
+            lines.push(`Tests: ${msg.passed}/${msg.total} passed`);
+            if (msg.error) lines.push(`Error: ${msg.error}`);
+            if (msg.stdout) lines.push(`\nStdout:\n${msg.stdout}`);
+            if (msg.stderr) lines.push(`\nStderr:\n${msg.stderr}`);
+            content.textContent = lines.join('\n');
+        }
+
         panel.hidden = false;
         document.getElementById('resize-h').hidden = false;
     },
@@ -284,6 +292,108 @@ function showFeedback(text, type) {
     el.className = `feedback ${type}`;
     el.hidden = false;
     setTimeout(() => { el.hidden = true; }, 5000);
+}
+
+/**
+ * Render submission output into `container` when first_failure detail is
+ * available. Builds DOM nodes directly (no innerHTML on user data) so all
+ * user-supplied values are set via textContent.
+ *
+ * Sections are only added when their value is non-null — runtime errors
+ * produce no "expected" value, and some failures have no "actual" capture.
+ *
+ * @param {HTMLElement} container - The #output-content element.
+ * @param {object}      msg       - The submit_result WebSocket message.
+ */
+function renderOutputWithFailure(container, msg) {
+    container.innerHTML = '';
+
+    // --- Summary line (tests passed + error message) ---
+    const summary = document.createElement('div');
+    const passSpan = document.createElement('span');
+    passSpan.className = 'output-warn';
+    passSpan.textContent = `Tests: ${msg.passed}/${msg.total} passed`;
+    summary.appendChild(passSpan);
+    if (msg.error) {
+        const errSpan = document.createElement('div');
+        errSpan.className = 'output-err';
+        errSpan.textContent = msg.error;
+        summary.appendChild(errSpan);
+    }
+    container.appendChild(summary);
+
+    // --- First-failure detail block ---
+    const ff = msg.first_failure;
+    const block = document.createElement('div');
+    block.className = 'output-failure-block';
+
+    const header = document.createElement('div');
+    header.className = 'output-failure-header';
+    header.textContent = 'Failing Test';
+    block.appendChild(header);
+
+    appendOutputRow(block, 'Input', ff.input, '');
+
+    if (ff.expected !== null && ff.expected !== undefined) {
+        appendOutputRow(block, 'Expected', ff.expected, 'output-ok');
+    }
+    if (ff.actual !== null && ff.actual !== undefined) {
+        appendOutputRow(block, 'Got', ff.actual, 'output-err');
+    }
+
+    container.appendChild(block);
+
+    // --- Stdout / stderr (appended below the failure block) ---
+    if (msg.stdout) {
+        const stdoutBlock = document.createElement('div');
+        stdoutBlock.className = 'output-stdio';
+        const label = document.createElement('span');
+        label.className = 'output-stdio-label';
+        label.textContent = 'stdout:';
+        const text = document.createElement('span');
+        text.textContent = '\n' + msg.stdout;
+        stdoutBlock.appendChild(label);
+        stdoutBlock.appendChild(text);
+        container.appendChild(stdoutBlock);
+    }
+    if (msg.stderr) {
+        const stderrBlock = document.createElement('div');
+        stderrBlock.className = 'output-stdio output-stdio-err';
+        const label = document.createElement('span');
+        label.className = 'output-stdio-label output-err';
+        label.textContent = 'stderr:';
+        const text = document.createElement('span');
+        text.className = 'output-err';
+        text.textContent = '\n' + msg.stderr;
+        stderrBlock.appendChild(label);
+        stderrBlock.appendChild(text);
+        container.appendChild(stderrBlock);
+    }
+}
+
+/**
+ * Append a labeled value row to a failure block element.
+ *
+ * @param {HTMLElement} parent     - The block to append into.
+ * @param {string}      label      - Section label text.
+ * @param {string}      value      - The value to display.
+ * @param {string}      valueClass - CSS class for the value span (may be empty).
+ */
+function appendOutputRow(parent, label, value, valueClass) {
+    const row = document.createElement('div');
+    row.className = 'output-failure-row';
+
+    const labelEl = document.createElement('span');
+    labelEl.className = 'output-failure-label';
+    labelEl.textContent = label;
+    row.appendChild(labelEl);
+
+    const valueEl = document.createElement('span');
+    if (valueClass) valueEl.className = valueClass;
+    valueEl.textContent = value;
+    row.appendChild(valueEl);
+
+    parent.appendChild(row);
 }
 
 function esc(str) {

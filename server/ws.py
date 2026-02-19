@@ -13,7 +13,7 @@ from server.rooms import Player, Room, RoomState, get_room, remove_room
 from server.problems import pick_random
 from server.sandbox import run_code
 from server.scoring import rank_players
-from server.utils import fix_exponents
+from server.utils import fix_exponents, fix_subscripts
 
 logger = logging.getLogger(__name__)
 
@@ -227,7 +227,7 @@ async def _begin_round(room: Room, problem: dict, round_number: int) -> None:
                 "id": problem["id"],
                 "title": problem["title"],
                 "difficulty": problem["difficulty"],
-                "description": fix_exponents(problem["description"]),
+                "description": fix_subscripts(fix_exponents(problem["description"])),
                 "entry_point": problem["entry_point"],
                 "starter_code": problem["starter_code"],
             },
@@ -347,6 +347,7 @@ async def handle_submit(room: Room, player_name: str, data: dict) -> None:
                 "submit_time": round(submit_time, 2),
                 "stdout": result.get("stdout", ""),
                 "stderr": result.get("stderr", ""),
+                "first_failure": result.get("first_failure"),
             }
         )
 
