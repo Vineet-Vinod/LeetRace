@@ -27,8 +27,8 @@ make dev-frontend      # Start only the Vite frontend dev server
 ```
 
 `make dev` intelligently chooses:
-- **With tmux installed**: Runs `./tmux-dev.sh` which opens side-by-side panes and properly cleans up on exit
-- **Without tmux**: Runs `./dev.sh` which starts both in the same terminal
+- **With tmux installed**: Runs `./scripts/tmux-dev.sh` which opens side-by-side panes and properly cleans up on exit
+- **Without tmux**: Runs `./scripts/dev.sh` which starts both in the same terminal
 
 ### Manual Setup
 ```bash
@@ -40,7 +40,7 @@ cd frontend && FRONTEND_PORT=3000 pnpm dev # Start frontend on http://localhost:
 
 ### Alternative: Run Script Directly
 ```bash
-./dev.sh  # Starts both servers with environment variables from .env
+./scripts/dev.sh  # Starts both servers with environment variables from .env
 ```
 
 ### Testing
@@ -61,7 +61,7 @@ ruff check . --fix           # Lint and auto-fix issues
 ### Problem Set
 ```bash
 uv pip install datasets                   # Install optional build dependency
-python scripts/build_problems.py          # Rebuild problems from HuggingFace dataset
+python scripts/generate.py                # Rebuild problems from HuggingFace dataset
 ```
 
 The project ships with 2,637 problems (637 Easy, 1,395 Medium, 605 Hard) pre-downloaded from [newfacade/LeetCodeDataset](https://huggingface.co/datasets/newfacade/LeetCodeDataset).

@@ -51,7 +51,7 @@ dev-frontend:
 
 ## dev: Start both backend and frontend servers together
 dev:
-	@command -v tmux >/dev/null 2>&1 && ./tmux-dev.sh || (echo "tmux not found, using dev.sh instead..." && ./dev.sh)
+	@command -v tmux >/dev/null 2>&1 && ./scripts/tmux-dev.sh || (echo "tmux not found, using dev.sh instead..." && ./scripts/dev.sh)
 
 ## clean: Remove build artifacts, cache, and dependencies
 clean:
