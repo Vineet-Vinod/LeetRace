@@ -7,10 +7,9 @@ import json
 import re
 from pathlib import Path
 
-PROBLEMS_DIR = Path(__file__).resolve().parent.parent / "problems"
+PROBLEMS_DIR: Path = Path(__file__).resolve().parent.parent / "problems"
 
-# Common imports needed by LeetCode starter code (class Solution with type hints)
-PREAMBLE = """\
+PREAMBLE: str = """\
 from typing import *
 from collections import *
 from functools import *
@@ -37,7 +36,6 @@ def extract_test_cases(check_fn: str) -> list[str]:
                 cases.append(current)
             current = stripped
         elif current is not None and stripped and not stripped.startswith("def "):
-            # Continuation of previous assert
             current += " " + stripped
         elif stripped.startswith("def ") and current is not None:
             cases.append(current)
@@ -52,10 +50,34 @@ def extract_test_cases(check_fn: str) -> list[str]:
 # Words that should be fully uppercased when converting slugs to titles.
 # Covers Roman numerals (common in LeetCode problem names like "III", "IV")
 # and common CS abbreviations.
-_UPPERCASE_WORDS = {
-    "i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x",
-    "bst", "dfs", "bfs", "lru", "lfu", "sql", "xml", "json", "csv",
-    "ip", "url", "api", "cpu", "ram", "html", "css", "rgb",
+_UPPERCASE_WORDS: set[str] = {
+    "i",
+    "ii",
+    "iii",
+    "iv",
+    "v",
+    "vi",
+    "vii",
+    "viii",
+    "ix",
+    "x",
+    "bst",
+    "dfs",
+    "bfs",
+    "lru",
+    "lfu",
+    "sql",
+    "xml",
+    "json",
+    "csv",
+    "ip",
+    "url",
+    "api",
+    "cpu",
+    "ram",
+    "html",
+    "css",
+    "rgb",
 }
 
 
@@ -67,8 +89,7 @@ def smart_title(slug: str) -> str:
     """
     words = slug.replace("-", " ").split()
     return " ".join(
-        w.upper() if w.lower() in _UPPERCASE_WORDS else w.capitalize()
-        for w in words
+        w.upper() if w.lower() in _UPPERCASE_WORDS else w.capitalize() for w in words
     )
 
 
@@ -118,19 +139,12 @@ def build():
         if not slug:
             slug = f"problem-{written}"
 
-        # Handle duplicate slugs
         if slug in slug_counts:
             slug_counts[slug] += 1
             slug = f"{slug}-{slug_counts[slug]}"
         else:
             slug_counts[slug] = 0
 
-        # Ensure starter_code has a valid body (add pass if it ends with just a signature)
-        if starter_code and starter_code.rstrip().endswith(':'):
-            # Function/class definition without body, add pass statement
-            starter_code = starter_code.rstrip() + '\n        pass'
-
-        # Build the problem JSON
         problem_data = {
             "id": slug,
             "title": smart_title(title),
@@ -158,7 +172,6 @@ def build():
         )
         written += 1
 
-    # Write index
     index_path = PROBLEMS_DIR / "index.json"
     index_path.write_text(json.dumps(index, indent=2))
 

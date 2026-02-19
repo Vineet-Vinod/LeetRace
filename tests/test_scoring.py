@@ -256,8 +256,12 @@ class TestRankPlayersCodeField:
     def test_code_field_present_for_player_with_submission(self):
         players = {
             "Alice": make_player(
-                "Alice", solved=True, char_count=50, passed=3, total=3,
-                code="def f(x): return x"
+                "Alice",
+                solved=True,
+                char_count=50,
+                passed=3,
+                total=3,
+                code="def f(x): return x",
             )
         }
         result = rank_players(players, include_code=True)
@@ -268,8 +272,12 @@ class TestRankPlayersCodeField:
         """Without include_code, code must be None to prevent mid-game leaking."""
         players = {
             "Alice": make_player(
-                "Alice", solved=True, char_count=50, passed=3, total=3,
-                code="def f(x): return x"
+                "Alice",
+                solved=True,
+                char_count=50,
+                passed=3,
+                total=3,
+                code="def f(x): return x",
             )
         }
         result = rank_players(players)
@@ -286,15 +294,21 @@ class TestRankPlayersCodeField:
     def test_code_field_present_in_all_required_fields_check(self):
         """Extend the existing required-fields test to include 'code'."""
         players = {
-            "Alice": make_player(
-                "Alice", solved=True, char_count=50, passed=3, total=3
-            )
+            "Alice": make_player("Alice", solved=True, char_count=50, passed=3, total=3)
         }
         result = rank_players(players, include_code=True)
         entry = result[0]
         required = {
-            "name", "solved", "char_count", "submit_time", "locked_at",
-            "tests_passed", "tests_total", "error", "position", "code",
+            "name",
+            "solved",
+            "char_count",
+            "submit_time",
+            "locked_at",
+            "tests_passed",
+            "tests_total",
+            "error",
+            "position",
+            "code",
         }
         assert required.issubset(set(entry.keys()))
 

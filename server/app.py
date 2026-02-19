@@ -45,16 +45,22 @@ async def _gc_loop() -> None:
                 remove_room(room_id)
                 logger.info("GC: removed expired room %s", room_id)
             if expired:
-                logger.info("GC: pruned %d room(s); %d remaining", len(expired), len(rooms))
+                logger.info(
+                    "GC: pruned %d room(s); %d remaining", len(expired), len(rooms)
+                )
         except Exception:
-            logger.exception("GC: unexpected error during room cleanup — will retry next cycle")
+            logger.exception(
+                "GC: unexpected error during room cleanup — will retry next cycle"
+            )
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Start background tasks on startup and clean them up on shutdown."""
     gc_task = asyncio.create_task(_gc_loop())
-    logger.info("GC: room garbage-collection loop started (interval=%ds)", _GC_INTERVAL_SECONDS)
+    logger.info(
+        "GC: room garbage-collection loop started (interval=%ds)", _GC_INTERVAL_SECONDS
+    )
     try:
         yield
     finally:

@@ -148,7 +148,9 @@ def get_expired_rooms(max_age_seconds: int = 3600) -> list[str]:
         # game ended.  finished_at may be None for rooms that transitioned to
         # FINISHED via old code paths; fall back to created_at in that case.
         if room.state == RoomState.FINISHED:
-            end_ts = room.finished_at if room.finished_at is not None else room.created_at
+            end_ts = (
+                room.finished_at if room.finished_at is not None else room.created_at
+            )
             if now - end_ts >= max_age_seconds:
                 expired.append(room_id)
             continue

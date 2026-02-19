@@ -17,9 +17,7 @@ _NO_SUBMISSION: dict = {
 }
 
 
-def rank_players(
-    players: dict[str, Player], include_code: bool = False
-) -> list[dict]:
+def rank_players(players: dict[str, Player], include_code: bool = False) -> list[dict]:
     """Rank players for the scoreboard.
 
     Sort order (best first):

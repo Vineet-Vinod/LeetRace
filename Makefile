@@ -29,6 +29,18 @@ test:
 serve:
 	BACKEND_PORT=$(BACKEND_PORT) uv run python main.py
 
+## rebuild: Rebuild the problem dataset (run when generate.py changes)
+rebuild:
+	@if [ -d ./problems ]; then \
+		echo "Error: problems/ directory already exists. Remove it before rebuilding."; \
+		exit 1; \
+	fi
+	uv run python scripts/generate.py
+
+## verify: Check the integrity of the problem dataset
+verify:
+	uv run python scripts/verify.py
+
 ## dev-backend: Start the FastAPI backend server (alias for serve)
 dev-backend:
 	BACKEND_PORT=$(BACKEND_PORT) uv run python main.py
