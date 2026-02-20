@@ -36,6 +36,7 @@ class Player:
     submission: dict | None = None
     best_submission: dict | None = None
     locked_at: float | None = None
+    resigned: bool = False
 
 
 @dataclass

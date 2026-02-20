@@ -118,25 +118,24 @@ export default function Landing() {
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-brd mb-7">
+        <div className="flex border-b border-brd mb-7 relative">
           {['create', 'join'].map((t) => (
             <button
               key={t}
               onClick={() => { setTab(t); setError(''); }}
-              className={`flex-1 py-3 bg-transparent border-none font-display text-[0.82rem] font-semibold tracking-[0.1em] uppercase cursor-pointer relative transition-colors duration-150 ${
+              className={`flex-1 py-3 bg-transparent border-none font-display text-[0.82rem] font-semibold tracking-[0.1em] uppercase cursor-pointer transition-colors duration-150 ${
                 tab === t ? 'text-primary' : 'text-dim hover:text-muted'
               }`}
             >
               {t === 'create' ? 'Create Room' : 'Join Room'}
-              {tab === t && (
-                <motion.div
-                  layoutId="tab-indicator"
-                  className="absolute bottom-[-1px] left-0 right-0 h-[2px] bg-primary"
-                  style={{ boxShadow: '0 0 10px rgba(0,229,199,0.25)' }}
-                />
-              )}
             </button>
           ))}
+          <motion.div
+            className="absolute bottom-[-1px] left-0 h-[2px] bg-primary"
+            style={{ boxShadow: '0 0 10px rgba(0,229,199,0.25)', width: '50%' }}
+            animate={{ x: tab === 'create' ? '0%' : '100%' }}
+            transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+          />
         </div>
 
         {/* Create Form */}
@@ -183,7 +182,11 @@ export default function Landing() {
                   min={1}
                   step={0.5}
                   value={timeLimit}
-                  onChange={(e) => setTimeLimit(parseFloat(e.target.value) || 1)}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setTimeLimit(v === '' ? '' : Math.max(1, parseFloat(v) || 1));
+                  }}
+                  onBlur={() => { if (timeLimit === '' || isNaN(timeLimit)) setTimeLimit(5); }}
                   className="w-full px-4 py-3 bg-panel border border-brd rounded-lg text-light font-mono text-[0.95rem] outline-none transition-all duration-150 focus:border-primary focus:shadow-[0_0_0_3px_rgba(0,229,199,0.15)] placeholder:text-dim"
                 />
               </div>
@@ -196,7 +199,11 @@ export default function Landing() {
                   min={1}
                   max={10}
                   value={rounds}
-                  onChange={(e) => setRounds(Math.max(1, Math.min(10, parseInt(e.target.value) || 1)))}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setRounds(v === '' ? '' : Math.max(1, Math.min(10, parseInt(v) || 1)));
+                  }}
+                  onBlur={() => { if (rounds === '' || isNaN(rounds)) setRounds(1); }}
                   className="w-full px-4 py-3 bg-panel border border-brd rounded-lg text-light font-mono text-[0.95rem] outline-none transition-all duration-150 focus:border-primary focus:shadow-[0_0_0_3px_rgba(0,229,199,0.15)] placeholder:text-dim"
                 />
               </div>

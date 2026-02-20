@@ -11,6 +11,7 @@ export default function Finished({
   playerName,
   onRestart,
   onViewCode,
+  onSkipBreak,
   breakRemaining,
   currentRound,
   totalRounds,
@@ -193,6 +194,14 @@ export default function Finished({
             className="inline-flex items-center justify-center gap-2 px-7 py-3 bg-primary text-inverse font-display text-[0.85rem] font-semibold tracking-[0.1em] uppercase rounded-lg transition-all duration-150 hover:bg-primary-bright hover:shadow-glow hover:-translate-y-px"
           >
             Play Again
+          </button>
+        )}
+        {roundOver && isHost && (
+          <button
+            onClick={onSkipBreak}
+            className="inline-flex items-center justify-center gap-2 px-7 py-3 bg-primary text-inverse font-display text-[0.85rem] font-semibold tracking-[0.1em] uppercase rounded-lg transition-all duration-150 hover:bg-primary-bright hover:shadow-glow hover:-translate-y-px"
+          >
+            Continue
           </button>
         )}
         <button

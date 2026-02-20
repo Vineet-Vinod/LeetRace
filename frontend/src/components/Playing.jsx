@@ -75,6 +75,10 @@ export default function Playing({
   playerName,
   onSubmit,
   onLock,
+  onResign,
+  resigned,
+  resignCount,
+  resignTotal,
   code,
   setCode,
   currentRound,
@@ -254,6 +258,13 @@ export default function Playing({
               </span>
             ) : (
               <>
+                <button
+                  onClick={onResign}
+                  disabled={resigned}
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-transparent text-muted border border-brd font-display text-[0.8rem] font-semibold tracking-[0.08em] uppercase rounded transition-all duration-150 hover:text-err hover:border-err/40 hover:bg-err/8 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-muted disabled:hover:border-brd disabled:hover:bg-transparent"
+                >
+                  {resignCount > 0 ? `Resign (${resignCount}/${resignTotal})` : 'Resign'}
+                </button>
                 <button
                   onClick={handleSubmit}
                   disabled={submitCooldown}

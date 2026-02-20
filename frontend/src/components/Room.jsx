@@ -19,6 +19,9 @@ const initialState = {
   breakRemaining: 0,
   roundOver: false,
   finalRankings: null,
+  resigned: false,
+  resignCount: 0,
+  resignTotal: 0,
 };
 
 function gameReducer(state, action) {
@@ -44,6 +47,9 @@ function gameReducer(state, action) {
         currentRound: action.payload.current_round,
         totalRounds: action.payload.total_rounds,
         breakRemaining: 0,
+        resigned: false,
+        resignCount: 0,
+        resignTotal: 0,
       };
 
     case 'SUBMIT_RESULT':
@@ -54,6 +60,12 @@ function gameReducer(state, action) {
 
     case 'LOCKED':
       return { ...state, locked: true };
+
+    case 'RESIGNED':
+      return { ...state, resigned: true };
+
+    case 'RESIGN_UPDATE':
+      return { ...state, resignCount: action.payload.count, resignTotal: action.payload.total };
 
     case 'ROUND_OVER':
       return {
@@ -128,6 +140,14 @@ export default function Room() {
 
       case 'locked':
         dispatch({ type: 'LOCKED' });
+        break;
+
+      case 'resigned':
+        dispatch({ type: 'RESIGNED' });
+        break;
+
+      case 'resign_update':
+        dispatch({ type: 'RESIGN_UPDATE', payload: msg });
         break;
 
       case 'round_over':
@@ -226,6 +246,10 @@ export default function Room() {
           playerName={playerName}
           onSubmit={() => {}}
           onLock={() => {}}
+          onResign={() => {}}
+          resigned={false}
+          resignCount={0}
+          resignTotal={0}
           code={code}
           setCode={() => {}}
           currentRound={state.currentRound}
@@ -274,6 +298,10 @@ export default function Room() {
           playerName={playerName}
           onSubmit={(c) => send({ type: 'submit', code: c })}
           onLock={() => send({ type: 'lock' })}
+          onResign={() => send({ type: 'resign' })}
+          resigned={state.resigned}
+          resignCount={state.resignCount}
+          resignTotal={state.resignTotal}
           code={code}
           setCode={setCode}
           currentRound={state.currentRound}
@@ -289,6 +317,7 @@ export default function Room() {
           isHost={isHost}
           playerName={playerName}
           onRestart={() => send({ type: 'restart' })}
+          onSkipBreak={() => send({ type: 'skip_break' })}
           onViewCode={() => setReviewMode(true)}
           breakRemaining={state.breakRemaining}
           currentRound={state.currentRound}

@@ -27,6 +27,7 @@ def _reset_players(room: Room) -> None:
         player.submission = None
         player.best_submission = None
         player.locked_at = None
+        player.resigned = False
 
 
 async def broadcast(room: Room, message: dict) -> None:
@@ -183,6 +184,34 @@ async def handle_lock(ws: WebSocket, room: Room, player_name: str) -> None:
 
     # If all players are locked in, end the round early
     if all(p.locked_at is not None for p in room.players.values()):
+        await end_game(room)
+
+
+async def handle_resign(ws: WebSocket, room: Room, player_name: str) -> None:
+    """Handle a player voting to resign (end the round early)."""
+    if room.state != RoomState.PLAYING:
+        return
+
+    player = room.players.get(player_name)
+    if not player:
+        return
+    if player.resigned:
+        await send_error(ws, "Already resigned")
+        return
+
+    player.resigned = True
+
+    if player.websocket:
+        await player.websocket.send_json({"type": "resigned"})
+
+    total = len(room.players)
+    count = sum(1 for p in room.players.values() if p.resigned)
+
+    await broadcast(
+        room, {"type": "resign_update", "count": count, "total": total}
+    )
+
+    if all(p.resigned for p in room.players.values()):
         await end_game(room)
 
 
@@ -441,6 +470,17 @@ async def websocket_handler(ws: WebSocket, room_id: str) -> None:
 
             elif msg_type == "lock" and player_name:
                 await handle_lock(ws, room, player_name)
+
+            elif msg_type == "resign" and player_name:
+                await handle_resign(ws, room, player_name)
+
+            elif msg_type == "skip_break" and player_name:
+                if player_name != room.host:
+                    await send_error(ws, "Only the host can skip the break")
+                elif room.state != RoomState.FINISHED or room.current_round >= room.total_rounds:
+                    await send_error(ws, "Cannot skip break right now")
+                else:
+                    await start_next_round(room)
 
             elif msg_type == "restart" and player_name:
                 await handle_restart(ws, room, player_name)
