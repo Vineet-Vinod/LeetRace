@@ -16,6 +16,7 @@ from server.problems import load_index
 from server.ws import websocket_handler
 
 STATIC_DIR = Path(__file__).resolve().parent.parent / "static"
+DIST_DIR = Path(__file__).resolve().parent.parent / "frontend" / "dist"
 
 logger = logging.getLogger(__name__)
 
@@ -139,14 +140,20 @@ async def ws_endpoint(ws: WebSocket, room_id: str):
 
 @app.get("/")
 async def index():
+    if DIST_DIR.is_dir():
+        return FileResponse(DIST_DIR / "index.html")
     return FileResponse(STATIC_DIR / "index.html")
 
 
 @app.get("/room")
 async def room_page():
+    if DIST_DIR.is_dir():
+        return FileResponse(DIST_DIR / "index.html")
     return FileResponse(STATIC_DIR / "room.html")
 
 
 # --- Static files (CSS, JS) ---
 
+if DIST_DIR.is_dir():
+    app.mount("/assets", StaticFiles(directory=str(DIST_DIR / "assets")), name="assets")
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
