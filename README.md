@@ -7,7 +7,7 @@ Multiplayer LeetCode racing webapp. Create a room, invite friends, and race to s
 1. **Create a room** — pick a difficulty (Easy / Medium / Hard) and a time limit (1–10 min)
 2. **Share the 6-character room code** with other players
 3. **Race** — everyone gets the same problem and a Monaco code editor
-4. **Submit** — solutions run against 100+ hidden test cases in a sandboxed subprocess
+4. **Submit** — solutions run against 500–999 hidden test cases, or the complete legal domain for smaller problems
 5. **Rank** — solved it? fewest characters wins (code golf). Didn't solve it? most tests passed ranks higher
 
 ## Quick Start
@@ -20,20 +20,45 @@ python main.py
 
 Open `http://localhost:8000` in your browser.
 
-## Rebuilding the Problem Set
+## Problem set
 
-The repo ships with 2,637 problems downloaded from the [LeetCodeDataset](https://huggingface.co/datasets/newfacade/LeetCodeDataset) on HuggingFace. To rebuild from scratch:
-
-```bash
-uv pip install datasets
-python scripts/build_problems.py
-```
+The corpus originated from [LeetCodeDataset](https://huggingface.co/datasets/newfacade/LeetCodeDataset).
+The bundled problems are maintained with local reference solutions and input generators.
 
 | Difficulty | Count |
 |------------|-------|
-| Easy       | 637   |
-| Medium     | 1,395 |
-| Hard       | 605   |
+| Easy       | 583   |
+| Medium     | 1,315 |
+| Hard       | 571   |
+
+## Corpus maintenance
+
+Each retained problem has a Python reference solution in `corpus/solutions/` and
+a seeded input generator in `corpus/generators/`. Generators produce 500–999
+distinct inputs, or enumerate the complete legal domain when it is smaller.
+Statements specify output ordering and tie rules, and use Markdown.
+
+Rebuild a problem's expected outputs from its reference solution:
+
+```bash
+uv run task corpus build two-sum
+```
+
+The build checks input uniqueness, computes expected outputs, and verifies the
+full suite in the submission sandbox before writing the JSON. Mutation wrappers
+check both the return value and the required changed state. Large literal inputs
+and expected lists use lossless compressed JSON; comparison still checks the
+exact order and values.
+
+```bash
+uv run task corpus verify           # Verify all bundled reference solutions
+uv run task corpus verify two-sum   # Verify one saved suite
+uv run task ci                     # Type checks, lint, and project tests
+```
+
+Repair reports and seeded random audit selections are saved under `corpus/`.
+Use these saved references to maintain the corpus; the older dataset-import
+scripts do not implement its deterministic output contracts.
 
 ## Architecture
 
@@ -56,8 +81,9 @@ leetrace/
 │       ├── room.js          # WebSocket client & game state
 │       └── editor.js        # Monaco editor wrapper
 ├── scripts/
-│   └── build_problems.py    # HuggingFace dataset → JSON files
-└── problems/                # 2,637 problem JSON files + index.json
+│   └── corpus.py            # Generate expected outputs and verify saved suites
+├── corpus/                  # Reference solutions, generators, and repair/audit reports
+└── problems/                # Problem JSON files + index.json
 ```
 
 ## API
@@ -78,6 +104,10 @@ User code runs in an isolated subprocess with hard limits:
 - **Wall clock**: 10 seconds
 - **File writes**: 1 MB
 - **Subprocesses**: none allowed
+
+These are the default limits. Problems with large finite output domains declare
+their own CPU and memory budgets. Each testcase gets a fresh solution instance,
+and comparisons preserve list ordering.
 
 ## Scoring
 

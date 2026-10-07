@@ -316,6 +316,21 @@ class TestHandleJoinDirect:
 
 
 class TestHandleSubmitDirect:
+    @pytest.mark.asyncio
+    async def test_description_does_not_enable_unordered_comparison(self):
+        room = self._playing_room()
+        room.problem = {
+            **FAKE_PROBLEM,
+            "description": "Inspect inputs in any order. Return indices in ascending order.",
+        }
+        room.players["Alice"] = Player(name="Alice")
+        reversed_answer = CORRECT_TWO_SUM.replace(
+            "[seen[target - n], i]", "[i, seen[target - n]]"
+        )
+        with patch.object(ws_module, "broadcast", new_callable=AsyncMock):
+            await ws_module.handle_submit(room, "Alice", {"code": reversed_answer})
+        assert room.players["Alice"].submission["solved"] is False
+
     def _playing_room(self):
         room = create_room(host_name="Alice")
         room.state = RoomState.PLAYING

@@ -39,7 +39,7 @@ rebuild:
 
 ## verify: Check the integrity of the problem dataset
 verify:
-	uv run python scripts/verify.py
+	uv run task corpus verify
 
 ## dev-backend: Start the FastAPI backend server (alias for serve)
 dev-backend:

@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import CodeEditor from './CodeEditor';
 
 function formatTimer(seconds) {
@@ -304,9 +306,11 @@ export default function Playing({
           </div>
           {/* Problem Description */}
           <div className="flex-1 overflow-y-auto px-5 py-5 font-body text-[0.88rem] leading-[1.7] text-muted">
-            <pre className="whitespace-pre-wrap break-words font-[inherit] m-0">
-              {problem?.description}
-            </pre>
+            <div className="problem-description break-words">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {problem?.description || ''}
+              </ReactMarkdown>
+            </div>
           </div>
         </div>
 

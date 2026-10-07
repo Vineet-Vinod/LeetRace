@@ -39,7 +39,7 @@ _MAX_CHILD_PROCESSES = 0  # no forking
 
 
 RUNNER_SCRIPT = textwrap.dedent("""\
-    import json, sys, time, re
+    import ast, base64, json, math, sys, time, re, zlib
     from collections import deque
 
     # --- TreeNode helpers ---
@@ -82,11 +82,17 @@ RUNNER_SCRIPT = textwrap.dedent("""\
         return root
 
     def is_same_tree(a, b):
-        if a is None and b is None:
-            return True
-        if a is None or b is None:
-            return False
-        return a.val == b.val and is_same_tree(a.left, b.left) and is_same_tree(a.right, b.right)
+        pending = [(a, b)]
+        while pending:
+            left, right = pending.pop()
+            if left is None or right is None:
+                if left is not right:
+                    return False
+                continue
+            if left.val != right.val:
+                return False
+            pending.extend(((left.left, right.left), (left.right, right.right)))
+        return True
 
     # --- ListNode helpers ---
     class ListNode:
@@ -115,8 +121,25 @@ RUNNER_SCRIPT = textwrap.dedent("""\
             a, b = a.next, b.next
         return a is None and b is None
 
-    def strip_kwargs(tc):
-        return re.sub(r'(?<=[\\(,])\\s*\\w+\\s*=\\s*(?!=)', ' ', tc)
+    def prepare_test(raw, any_order):
+        tree = ast.parse(raw)
+        statement = tree.body[0]
+        test = statement.test if isinstance(statement, ast.Assert) else None
+        equality = isinstance(test, ast.Compare) and len(test.ops) == 1 and isinstance(test.ops[0], ast.Eq)
+        call = test.left if equality else tree
+        for node in ast.walk(call):
+            if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == 'candidate':
+                if all(keyword.arg is not None for keyword in node.keywords):
+                    node.args.extend(keyword.value for keyword in node.keywords)
+                    node.keywords = []
+        if equality:
+            comparison = 'flex_eq' if any_order else 'normalize_eq'
+            tree.body[0:1] = [
+                ast.Assign(targets=[ast.Name(id='_actual_', ctx=ast.Store())], value=test.left),
+                ast.Assign(targets=[ast.Name(id='_expected_', ctx=ast.Store())], value=test.comparators[0]),
+                ast.parse(f"assert {comparison}(_actual_, _expected_), 'Expected ' + repr(_expected_) + ' but got ' + repr(_actual_)").body[0],
+            ]
+        return compile(ast.fix_missing_locations(tree), '<testcase>', 'exec')
 
     def _normalize(x):
         if isinstance(x, (list, tuple)):
@@ -147,29 +170,27 @@ RUNNER_SCRIPT = textwrap.dedent("""\
     def normalize_eq(a, b):
         return _normalize(a) == _normalize(b)
 
-    def use_flex_eq(tc):
-        m = re.match(r'assert\\s+(.+?)\\s*==\\s*(.+)$', tc)
-        if m:
-            call = m.group(1)
-            expected = m.group(2)
-            return f"_actual_ = {call}; _expected_ = {expected}; assert flex_eq(_actual_, _expected_), 'Expected ' + repr(_expected_) + ' but got ' + repr(_actual_)"
-        return tc
+    def expected_output(payload):
+        return json.loads(zlib.decompress(base64.b64decode(payload)))
 
-    def use_normalize_eq(tc):
-        m = re.match(r'assert\\s+(.+?)\\s*==\\s*(.+)$', tc)
-        if m:
-            call = m.group(1)
-            expected = m.group(2)
-            return f"_actual_ = {call}; _expected_ = {expected}; assert normalize_eq(_actual_, _expected_), 'Expected ' + repr(_expected_) + ' but got ' + repr(_actual_)"
-        return tc
+    test_data = expected_output
+
+    def is_close(actual, expected, absolute_tolerance, relative_tolerance=0.0):
+        if isinstance(expected, float):
+            if isinstance(actual, bool) or not isinstance(actual, (int, float)):
+                return False
+            return math.isfinite(actual) and math.isfinite(expected) and math.isclose(
+                actual, expected, abs_tol=absolute_tolerance, rel_tol=relative_tolerance)
+        if isinstance(expected, (list, tuple)):
+            return isinstance(actual, (list, tuple)) and len(actual) == len(expected) and all(
+                is_close(a, b, absolute_tolerance, relative_tolerance) for a, b in zip(actual, expected))
+        return actual == expected
 
     data = json.loads(sys.stdin.read())
     code = data["code"]
     entry_point = data["entry_point"]
     any_order = data.get("any_order", False)
-    transform = use_flex_eq if any_order else use_normalize_eq
-    orig_test_cases = data["test_cases"]
-    test_cases = [transform(strip_kwargs(tc)) for tc in orig_test_cases]
+    test_cases = data["test_cases"]
     preamble = data.get("preamble", "")
 
     import io
@@ -191,6 +212,7 @@ RUNNER_SCRIPT = textwrap.dedent("""\
             exec(preamble, namespace)
         except Exception:
             pass
+    namespace["pow"] = pow
 
     # Execute user code
     try:
@@ -233,6 +255,9 @@ RUNNER_SCRIPT = textwrap.dedent("""\
     test_ns["candidate"] = candidate
     test_ns["flex_eq"] = flex_eq
     test_ns["normalize_eq"] = normalize_eq
+    test_ns["expected_output"] = expected_output
+    test_ns["test_data"] = test_data
+    test_ns["is_close"] = is_close
     test_ns["tree_node"] = tree_node
     test_ns["list_node"] = list_node
     test_ns["is_same_tree"] = is_same_tree
@@ -245,18 +270,22 @@ RUNNER_SCRIPT = textwrap.dedent("""\
 
     def _parse_raw_tc(raw):
         \"\"\"Extract the named args and expected value from a raw test case.\"\"\"
-        m = re.match(r'assert\\s+candidate\\((.*)\\)\\s*==\\s*(.+)$', raw)
-        if m:
-            return m.group(1).strip(), m.group(2).strip()
-        # Fallback: try without 'candidate(' wrapper
-        m2 = re.match(r'assert\\s+(.+?)\\s*==\\s*(.+)$', raw)
-        if m2:
-            return m2.group(1).strip(), m2.group(2).strip()
+        statement = ast.parse(raw).body[0]
+        if isinstance(statement, ast.Assert) and isinstance(statement.test, ast.Compare):
+            test = statement.test
+            if len(test.ops) == 1 and isinstance(test.ops[0], ast.Eq):
+                call = ast.unparse(test.left)
+                if call.startswith('candidate('):
+                    call = call[len('candidate('):-1]
+                return call, ast.unparse(test.comparators[0])
         return re.sub(r'^assert\\s+', '', raw).strip(), None
 
-    for orig_tc, tc in zip(orig_test_cases, test_cases):
+    for orig_tc in test_cases:
+        test_ns.pop('_actual_', None)
+        test_ns.pop('_expected_', None)
         try:
-            exec(tc, test_ns)
+            test_ns['candidate'] = eval(entry_point, namespace)
+            exec(prepare_test(orig_tc, any_order), test_ns)
             passed += 1
         except AssertionError as e:
             if first_error is None:
@@ -287,17 +316,15 @@ RUNNER_SCRIPT = textwrap.dedent("""\
 """)
 
 
-def _set_limits():
+def _set_limits(
+    cpu_seconds: int = _CPU_LIMIT_SECONDS, memory_bytes: int = _MEMORY_LIMIT_BYTES
+):
     """Set POSIX resource limits for the child process (Linux and macOS)."""
     try:
         import resource
 
-        resource.setrlimit(
-            resource.RLIMIT_CPU, (_CPU_LIMIT_SECONDS, _CPU_LIMIT_SECONDS)
-        )
-        resource.setrlimit(
-            resource.RLIMIT_AS, (_MEMORY_LIMIT_BYTES, _MEMORY_LIMIT_BYTES)
-        )
+        resource.setrlimit(resource.RLIMIT_CPU, (cpu_seconds, cpu_seconds))
+        resource.setrlimit(resource.RLIMIT_AS, (memory_bytes, memory_bytes))
         resource.setrlimit(
             resource.RLIMIT_FSIZE, (_FILE_SIZE_LIMIT_BYTES, _FILE_SIZE_LIMIT_BYTES)
         )
@@ -317,6 +344,8 @@ def _run_sync(
     test_cases: list[str],
     preamble: str = "",
     any_order: bool = False,
+    time_limit_seconds: int = _CPU_LIMIT_SECONDS,
+    memory_limit_mb: int = _MEMORY_LIMIT_BYTES // (1024 * 1024),
 ) -> dict:
     """Synchronous sandbox execution."""
     payload = json.dumps(
@@ -329,6 +358,7 @@ def _run_sync(
         }
     )
 
+    wall_timeout = max(_SUBPROCESS_TIMEOUT_SECONDS, time_limit_seconds + 5)
     start = time.monotonic()
     try:
         proc = subprocess.run(
@@ -336,8 +366,10 @@ def _run_sync(
             input=payload,
             capture_output=True,
             text=True,
-            timeout=_SUBPROCESS_TIMEOUT_SECONDS,
-            preexec_fn=_set_limits,
+            timeout=wall_timeout,
+            preexec_fn=lambda: _set_limits(
+                time_limit_seconds, memory_limit_mb * 1024 * 1024
+            ),
         )
         elapsed_ms = int((time.monotonic() - start) * 1000)
 
@@ -360,7 +392,7 @@ def _run_sync(
         return {
             "passed": 0,
             "total": len(test_cases),
-            "error": f"Time limit exceeded ({_SUBPROCESS_TIMEOUT_SECONDS}s)",
+            "error": f"Time limit exceeded ({wall_timeout}s)",
             "first_failure": None,
             "time_ms": elapsed_ms,
         }
@@ -390,6 +422,8 @@ async def run_code(
     test_cases: list[str],
     preamble: str = "",
     any_order: bool = False,
+    time_limit_seconds: int = _CPU_LIMIT_SECONDS,
+    memory_limit_mb: int = _MEMORY_LIMIT_BYTES // (1024 * 1024),
 ) -> dict:
     """Run user code in a sandbox. Returns {passed, total, error, time_ms}."""
     # Acquire the semaphore before spawning the subprocess so that at most
@@ -398,5 +432,12 @@ async def run_code(
     # CPU-bound subprocess execution is counted against the limit.
     async with _submission_semaphore:
         return await asyncio.to_thread(
-            _run_sync, code, entry_point, test_cases, preamble, any_order
+            _run_sync,
+            code,
+            entry_point,
+            test_cases,
+            preamble,
+            any_order,
+            time_limit_seconds,
+            memory_limit_mb,
         )
