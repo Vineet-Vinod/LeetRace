@@ -33,6 +33,15 @@ PREAMBLE = "from typing import *\nfrom collections import *\nfrom functools impo
 
 
 class TestCorrectCode:
+    def test_math_preamble_preserves_builtin_modular_pow(self):
+        result = _run_sync(
+            "def f(): return pow(2, 10, 1000)",
+            "f",
+            ["assert candidate() == 24"],
+            "from math import *",
+        )
+        assert result["passed"] == 1
+
     def test_two_sum_solution_passes_all_cases(self):
         code = """
 class Solution:
@@ -275,6 +284,49 @@ class TestRuntimeExceptions:
 
 
 class TestEntryPoint:
+    def test_solution_instance_is_fresh_for_each_case(self):
+        code = """
+class Solution:
+    def __init__(self):
+        self.total = 0
+    def solve(self, n):
+        self.total += n
+        return self.total
+"""
+        result = _run_sync(
+            code,
+            "Solution().solve",
+            [
+                "assert candidate(2) == 2",
+                "assert candidate(3) == 3",
+            ],
+        )
+        assert result["passed"] == 2
+
+    def test_testcase_parsing_preserves_string_contents(self):
+        code = "def echo(value): return value"
+        result = _run_sync(
+            code,
+            "echo",
+            [
+                "assert candidate(s='hello, x=1 == 2') == 'hello, x=1 == 2'",
+            ],
+        )
+        assert result["passed"] == 1
+
+    def test_runtime_failure_does_not_reuse_previous_actual(self):
+        code = "def divide(n): return 6 // n"
+        result = _run_sync(
+            code,
+            "divide",
+            [
+                "assert candidate(2) == 3",
+                "assert candidate(0) == 0",
+            ],
+        )
+        assert result["passed"] == 1
+        assert "ZeroDivisionError" in result["first_failure"]["actual"]
+
     def test_unknown_entry_point_returns_error(self):
         code = "def f(x): return x"
         result = _run_sync(code, "does_not_exist_xyz", ["assert candidate(1) == 1"])
@@ -305,6 +357,39 @@ class Solution:
 
 
 class TestEdgeCases:
+    @pytest.mark.parametrize(
+        ("answer", "passed"),
+        [
+            ("[1.000009, 2.0]", 1),
+            ("[2.0, 1.000009]", 0),
+            ("[1.00002, 2.0]", 0),
+            ("[True, 2.0]", 0),
+            ("[float('nan'), 2.0]", 0),
+            ("[1.0]", 0),
+        ],
+    )
+    def test_float_sequences_keep_order_and_tolerance(self, answer, passed):
+        result = _run_sync(
+            f"def f(): return {answer}",
+            "f",
+            ["assert is_close(candidate(), [1.0, 2.0], 1e-5)"],
+        )
+        assert result["passed"] == passed
+
+    def test_compressed_expected_output_requires_exact_order(self):
+        import base64
+        import json
+        import zlib
+
+        encoded = base64.b64encode(
+            zlib.compress(json.dumps([[1, 2], [3, 4]]).encode())
+        ).decode()
+        tests = [f"assert candidate() == expected_output({encoded!r})"]
+        correct = _run_sync("def f(): return [[1, 2], [3, 4]]", "f", tests)
+        wrong = _run_sync("def f(): return [[2, 1], [3, 4]]", "f", tests)
+        assert correct["passed"] == 1
+        assert wrong["passed"] == 0
+
     def test_empty_test_cases_list(self):
         result = _run_sync("def f(x): return x", "f", [])
         assert result["passed"] == 0

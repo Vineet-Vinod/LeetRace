@@ -8,7 +8,8 @@ Tests cover:
 - scoreboard_msg: message structure
 """
 
-from server.ws import fix_exponents, _is_better, room_state_msg, scoreboard_msg
+from server.ws import _is_better, room_state_msg, scoreboard_msg
+from server.utils import fix_exponents
 from server.rooms import Room, RoomState, Player
 
 

@@ -13,7 +13,6 @@ from server.rooms import Player, Room, RoomState, get_room, remove_room
 from server.problems import pick_random
 from server.sandbox import run_code
 from server.scoring import rank_players
-from server.utils import fix_exponents, fix_subscripts
 
 logger = logging.getLogger(__name__)
 
@@ -254,7 +253,7 @@ async def _begin_round(room: Room, problem: dict, round_number: int) -> None:
                 "id": problem["id"],
                 "title": problem["title"],
                 "difficulty": problem["difficulty"],
-                "description": fix_subscripts(fix_exponents(problem["description"])),
+                "description": problem["description"],
                 "entry_point": problem["entry_point"],
                 "starter_code": problem["starter_code"],
             },
@@ -327,17 +326,13 @@ async def handle_submit(room: Room, player_name: str, data: dict) -> None:
     char_count = len(code)
     submit_time = time.time() - room.start_time
 
-    # Heuristic: detect problems where result order doesn't matter by scanning the
-    # description for "any order". This can produce false positives for problems
-    # that mention the phrase in a different context. A more robust approach would
-    # store this as an explicit boolean field in the problem JSON at build time.
-    any_order = "any order" in room.problem.get("description", "").lower()
     result = await run_code(
         code=code,
         entry_point=room.problem["entry_point"],
         test_cases=room.problem["test_cases"],
         preamble=room.problem.get("preamble", ""),
-        any_order=any_order,
+        time_limit_seconds=room.problem.get("time_limit_seconds", 5),
+        memory_limit_mb=room.problem.get("memory_limit_mb", 256),
     )
 
     solved = result["passed"] == result["total"] and result["total"] > 0
