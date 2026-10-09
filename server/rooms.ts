@@ -24,6 +24,7 @@ interface Room {
   totalRounds: number;
   currentRound: number;
   problem: Problem | null;
+  lastProblemId?: string;
   startedAt: number;
   breakUntil: number | null;
   touchedAt: number;
@@ -180,9 +181,10 @@ export class RoomStore {
   }
 
   private beginRound(room: Room) {
-    const problem = this.pickProblem(room.difficulty, room.problem?.id);
+    const problem = this.pickProblem(room.difficulty, room.lastProblemId);
     for (const [token, player] of room.players) room.players.set(token, freshPlayer(player.name));
     room.problem = problem;
+    room.lastProblemId = problem.id;
     room.state = 'playing';
     room.currentRound += 1;
     room.startedAt = this.now();

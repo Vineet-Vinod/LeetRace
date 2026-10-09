@@ -97,6 +97,22 @@ describe('game rooms', () => {
     expect(snapshot.me.submission).toBeNull();
   });
 
+  it('selects a different problem after replaying while clearing the lobby problem', () => {
+    const nextProblem = { ...problem, id: 'next', title: 'Next problem' };
+    const store = new RoomStore((_difficulty, previousId) => previousId === problem.id ? nextProblem : problem);
+    const host = store.create({ name: 'Dark', timeLimit: 30, difficulty: 'Easy', rounds: 1 });
+    store.start(host.roomId, host.token);
+    expect(store.snapshot(host.roomId, host.token).problem?.id).toBe('sum');
+    store.resign(host.roomId, host.token);
+    store.restart(host.roomId, host.token);
+    expect(store.snapshot(host.roomId, host.token).problem).toBeNull();
+    store.start(host.roomId, host.token);
+    const replay = store.snapshot(host.roomId, host.token);
+    expect(replay.problem?.id).toBe('next');
+    expect(replay.difficulty).toBe('Easy');
+    expect(replay.currentRound).toBe(1);
+  });
+
   it('rejects concurrent submissions and discards results from an old round', async () => {
     let finish: ((value: SubmissionResult) => void) | undefined;
     const execution = new Promise<SubmissionResult>((resolve) => { finish = resolve; });
