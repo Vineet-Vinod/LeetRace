@@ -1,27 +1,77 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { api, errorMessage, saveSession, type RouterInputs } from "../api";
 
 type Difficulty = RouterInputs["createRoom"]["difficulty"];
 
-const DIFFICULTIES: {
-  value: Difficulty;
-  label: string;
-  style: keyof typeof diffActiveClass;
-}[] = [
-  { value: null, label: "Any", style: "active-any" },
-  { value: "Easy", label: "Easy", style: "active-easy" },
-  { value: "Medium", label: "Medium", style: "active-med" },
-  { value: "Hard", label: "Hard", style: "active-hard" },
+const DIFFICULTIES: { value: Difficulty; label: string; tone: string }[] = [
+  { value: null, label: "Any", tone: "bg-pit-blue text-carbon" },
+  { value: "Easy", label: "Easy", tone: "bg-sector-green text-carbon" },
+  { value: "Medium", label: "Medium", tone: "bg-sector-yellow text-carbon" },
+  { value: "Hard", label: "Hard", tone: "bg-signal text-white" },
 ];
 
-const diffActiveClass = {
-  "active-any": "bg-accent/12 border-accent/30 text-accent-bright",
-  "active-easy": "bg-ok/12 border-ok/30 text-ok",
-  "active-med": "bg-warn/12 border-warn/30 text-warn",
-  "active-hard": "bg-err/12 border-err/30 text-err",
-};
+const ease = [0.16, 1, 0.3, 1] as const;
+
+function Stepper({
+  label,
+  value,
+  step,
+  min,
+  max,
+  unit,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  step: number;
+  min: number;
+  max: number;
+  unit: string;
+  onChange: (value: number) => void;
+}) {
+  const set = (next: number) =>
+    onChange(Math.min(max, Math.max(min, Math.round(next / step) * step)));
+  return (
+    <div className="flex-1 flex flex-col gap-2">
+      <span className="label">{label}</span>
+      <div className="flex h-11 border border-line bg-pit focus-within:border-signal">
+        <button
+          type="button"
+          aria-label={`Decrease ${label}`}
+          onClick={() => set(value - step)}
+          disabled={value <= min}
+          className="w-10 text-ink-muted hover:text-ink hover:bg-raised disabled:opacity-30"
+        >
+          −
+        </button>
+        <label className="flex-1 flex items-baseline justify-center gap-1.5 border-x border-line">
+          <input
+            aria-label={label}
+            type="number"
+            min={min}
+            max={max}
+            step={step}
+            value={value}
+            onChange={(event) => set(event.target.valueAsNumber || min)}
+            className="w-12 bg-transparent text-center font-display text-xl font-semibold italic outline-none self-center"
+          />
+          <span className="label self-center -ml-1">{unit}</span>
+        </label>
+        <button
+          type="button"
+          aria-label={`Increase ${label}`}
+          onClick={() => set(value + step)}
+          disabled={value >= max}
+          className="w-10 text-ink-muted hover:text-ink hover:bg-raised disabled:opacity-30"
+        >
+          +
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -37,7 +87,7 @@ export default function Landing() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!name.trim()) {
-      setError("Enter your name.");
+      setError("Enter your driver name.");
       return;
     }
     setError("");
@@ -65,203 +115,224 @@ export default function Landing() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-5 py-10 relative">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-[radial-gradient(circle,rgba(0,229,199,0.06)_0%,transparent_70%)] pointer-events-none" />
-      <motion.h1
-        initial={{ opacity: 0, y: -20, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="font-display font-bold tracking-[0.25em] uppercase text-light relative z-10 mb-1"
-        style={{ fontSize: "clamp(2.6rem, 6vw, 4.2rem)" }}
-      >
-        LEET
-        <span
-          className="text-primary"
-          style={{ textShadow: "0 0 30px rgba(0,229,199,0.3)" }}
-        >
-          RACE
-        </span>
-      </motion.h1>
-
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.25, duration: 0.5 }}
-        className="font-display text-dim tracking-[0.3em] uppercase mb-12 relative z-10"
-        style={{ fontSize: "clamp(0.7rem, 1.5vw, 0.9rem)" }}
-      >
-        Race to solve &middot; Code to win
-      </motion.p>
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full max-w-[480px] bg-surface/75 border border-brd rounded-2xl p-9 backdrop-blur-2xl shadow-panel relative z-10"
-      >
-        <div className="mb-7">
-          <label className="block font-display text-[0.72rem] font-semibold tracking-[0.14em] uppercase text-muted mb-2">
-            Your Name
-          </label>
-          <input
-            aria-label="Your name"
-            required
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            maxLength={20}
-            placeholder="Enter your name..."
-            className="w-full px-4 py-3 bg-panel border border-brd rounded-lg text-light font-body text-[0.95rem] outline-none transition-all duration-150 focus:border-primary focus:shadow-[0_0_0_3px_rgba(0,229,199,0.15)] placeholder:text-dim"
-          />
-        </div>
-        <div className="flex border-b border-brd mb-7 relative">
-          {(["create", "join"] as const).map((t) => (
-            <button
-              key={t}
-              onClick={() => {
-                setTab(t);
-                setError("");
-              }}
-              className={`flex-1 py-3 bg-transparent border-none font-display text-[0.82rem] font-semibold tracking-[0.1em] uppercase cursor-pointer transition-colors duration-150 ${
-                tab === t ? "text-primary" : "text-dim hover:text-muted"
-              }`}
-            >
-              {t === "create" ? "Create Room" : "Join Room"}
-            </button>
-          ))}
-          <motion.div
-            className="absolute bottom-[-1px] left-0 h-[2px] bg-primary"
-            style={{ boxShadow: "0 0 10px rgba(0,229,199,0.25)", width: "50%" }}
-            animate={{ x: tab === "create" ? "0%" : "100%" }}
-            transition={{ type: "spring", stiffness: 500, damping: 30 }}
-          />
-        </div>
-        {tab === "create" && (
-          <motion.form
-            key="create"
-            initial={{ opacity: 0, x: -12 }}
+    <div className="min-h-screen flex flex-col">
+      <div className="kerb h-1.5 opacity-90" />
+      <main className="flex-1 grid lg:grid-cols-[1.1fr_1fr] items-center gap-12 px-6 py-12 lg:px-16 max-w-7xl w-full mx-auto">
+        <section className="relative">
+          <div className="speed-lines absolute -inset-x-16 -inset-y-10 pointer-events-none [mask-image:linear-gradient(90deg,black,transparent)]" />
+          <motion.p
+            initial={{ opacity: 0, x: -16 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.25 }}
-            onSubmit={handleSubmit}
-            className="flex flex-col gap-5"
+            transition={{ duration: 0.5, ease }}
+            className="relative flex items-center gap-3 label text-signal mb-5"
           >
-            <div className="flex flex-col gap-1.5">
-              <label className="font-display text-[0.72rem] font-medium tracking-[0.12em] uppercase text-muted">
-                Difficulty
-              </label>
-              <div className="flex gap-1.5">
-                {DIFFICULTIES.map((d) => (
-                  <button
-                    key={d.label}
-                    type="button"
-                    onClick={() => setDifficulty(d.value)}
-                    className={`flex-1 py-2.5 px-2 bg-panel border border-brd rounded text-center font-display text-[0.72rem] font-semibold tracking-[0.08em] uppercase cursor-pointer transition-all duration-150 ${
-                      difficulty === d.value
-                        ? diffActiveClass[d.style]
-                        : "text-muted hover:border-brd-light hover:text-light"
-                    }`}
-                  >
-                    {d.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="flex gap-3.5">
-              <div className="flex-1 flex flex-col gap-1.5">
-                <label className="font-display text-[0.72rem] font-medium tracking-[0.12em] uppercase text-muted">
-                  Time (min)
-                </label>
-                <input
-                  aria-label="Time in minutes"
-                  type="number"
-                  min={1}
-                  max={60}
-                  step={0.5}
-                  value={timeLimit}
-                  onChange={(e) => {
-                    setTimeLimit(e.target.valueAsNumber || 1);
-                  }}
-                  className="w-full px-4 py-3 bg-panel border border-brd rounded-lg text-light font-mono text-[0.95rem] outline-none transition-all duration-150 focus:border-primary focus:shadow-[0_0_0_3px_rgba(0,229,199,0.15)] placeholder:text-dim"
+            <span className="flex gap-1">
+              {[0, 1, 2, 3, 4].map((light) => (
+                <span
+                  key={light}
+                  className="size-2.5 rounded-full animate-light-on"
+                  style={{ animationDelay: `${light * 0.18}s` }}
                 />
+              ))}
+            </span>
+            Lights out and away we go
+          </motion.p>
+          <motion.h1
+            initial={{ opacity: 0, x: -40 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.7, ease }}
+            className="relative font-display font-extrabold italic uppercase leading-[0.82] tracking-tight"
+            style={{ fontSize: "clamp(4.5rem, 11vw, 9rem)" }}
+          >
+            Leet
+            <br />
+            <span className="text-signal">Race</span>
+            <span className="inline-block w-[0.5em] h-[0.12em] ml-3 align-middle bg-ink -skew-x-12" />
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.6 }}
+            className="relative mt-7 max-w-md text-ink-muted text-lg leading-relaxed"
+          >
+            Same problem, same clock. Pass every test, then trim your Python
+            down: the shortest solution takes pole.
+          </motion.p>
+          <motion.dl
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.45, duration: 0.6, ease }}
+            className="relative mt-10 grid grid-cols-3 max-w-md border-l-2 border-signal"
+          >
+            {[
+              ["20", "Drivers per room"],
+              ["10", "Rounds per race"],
+              ["1", "Shortest wins"],
+            ].map(([value, label]) => (
+              <div key={label} className="px-4 border-r border-line">
+                <dt className="label">{label}</dt>
+                <dd className="font-display text-3xl font-bold italic mt-1">
+                  {value}
+                </dd>
               </div>
-              <div className="flex-1 flex flex-col gap-1.5">
-                <label className="font-display text-[0.72rem] font-medium tracking-[0.12em] uppercase text-muted">
-                  Rounds
-                </label>
-                <input
-                  aria-label="Rounds"
-                  type="number"
-                  min={1}
-                  max={10}
-                  value={rounds}
-                  onChange={(e) => {
-                    setRounds(e.target.valueAsNumber || 1);
-                  }}
-                  className="w-full px-4 py-3 bg-panel border border-brd rounded-lg text-light font-mono text-[0.95rem] outline-none transition-all duration-150 focus:border-primary focus:shadow-[0_0_0_3px_rgba(0,229,199,0.15)] placeholder:text-dim"
-                />
-              </div>
-            </div>
+            ))}
+          </motion.dl>
+        </section>
 
+        <motion.section
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15, duration: 0.6, ease }}
+          className="relative w-full max-w-[460px] lg:justify-self-end bg-panel border border-line shadow-[0_30px_80px_-20px_rgba(0,0,0,0.8)]"
+        >
+          <div className="absolute -top-px left-0 h-[3px] w-24 bg-signal" />
+          <div className="grid grid-cols-2 border-b border-line">
+            {(["create", "join"] as const).map((value) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => {
+                  setTab(value);
+                  setError("");
+                }}
+                aria-pressed={tab === value}
+                className={`relative h-14 font-display text-sm font-semibold uppercase italic tracking-[0.18em] transition-colors ${
+                  tab === value ? "text-ink" : "text-ink-dim hover:text-ink-muted"
+                }`}
+              >
+                {value === "create" ? "Create room" : "Join room"}
+                {tab === value && (
+                  <motion.span
+                    layoutId="landing-tab"
+                    className="absolute inset-x-0 -bottom-px h-[3px] bg-signal"
+                    transition={{ type: "spring", stiffness: 500, damping: 36 }}
+                  />
+                )}
+              </button>
+            ))}
+          </div>
+          <form onSubmit={handleSubmit} className="p-7 flex flex-col gap-6">
+            <label className="flex flex-col gap-2">
+              <span className="label">Driver name</span>
+              <input
+                required
+                autoFocus
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                maxLength={20}
+                placeholder="e.g. Verstappen"
+                className="field font-display text-lg italic font-medium tracking-wide"
+              />
+            </label>
+            <AnimatePresence mode="wait" initial={false}>
+              {tab === "create" ? (
+                <motion.div
+                  key="create"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 10 }}
+                  transition={{ duration: 0.18 }}
+                  className="flex flex-col gap-6"
+                >
+                  <fieldset className="flex flex-col gap-2">
+                    <legend className="label mb-2">Difficulty</legend>
+                    <div className="grid grid-cols-4 gap-1.5">
+                      {DIFFICULTIES.map((option) => (
+                        <button
+                          key={option.label}
+                          type="button"
+                          aria-pressed={difficulty === option.value}
+                          onClick={() => setDifficulty(option.value)}
+                          className={`plate h-10 font-display text-sm font-semibold uppercase tracking-[0.12em] transition-colors ${
+                            difficulty === option.value
+                              ? option.tone
+                              : "bg-pit text-ink-muted hover:bg-raised hover:text-ink"
+                          }`}
+                        >
+                          <span className="block">{option.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </fieldset>
+                  <div className="flex gap-4">
+                    <Stepper
+                      label="Lap time"
+                      unit="min"
+                      value={timeLimit}
+                      step={0.5}
+                      min={1}
+                      max={60}
+                      onChange={setTimeLimit}
+                    />
+                    <Stepper
+                      label="Rounds"
+                      unit="laps"
+                      value={rounds}
+                      step={1}
+                      min={1}
+                      max={10}
+                      onChange={setRounds}
+                    />
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.label
+                  key="join"
+                  initial={{ opacity: 0, x: 10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  transition={{ duration: 0.18 }}
+                  className="flex flex-col gap-2"
+                >
+                  <span className="label">Room code</span>
+                  <input
+                    required
+                    minLength={6}
+                    maxLength={6}
+                    value={roomCode}
+                    onChange={(event) =>
+                      setRoomCode(event.target.value.slice(0, 6).toUpperCase())
+                    }
+                    placeholder="A1B2C3"
+                    className="field h-16 text-center font-mono text-3xl tracking-[0.45em] uppercase"
+                  />
+                </motion.label>
+              )}
+            </AnimatePresence>
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-1.5 inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-primary text-inverse font-display text-[0.9rem] font-semibold tracking-[0.1em] uppercase rounded-lg transition-all duration-150 hover:bg-primary-bright hover:shadow-glow hover:-translate-y-px disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none"
+              className="btn btn-go h-12 text-base w-full"
             >
               {loading ? (
-                <>
-                  <span className="w-4 h-4 border-2 border-inverse/30 border-t-inverse rounded-full animate-spin" />
-                  Creating...
-                </>
+                <span className="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : tab === "create" ? (
+                "Create room"
               ) : (
-                "Create Room"
+                "Join the grid"
               )}
+              {!loading && <span aria-hidden>→</span>}
             </button>
-          </motion.form>
-        )}
-        {tab === "join" && (
-          <motion.form
-            key="join"
-            initial={{ opacity: 0, x: 12 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.25 }}
-            onSubmit={handleSubmit}
-            className="flex flex-col gap-5"
-          >
-            <div className="flex flex-col gap-1.5">
-              <label className="font-display text-[0.72rem] font-medium tracking-[0.12em] uppercase text-muted">
-                Room Code
-              </label>
-              <input
-                aria-label="Room code"
-                required
-                minLength={6}
-                type="text"
-                value={roomCode}
-                onChange={(e) => setRoomCode(e.target.value.slice(0, 6))}
-                maxLength={6}
-                placeholder="XXXXXX"
-                className="w-full px-4 py-3.5 bg-panel border border-brd rounded-lg text-light font-mono text-xl tracking-[0.35em] uppercase text-center outline-none transition-all duration-150 focus:border-primary focus:shadow-[0_0_0_3px_rgba(0,229,199,0.15)] placeholder:text-dim"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full mt-1.5 inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-primary text-inverse font-display text-[0.9rem] font-semibold tracking-[0.1em] uppercase rounded-lg transition-all duration-150 hover:bg-primary-bright hover:shadow-glow hover:-translate-y-px disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              {loading ? "Joining..." : "Join Room"}
-            </button>
-          </motion.form>
-        )}
-        {error && (
-          <motion.p
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-4 text-err text-[0.82rem] text-center"
-          >
-            {error}
-          </motion.p>
-        )}
-      </motion.div>
+            <AnimatePresence>
+              {error && (
+                <motion.p
+                  role="alert"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="text-signal-bright text-sm border-l-2 border-signal pl-3"
+                >
+                  {error}
+                </motion.p>
+              )}
+            </AnimatePresence>
+          </form>
+        </motion.section>
+      </main>
+      <footer className="px-6 lg:px-16 py-5 flex justify-between label border-t border-line">
+        <span>Python · Monaco</span>
+        <span>Ranked by characters, then lock-in time</span>
+      </footer>
     </div>
   );
 }

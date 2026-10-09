@@ -6,7 +6,11 @@ const Room = lazy(() => import("./components/Room"));
 
 export default function App() {
   return (
-    <Suspense fallback={<p className="p-10 text-muted">Loading room...</p>}>
+    <Suspense
+      fallback={
+        <p className="p-10 label">Loading room…</p>
+      }
+    >
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/room" element={<Room />} />
