@@ -1,30 +1,187 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { api, errorMessage, saveSession, type RouterInputs } from "../api";
+import { Box } from "../components/crt";
 
 type Difficulty = RouterInputs["createRoom"]["difficulty"];
 
-const DIFFICULTIES: {
-  value: Difficulty;
-  label: string;
-  style: keyof typeof diffActiveClass;
-}[] = [
-  { value: null, label: "Any", style: "active-any" },
-  { value: "Easy", label: "Easy", style: "active-easy" },
-  { value: "Medium", label: "Medium", style: "active-med" },
-  { value: "Hard", label: "Hard", style: "active-hard" },
+const DIFFICULTIES: { value: Difficulty; label: string; tone: string }[] = [
+  { value: null, label: "Any", tone: "text-amber-hi glow" },
+  { value: "Easy", label: "Easy", tone: "text-phos glow-phos" },
+  { value: "Medium", label: "Medium", tone: "text-ember" },
+  { value: "Hard", label: "Hard", tone: "text-alarm glow-alarm" },
 ];
 
-const diffActiveClass = {
-  "active-any": "bg-accent/12 border-accent/30 text-accent-bright",
-  "active-easy": "bg-ok/12 border-ok/30 text-ok",
-  "active-med": "bg-warn/12 border-warn/30 text-warn",
-  "active-hard": "bg-err/12 border-err/30 text-err",
+const BOOT: [string, string][] = [
+  ["PHOSPHOR/OS 8.6 — LEETRACE SYSTEMS", ""],
+  ...[
+    "MEMORY CHECK 640K",
+    "PYTHON 3 INTERPRETER",
+    "HIDDEN TEST JUDGE",
+    "MULTIPLAYER UPLINK",
+  ].map((text): [string, string] => [`${text} `.padEnd(34, "."), " OK"]),
+];
+const BOOT_LENGTH = BOOT.reduce((sum, [text, ok]) => sum + text.length + ok.length, 0);
+
+const GLYPHS: Record<string, string[]> = {
+  L: ["██╗     ", "██║     ", "██║     ", "██║     ", "███████╗", "╚══════╝"],
+  E: ["███████╗", "██╔════╝", "█████╗  ", "██╔══╝  ", "███████╗", "╚══════╝"],
+  T: ["████████╗", "╚══██╔══╝", "   ██║   ", "   ██║   ", "   ██║   ", "   ╚═╝   "],
+  R: ["██████╗ ", "██╔══██╗", "██████╔╝", "██╔══██╗", "██║  ██║", "╚═╝  ╚═╝"],
+  A: [" █████╗ ", "██╔══██╗", "███████║", "██╔══██║", "██║  ██║", "╚═╝  ╚═╝"],
+  C: [" ██████╗", "██╔════╝", "██║     ", "██║     ", "╚██████╗", " ╚═════╝"],
 };
+const LOGO = Array.from({ length: 6 }, (_, row) =>
+  [..."LEETRACE"].map((letter) => GLYPHS[letter]?.[row] ?? "").join(""),
+).join("\n");
+
+function useBoot() {
+  const reduced = useReducedMotion();
+  const [typed, setTyped] = useState(0);
+  const done = reduced || typed >= BOOT_LENGTH;
+  useEffect(() => {
+    if (done) return;
+    const skip = () => setTyped(BOOT_LENGTH);
+    const timer = window.setInterval(
+      () => setTyped((value) => Math.min(BOOT_LENGTH, value + 4)),
+      14,
+    );
+    window.addEventListener("keydown", skip);
+    window.addEventListener("pointerdown", skip);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener("keydown", skip);
+      window.removeEventListener("pointerdown", skip);
+    };
+  }, [done]);
+  return { typed: done ? BOOT_LENGTH : typed, done };
+}
+
+function BootLog({ typed, done }: { typed: number; done: boolean }) {
+  let budget = typed;
+  return (
+    <pre
+      aria-hidden="true"
+      className="min-h-[6.6em] text-[0.6875rem] leading-[1.6] text-ink-faint"
+    >
+      {BOOT.map(([text, ok], index) => {
+        const shown = text.slice(0, Math.max(0, budget));
+        budget -= text.length;
+        const okShown = ok.slice(0, Math.max(0, budget));
+        budget -= ok.length;
+        if (!shown) return null;
+        return (
+          <span key={index} className="block">
+            {index === 0 ? <span className="text-ink-dim">{shown}</span> : shown}
+            {okShown && <span className="text-phos">{okShown}</span>}
+          </span>
+        );
+      })}
+      <span className="block text-amber">
+        {done ? "READY." : ""}
+        <span className="cursor-block" />
+      </span>
+    </pre>
+  );
+}
+
+function FieldRow({
+  label,
+  htmlFor,
+  id,
+  children,
+}: {
+  label: string;
+  htmlFor?: string;
+  id?: string;
+  children: ReactNode;
+}) {
+  const text = (
+    <>
+      <span aria-hidden="true" className="text-amber-lo">
+        ${" "}
+      </span>
+      {label}
+    </>
+  );
+  return (
+    <div className="grid items-center gap-x-4 gap-y-1.5 sm:grid-cols-[9.5rem_1fr]">
+      {htmlFor ? (
+        <label htmlFor={htmlFor} className="text-sm text-ink-dim">
+          {text}
+        </label>
+      ) : (
+        <span id={id} className="text-sm text-ink-dim">
+          {text}
+        </span>
+      )}
+      <div className="flex min-w-0 flex-wrap items-center gap-2">{children}</div>
+    </div>
+  );
+}
+
+function Stepper({
+  id,
+  label,
+  value,
+  min,
+  max,
+  step,
+  unit,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  unit: string;
+  onChange: (value: number) => void;
+}) {
+  const set = (next: number) => onChange(Math.min(max, Math.max(min, next)));
+  return (
+    <>
+      <button
+        type="button"
+        className="btn px-1.5"
+        aria-label={`Decrease ${label.toLowerCase()}`}
+        disabled={value <= min}
+        onClick={() => set(value - step)}
+      >
+        -
+      </button>
+      <input
+        id={id}
+        aria-label={label}
+        type="number"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(event) => onChange(event.target.valueAsNumber || 1)}
+        onBlur={() => set(value)}
+        className="field w-[5ch] text-center tabular-nums"
+      />
+      <button
+        type="button"
+        className="btn px-1.5"
+        aria-label={`Increase ${label.toLowerCase()}`}
+        disabled={value >= max}
+        onClick={() => set(value + step)}
+      >
+        +
+      </button>
+      <span className="text-xs text-ink-faint">{unit}</span>
+    </>
+  );
+}
 
 export default function Landing() {
   const navigate = useNavigate();
+  const { typed, done } = useBoot();
+  const nameInput = useRef<HTMLInputElement>(null);
   const [tab, setTab] = useState<"create" | "join">("create");
   const [name, setName] = useState("");
   const [difficulty, setDifficulty] = useState<Difficulty>(null);
@@ -34,10 +191,15 @@ export default function Landing() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (done) nameInput.current?.focus();
+  }, [done]);
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!name.trim()) {
       setError("Enter your name.");
+      nameInput.current?.focus();
       return;
     }
     setError("");
@@ -65,203 +227,188 @@ export default function Landing() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-5 py-10 relative">
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-[radial-gradient(circle,rgba(0,229,199,0.06)_0%,transparent_70%)] pointer-events-none" />
-      <motion.h1
-        initial={{ opacity: 0, y: -20, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="font-display font-bold tracking-[0.25em] uppercase text-light relative z-10 mb-1"
-        style={{ fontSize: "clamp(2.6rem, 6vw, 4.2rem)" }}
-      >
-        LEET
-        <span
-          className="text-primary"
-          style={{ textShadow: "0 0 30px rgba(0,229,199,0.3)" }}
+    <div className="h-dvh overflow-y-auto">
+      <main className="mx-auto flex min-h-full w-full max-w-[860px] flex-col justify-center gap-5 px-4 py-8">
+        <Box
+          double
+          title="[ tty0 :: guest@leetrace ]"
+          right={<span className="font-normal text-ink-faint">80×24</span>}
+          className="power-on"
         >
-          RACE
-        </span>
-      </motion.h1>
-
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.25, duration: 0.5 }}
-        className="font-display text-dim tracking-[0.3em] uppercase mb-12 relative z-10"
-        style={{ fontSize: "clamp(0.7rem, 1.5vw, 0.9rem)" }}
-      >
-        Race to solve &middot; Code to win
-      </motion.p>
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className="w-full max-w-[480px] bg-surface/75 border border-brd rounded-2xl p-9 backdrop-blur-2xl shadow-panel relative z-10"
-      >
-        <div className="mb-7">
-          <label className="block font-display text-[0.72rem] font-semibold tracking-[0.14em] uppercase text-muted mb-2">
-            Your Name
-          </label>
-          <input
-            aria-label="Your name"
-            required
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            maxLength={20}
-            placeholder="Enter your name..."
-            className="w-full px-4 py-3 bg-panel border border-brd rounded-lg text-light font-body text-[0.95rem] outline-none transition-all duration-150 focus:border-primary focus:shadow-[0_0_0_3px_rgba(0,229,199,0.15)] placeholder:text-dim"
-          />
-        </div>
-        <div className="flex border-b border-brd mb-7 relative">
-          {(["create", "join"] as const).map((t) => (
-            <button
-              key={t}
-              onClick={() => {
-                setTab(t);
-                setError("");
-              }}
-              className={`flex-1 py-3 bg-transparent border-none font-display text-[0.82rem] font-semibold tracking-[0.1em] uppercase cursor-pointer transition-colors duration-150 ${
-                tab === t ? "text-primary" : "text-dim hover:text-muted"
-              }`}
+          <div className="flex flex-col gap-5 px-6 pt-6 pb-6 sm:px-8">
+            <BootLog typed={typed} done={done} />
+            <motion.div
+              initial={false}
+              animate={{ opacity: done ? 1 : 0.08 }}
+              transition={{ duration: 0.3 }}
+              className="flex flex-col gap-3"
             >
-              {t === "create" ? "Create Room" : "Join Room"}
-            </button>
-          ))}
-          <motion.div
-            className="absolute bottom-[-1px] left-0 h-[2px] bg-primary"
-            style={{ boxShadow: "0 0 10px rgba(0,229,199,0.25)", width: "50%" }}
-            animate={{ x: tab === "create" ? "0%" : "100%" }}
-            transition={{ type: "spring", stiffness: 500, damping: 30 }}
-          />
-        </div>
-        {tab === "create" && (
-          <motion.form
-            key="create"
-            initial={{ opacity: 0, x: -12 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.25 }}
-            onSubmit={handleSubmit}
-            className="flex flex-col gap-5"
-          >
-            <div className="flex flex-col gap-1.5">
-              <label className="font-display text-[0.72rem] font-medium tracking-[0.12em] uppercase text-muted">
-                Difficulty
-              </label>
-              <div className="flex gap-1.5">
-                {DIFFICULTIES.map((d) => (
-                  <button
-                    key={d.label}
-                    type="button"
-                    onClick={() => setDifficulty(d.value)}
-                    className={`flex-1 py-2.5 px-2 bg-panel border border-brd rounded text-center font-display text-[0.72rem] font-semibold tracking-[0.08em] uppercase cursor-pointer transition-all duration-150 ${
-                      difficulty === d.value
-                        ? diffActiveClass[d.style]
-                        : "text-muted hover:border-brd-light hover:text-light"
-                    }`}
-                  >
-                    {d.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="flex gap-3.5">
-              <div className="flex-1 flex flex-col gap-1.5">
-                <label className="font-display text-[0.72rem] font-medium tracking-[0.12em] uppercase text-muted">
-                  Time (min)
-                </label>
-                <input
-                  aria-label="Time in minutes"
-                  type="number"
-                  min={1}
-                  max={60}
-                  step={0.5}
-                  value={timeLimit}
-                  onChange={(e) => {
-                    setTimeLimit(e.target.valueAsNumber || 1);
+              <h1 className="sr-only">LeetRace</h1>
+              <pre
+                aria-hidden="true"
+                className="overflow-hidden text-[clamp(0.42rem,1.45vw,0.8125rem)] leading-[1.02] text-amber glow"
+              >
+                {LOGO}
+              </pre>
+              <p className="font-display text-[1.45rem] leading-none tracking-[0.08em] text-amber-hi">
+                MULTIPLAYER PYTHON SPEEDRUNS
+                <span className="text-amber-lo"> // </span>
+                FEWEST CHARS WINS
+              </p>
+            </motion.div>
+          </div>
+
+          <div className="border-t border-dashed border-line-hi px-6 pt-5 pb-6 sm:px-8">
+            <div role="group" aria-label="Mode" className="mb-5 flex flex-wrap gap-2">
+              {(["create", "join"] as const).map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  className="btn"
+                  aria-pressed={tab === mode}
+                  onClick={() => {
+                    setTab(mode);
+                    setError("");
                   }}
-                  className="w-full px-4 py-3 bg-panel border border-brd rounded-lg text-light font-mono text-[0.95rem] outline-none transition-all duration-150 focus:border-primary focus:shadow-[0_0_0_3px_rgba(0,229,199,0.15)] placeholder:text-dim"
-                />
-              </div>
-              <div className="flex-1 flex flex-col gap-1.5">
-                <label className="font-display text-[0.72rem] font-medium tracking-[0.12em] uppercase text-muted">
-                  Rounds
-                </label>
-                <input
-                  aria-label="Rounds"
-                  type="number"
-                  min={1}
-                  max={10}
-                  value={rounds}
-                  onChange={(e) => {
-                    setRounds(e.target.valueAsNumber || 1);
-                  }}
-                  className="w-full px-4 py-3 bg-panel border border-brd rounded-lg text-light font-mono text-[0.95rem] outline-none transition-all duration-150 focus:border-primary focus:shadow-[0_0_0_3px_rgba(0,229,199,0.15)] placeholder:text-dim"
-                />
-              </div>
+                >
+                  {mode === "create" ? "Create Room" : "Join Room"}
+                </button>
+              ))}
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full mt-1.5 inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-primary text-inverse font-display text-[0.9rem] font-semibold tracking-[0.1em] uppercase rounded-lg transition-all duration-150 hover:bg-primary-bright hover:shadow-glow hover:-translate-y-px disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none"
+            <form
+              key={tab}
+              onSubmit={(event) => void handleSubmit(event)}
+              className="flex flex-col gap-4"
             >
-              {loading ? (
+              <FieldRow label="handle" htmlFor="name">
+                <input
+                  ref={nameInput}
+                  id="name"
+                  aria-label="Your name"
+                  required
+                  type="text"
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  maxLength={20}
+                  placeholder="enter your name"
+                  autoComplete="nickname"
+                  spellCheck={false}
+                  className="field w-full max-w-[22rem]"
+                />
+              </FieldRow>
+
+              {tab === "create" ? (
                 <>
-                  <span className="w-4 h-4 border-2 border-inverse/30 border-t-inverse rounded-full animate-spin" />
-                  Creating...
+                  <FieldRow label="difficulty" id="difficulty-label">
+                    <div
+                      role="radiogroup"
+                      aria-labelledby="difficulty-label"
+                      className="flex flex-wrap gap-x-4 gap-y-1"
+                    >
+                      {DIFFICULTIES.map((option) => {
+                        const checked = difficulty === option.value;
+                        return (
+                          <label
+                            key={option.label}
+                            className="cursor-pointer text-sm tracking-[0.08em] uppercase"
+                          >
+                            <input
+                              type="radio"
+                              name="difficulty"
+                              className="peer sr-only"
+                              checked={checked}
+                              onChange={() => setDifficulty(option.value)}
+                            />
+                            <span
+                              className={`inline-block px-1 peer-focus-visible:outline peer-focus-visible:outline-1 peer-focus-visible:outline-dashed peer-focus-visible:outline-amber-hi ${checked ? option.tone : "text-ink-faint hover:text-ink"}`}
+                            >
+                              {checked ? "(•)" : "( )"} {option.label}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </FieldRow>
+                  <FieldRow label="time_limit" htmlFor="time">
+                    <Stepper
+                      id="time"
+                      label="Time in minutes"
+                      value={timeLimit}
+                      min={1}
+                      max={60}
+                      step={0.5}
+                      unit="min / round"
+                      onChange={setTimeLimit}
+                    />
+                  </FieldRow>
+                  <FieldRow label="rounds" htmlFor="rounds">
+                    <Stepper
+                      id="rounds"
+                      label="Rounds"
+                      value={rounds}
+                      min={1}
+                      max={10}
+                      step={1}
+                      unit={rounds === 1 ? "round" : "rounds"}
+                      onChange={(value) => setRounds(Math.round(value))}
+                    />
+                  </FieldRow>
                 </>
               ) : (
-                "Create Room"
+                <FieldRow label="room_code" htmlFor="code">
+                  <input
+                    id="code"
+                    aria-label="Room code"
+                    required
+                    minLength={6}
+                    maxLength={6}
+                    type="text"
+                    value={roomCode}
+                    onChange={(event) =>
+                      setRoomCode(event.target.value.toUpperCase().slice(0, 6))
+                    }
+                    placeholder="XXXXXX"
+                    autoComplete="off"
+                    spellCheck={false}
+                    className="field w-[11ch] font-display text-[1.9rem] leading-none tracking-[0.3em] uppercase"
+                  />
+                </FieldRow>
               )}
-            </button>
-          </motion.form>
-        )}
-        {tab === "join" && (
-          <motion.form
-            key="join"
-            initial={{ opacity: 0, x: 12 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.25 }}
-            onSubmit={handleSubmit}
-            className="flex flex-col gap-5"
-          >
-            <div className="flex flex-col gap-1.5">
-              <label className="font-display text-[0.72rem] font-medium tracking-[0.12em] uppercase text-muted">
-                Room Code
-              </label>
-              <input
-                aria-label="Room code"
-                required
-                minLength={6}
-                type="text"
-                value={roomCode}
-                onChange={(e) => setRoomCode(e.target.value.slice(0, 6))}
-                maxLength={6}
-                placeholder="XXXXXX"
-                className="w-full px-4 py-3.5 bg-panel border border-brd rounded-lg text-light font-mono text-xl tracking-[0.35em] uppercase text-center outline-none transition-all duration-150 focus:border-primary focus:shadow-[0_0_0_3px_rgba(0,229,199,0.15)] placeholder:text-dim"
-              />
-            </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full mt-1.5 inline-flex items-center justify-center gap-2 px-7 py-3.5 bg-primary text-inverse font-display text-[0.9rem] font-semibold tracking-[0.1em] uppercase rounded-lg transition-all duration-150 hover:bg-primary-bright hover:shadow-glow hover:-translate-y-px disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              {loading ? "Joining..." : "Join Room"}
-            </button>
-          </motion.form>
-        )}
-        {error && (
-          <motion.p
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-4 text-err text-[0.82rem] text-center"
-          >
-            {error}
-          </motion.p>
-        )}
-      </motion.div>
+              <div className="mt-2 flex flex-wrap items-center gap-4 sm:pl-[10.5rem]">
+                <button type="submit" disabled={loading} className="btn btn-solid btn-lg">
+                  {loading
+                    ? tab === "create"
+                      ? "Creating…"
+                      : "Joining…"
+                    : tab === "create"
+                      ? "Create Room"
+                      : "Join Room"}
+                  <span className="kbd">⏎</span>
+                </button>
+                {error && (
+                  <p role="alert" className="text-sm text-alarm">
+                    <span className="font-bold">!! ERR:</span> {error}
+                  </p>
+                )}
+              </div>
+            </form>
+          </div>
+        </Box>
+
+        <ol className="grid gap-x-6 gap-y-1 px-1 text-xs text-ink-faint sm:grid-cols-3">
+          <li>
+            <span className="text-amber-lo">01</span> pass every hidden test
+          </li>
+          <li>
+            <span className="text-amber-lo">02</span> fewer characters rank higher
+          </li>
+          <li>
+            <span className="text-amber-lo">03</span> lock your score or keep golfing
+          </li>
+        </ol>
+      </main>
     </div>
   );
 }

@@ -1,604 +1,470 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { useRef, type MutableRefObject } from "react";
+import { Link, Navigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import {
-  api,
-  errorMessage,
-  sessionToken,
-  type RoomSnapshot,
-  type Submission,
-} from "../api";
-import CodeEditor from "./CodeEditor";
+import { editor as monacoEditor } from "monaco-editor/esm/vs/editor/editor.api.js";
+import { formatTimer, useRoom, type RoomState } from "../hooks/useRoom";
+import { usePaneLayout, type PaneLayout } from "../hooks/usePaneLayout";
+import CodeEditor, { type EditorInstance } from "./CodeEditor";
+import { ChatDock } from "./ChatDock";
+import { Box, DifficultyTag, Tag } from "./crt";
+import { EDITOR_FONT, phosphorTheme } from "./phosphorTheme";
+import { ReviewSummary, SubmissionResults } from "./ResultsPane";
+import { FinishedView, LobbyView } from "./RoomViews";
+import { StandingsStrip } from "./Standings";
 
-const primaryButton =
-  "px-5 py-2.5 bg-primary text-inverse rounded-lg font-display text-sm font-semibold uppercase tracking-wider hover:bg-primary-bright disabled:opacity-40 disabled:cursor-not-allowed";
-const secondaryButton =
-  "px-4 py-2.5 border border-brd-light rounded-lg font-display text-sm text-muted hover:text-light hover:border-primary disabled:opacity-40 disabled:cursor-not-allowed";
+type Room = NonNullable<RoomState["room"]>;
 
-function formatTimer(seconds: number) {
-  const rounded = Math.max(0, Math.ceil(seconds));
-  return `${Math.floor(rounded / 60)}:${String(rounded % 60).padStart(2, "0")}`;
-}
+const clock = (seconds: number) => formatTimer(seconds).padStart(5, "0");
 
-function Scoreboard({
-  room,
-  onReview,
-}: {
-  room: RoomSnapshot;
-  onReview?: (name: string, code: string) => void;
-}) {
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-left text-sm border-separate border-spacing-y-2">
-        <thead className="font-display uppercase text-xs tracking-wider text-dim">
-          <tr>
-            <th className="p-3">Rank</th>
-            <th className="p-3">Player</th>
-            <th className="p-3">Best</th>
-            <th className="p-3">Tests</th>
-            {onReview && <th className="p-3">Code</th>}
-          </tr>
-        </thead>
-        <tbody>
-          {room.rankings.map((player) => (
-            <tr key={player.name} className="bg-elevated">
-              <td className="p-3 rounded-l-lg font-mono text-muted">
-                {player.position}
-              </td>
-              <td
-                className={`p-3 font-display ${player.name === room.me.name ? "text-primary" : "text-light"}`}
-              >
-                {player.name}
-              </td>
-              <td className="p-3 font-mono whitespace-nowrap">
-                <span className={player.solved ? "text-ok" : "text-dim"}>
-                  {player.solved
-                    ? `${player.charCount} chars`
-                    : player.resigned
-                      ? "Resigned"
-                      : "Unsolved"}
-                </span>
-                {player.lockedAt !== null && (
-                  <span className="text-warn text-xs ml-2">Locked</span>
-                )}
-              </td>
-              <td className="p-3 font-mono text-muted">
-                {player.testsPassed}/{player.testsTotal}
-              </td>
-              {onReview && (
-                <td className="p-3 rounded-r-lg">
-                  {player.code !== null && (
-                    <button
-                      className="text-primary hover:underline"
-                      onClick={() => onReview(player.name, player.code ?? "")}
-                    >
-                      View
-                    </button>
-                  )}
-                </td>
-              )}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function Output({ result }: { result: Submission | null }) {
-  if (!result)
-    return (
-      <p className="text-dim">
-        Submit your code to see results. Ctrl/Cmd + Enter submits.
-      </p>
-    );
-  return (
-    <div className="flex flex-col gap-2 font-mono text-sm whitespace-pre-wrap break-words">
-      <p className={result.solved ? "text-ok" : "text-warn"}>
-        {result.solved
-          ? `Solved! ${result.charCount} characters`
-          : `${result.passed}/${result.total} tests passed`}{" "}
-        <span className="text-dim">{Math.round(result.timeMs)} ms</span>
-      </p>
-      {result.error && <p className="text-err">{result.error}</p>}
-      {result.firstFailure && (
-        <div className="p-3 bg-elevated rounded border border-brd">
-          <p className="text-muted mb-2">First failing test</p>
-          <p>Input: {result.firstFailure.input}</p>
-          <p className="text-ok">Expected: {result.firstFailure.expected}</p>
-          <p className="text-err">Received: {result.firstFailure.actual}</p>
-        </div>
-      )}
-      {result.stdout && (
-        <div className="border-t border-brd pt-2 text-muted">
-          Output:{"\n"}
-          {result.stdout}
-        </div>
-      )}
-      {result.stderr && <div className="text-err">{result.stderr}</div>}
-    </div>
-  );
-}
-
-function Chat({
-  room,
-  onSend,
-}: {
-  room: RoomSnapshot;
-  onSend: (message: string) => Promise<boolean>;
-}) {
-  const [collapsed, setCollapsed] = useState(true);
-  const [text, setText] = useState("");
-  const [sending, setSending] = useState(false);
-  const end = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!collapsed) end.current?.scrollIntoView();
-  }, [room.messages.length, collapsed]);
-
-  async function send(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!text.trim() || sending) return;
-    setSending(true);
-    if (await onSend(text.trim())) setText("");
-    setSending(false);
+function Header({ r, room }: { r: RoomState; room: Room }) {
+  const playing = room.state === "playing" && !r.review;
+  const danger = playing && room.remaining <= 30;
+  let timerLabel = "standby";
+  let timerValue = clock(room.timeLimit);
+  if (playing) {
+    timerLabel = "t-minus";
+    timerValue = clock(room.remaining);
+  } else if (r.review) {
+    timerLabel = "mode";
+    timerValue = "REVIEW";
+  } else if (room.state === "finished") {
+    timerLabel = room.breakRemaining !== null ? "next rnd" : "game over";
+    timerValue =
+      room.breakRemaining !== null ? clock(room.breakRemaining) : "00:00";
   }
 
   return (
-    <aside className="fixed bottom-0 right-4 w-72 max-w-[calc(100vw-2rem)] z-30 bg-surface border border-brd rounded-t-lg shadow-panel">
-      <button
-        className="w-full flex justify-between p-3 font-display uppercase tracking-wider text-xs text-muted"
-        onClick={() => setCollapsed(!collapsed)}
-        aria-expanded={!collapsed}
+    <header className="flex flex-none flex-wrap items-center gap-x-4 gap-y-1 border-b border-line bg-crt-1 px-4 py-1.5">
+      <span
+        className="font-display text-[2rem] leading-none tracking-[0.08em] text-amber-hi glow select-none"
+        aria-label="LeetRace"
       >
-        Chat{" "}
-        <span>
-          {collapsed ? "+" : "−"} · {room.messages.length}
+        LEETRACE
+        <span aria-hidden="true" className="ml-0.5 animate-blink text-amber-lo">
+          _
+        </span>
+      </span>
+      <button
+        onClick={() => void r.copyRoom()}
+        title="Copy room code"
+        aria-label={`Room code ${r.roomId}. Click to copy.`}
+        className="group flex items-baseline gap-2 border border-line-hi px-2 py-0.5 hover:border-amber hover:bg-amber hover:text-crt-0"
+      >
+        <span className="label group-hover:text-crt-0">room</span>
+        <span className="font-semibold tracking-[0.25em] text-amber-hi group-hover:text-crt-0">
+          {r.roomId}
+        </span>
+        <span className="text-[0.625rem] text-ink-faint uppercase group-hover:text-crt-0 max-lg:hidden">
+          {r.copied ? "✔ copied" : "⧉ copy"}
         </span>
       </button>
-      {!collapsed && (
-        <>
-          <div
-            className="h-48 overflow-y-auto p-3 space-y-2 border-t border-brd"
-            role="log"
-            aria-live="polite"
-          >
-            {room.messages.length === 0 && (
-              <p className="text-dim text-xs">No messages yet</p>
-            )}
-            {room.messages.map((message) => (
-              <div key={message.id} className="text-sm break-words">
-                <span
-                  className={`font-display text-xs ${message.sender === room.me.name ? "text-primary" : "text-muted"}`}
-                >
-                  {message.sender}
-                </span>
-                <p>{message.message}</p>
-              </div>
-            ))}
-            <div ref={end} />
-          </div>
-          <form
-            onSubmit={(event) => {
-              void send(event);
-            }}
-            className="p-2 flex gap-2 border-t border-brd"
-          >
-            <input
-              aria-label="Chat message"
-              className="min-w-0 flex-1 bg-elevated border border-brd rounded p-2 text-sm outline-none focus:border-primary"
-              value={text}
-              onChange={(event) => setText(event.target.value)}
-              maxLength={200}
-              placeholder="Say something..."
-            />
-            <button
-              disabled={sending || !text.trim()}
-              className="text-primary text-sm disabled:opacity-40"
-            >
-              Send
-            </button>
-          </form>
-        </>
+      <span className="flex items-baseline gap-2">
+        <span className="label">rnd</span>
+        <span className="tabular-nums text-ink">
+          {String(room.currentRound).padStart(2, "0")}
+          <span className="text-ink-faint">/</span>
+          {String(room.totalRounds).padStart(2, "0")}
+        </span>
+      </span>
+      <div className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden max-lg:hidden">
+        {room.problem && room.state !== "lobby" && (
+          <>
+            <span aria-hidden="true" className="text-amber-lo">
+              »
+            </span>
+            <h1 className="min-w-0 truncate font-semibold text-ink">
+              {room.problem.title}
+            </h1>
+            <DifficultyTag difficulty={room.problem.difficulty} />
+          </>
+        )}
+      </div>
+      <div
+        className="flex items-baseline gap-2 max-lg:ml-auto"
+        role="timer"
+        aria-label={`${timerLabel} ${timerValue}`}
+      >
+        <span className={`label ${danger ? "text-alarm" : ""} max-lg:hidden`}>
+          {timerLabel}
+        </span>
+        <span
+          className={`font-display text-[2.6rem] leading-[0.9] tabular-nums ${danger ? "danger-pulse text-alarm glow-alarm" : playing ? "text-amber-hi glow" : "text-ink-dim"}`}
+        >
+          {timerValue}
+        </span>
+      </div>
+      <span className="flex items-center gap-2 border-l border-line pl-4">
+        <span className="text-ink-faint">@</span>
+        <span className="max-w-[14ch] truncate font-semibold text-amber">
+          {room.me.name}
+        </span>
+        {r.isHost && <Tag tone="amber">Host</Tag>}
+      </span>
+      <span
+        role="status"
+        className={`flex items-center gap-1.5 text-[0.6875rem] tracking-[0.1em] uppercase ${r.connected ? "text-phos" : "text-alarm"}`}
+      >
+        <span aria-hidden="true" className={r.connected ? "glow-phos" : "animate-blink"}>
+          {r.connected ? "●" : "○"}
+        </span>
+        <span className="max-lg:sr-only">
+          {r.connected ? "online" : "reconnecting"}
+        </span>
+      </span>
+      <button
+        className="btn btn-danger"
+        onClick={() => void r.leave()}
+        disabled={!r.canAct}
+      >
+        Leave
+      </button>
+    </header>
+  );
+}
+
+function ErrorBanner({ r }: { r: RoomState }) {
+  return (
+    <div
+      role="alert"
+      className="flex flex-none items-center gap-3 border-b border-alarm-lo bg-alarm/10 px-4 py-1.5 text-xs text-alarm"
+    >
+      <span className="font-bold tracking-[0.12em]">!! ERR</span>
+      <p className="min-w-0 flex-1 break-words">{r.error}</p>
+      <button
+        className="btn btn-danger py-0.5"
+        onClick={() => r.setError("")}
+        aria-label="Dismiss error"
+      >
+        x
+      </button>
+    </div>
+  );
+}
+
+function DoneBanner({ r, room }: { r: RoomState; room: Room }) {
+  const resigned = room.me.resigned;
+  const waiting = r.waitingOn.length
+    ? `waiting on ${r.waitingOn.join(", ")}`
+    : "round wrapping up";
+  return (
+    <div
+      role="status"
+      className={`flex flex-none flex-wrap items-center gap-x-3 gap-y-1 border-b px-4 py-1.5 text-xs ${resigned ? "border-alarm-lo bg-alarm/[0.08]" : "border-phos-lo bg-phos/[0.06]"}`}
+    >
+      <span
+        className={`font-bold tracking-[0.12em] uppercase ${resigned ? "text-alarm glow-alarm" : "text-phos glow-phos"}`}
+      >
+        {resigned
+          ? "✘ You resigned"
+          : `■ Score locked${r.me?.charCount ? ` · ${r.me.charCount} chars` : ""}`}
+      </span>
+      <span className="text-ink-faint">·</span>
+      <span className="text-ink">
+        {waiting}
+        <span className="cursor-block" />
+      </span>
+      <span className="ml-auto text-ink-faint">editor is read-only</span>
+    </div>
+  );
+}
+
+function StatusLine({
+  r,
+  room,
+  layout,
+}: {
+  r: RoomState;
+  room: Room;
+  layout: PaneLayout;
+}) {
+  const mode = r.review
+    ? "review"
+    : room.state === "lobby"
+      ? "lobby"
+      : room.state === "finished"
+        ? room.breakRemaining !== null
+          ? "break"
+          : "game over"
+        : room.me.resigned
+          ? "resigned"
+          : room.me.locked
+            ? "locked"
+            : "race";
+  return (
+    <footer className="statusline" aria-label="Status line">
+      <span
+        className={`seg-mode uppercase ${mode === "resigned" ? "bg-alarm" : mode === "locked" ? "bg-phos" : ""}`}
+      >
+        {mode}
+      </span>
+      <span className="seg-alt">⎇ {r.roomId}</span>
+      <span>
+        round {room.currentRound}/{room.totalRounds}
+      </span>
+      <span className="max-sm:hidden">
+        {room.players.length} player{room.players.length === 1 ? "" : "s"}
+      </span>
+      {room.state === "playing" && !r.review && (
+        <span className="max-md:hidden">
+          {Array.from(r.code).length} chars · python3 · utf-8
+        </span>
       )}
-    </aside>
+      <span className="ml-auto max-md:hidden">
+        ^D chat
+        {layout.unread > 0 && (
+          <span className="bg-amber px-1 font-bold text-crt-0">
+            {layout.unread}
+          </span>
+        )}
+      </span>
+      {room.state === "playing" && !r.readOnly && (
+        <span className="max-md:hidden">^⏎ submit</span>
+      )}
+      <span className={`seg-alt ${r.connected ? "" : "text-alarm"}`}>
+        {r.connected ? "LINK OK" : "NO CARRIER"}
+      </span>
+    </footer>
+  );
+}
+
+function Workspace({
+  r,
+  room,
+  layout,
+  editorRef,
+}: {
+  r: RoomState;
+  room: Room;
+  layout: PaneLayout;
+  editorRef: MutableRefObject<EditorInstance | null>;
+}) {
+  const problem = room.problem;
+  const reviewing = useRef(r.review);
+  reviewing.current = r.review;
+  if (!problem) return null;
+
+  const review = r.review;
+  const value = review?.code ?? r.code;
+  const chars = Array.from(value).length;
+  const wide = layout.wide;
+
+  const problemPane = (
+    <Box
+      title={`[ ${problem.id}.md ]`}
+      right={<DifficultyTag difficulty={problem.difficulty} />}
+      style={wide ? { flex: "1 1 0", minWidth: 0 } : { height: "46vh", minHeight: 260 }}
+      aria-label="Problem"
+      className={wide ? "" : "flex-none"}
+    >
+      <article className="problem-description min-h-0 flex-1 overflow-y-auto px-5 pt-5 pb-6">
+        <h1 className="!mt-0 !text-[2.1rem]">{problem.title}</h1>
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>{problem.statement}</ReactMarkdown>
+      </article>
+    </Box>
+  );
+
+  const toolbar = review ? (
+    <div className="flex flex-none flex-wrap items-center gap-x-3 gap-y-1 border-b border-line px-3 pt-3 pb-2 text-xs">
+      <span className="text-ink-dim">
+        reviewing <span className="font-semibold text-amber-hi">{review.name}</span>
+        <span className="text-ink-faint"> · </span>
+        <span className="tabular-nums text-amber-hi">{chars}</span> chars
+      </span>
+      <button className="btn btn-solid ml-auto" onClick={() => r.setReview(null)}>
+        Back to results <span className="kbd">◂</span>
+      </button>
+    </div>
+  ) : (
+    <div className="flex flex-none flex-wrap items-center gap-x-3 gap-y-1 border-b border-line px-3 pt-3 pb-2 text-xs">
+      <span className="text-ink-dim">
+        <span className="tabular-nums font-semibold text-amber-hi">{chars}</span> chars
+        <span className="text-ink-faint"> · </span>
+        <span className={r.readOnly ? "text-alarm" : "text-phos"}>
+          {r.readOnly ? "-- READ-ONLY --" : "-- INSERT --"}
+        </span>
+      </span>
+      <div className="ml-auto flex flex-wrap gap-1">
+        <button
+          className="btn btn-solid"
+          disabled={!r.canAct || r.readOnly}
+          onClick={r.submit}
+          aria-keyshortcuts="Control+Enter"
+        >
+          {r.pending ? "Running…" : "Submit"} <span className="kbd">^⏎</span>
+        </button>
+        <button
+          className="btn btn-ok"
+          disabled={!r.canAct || r.readOnly || !r.me?.solved}
+          onClick={() => void r.lock()}
+          title={r.me?.solved ? "Lock your best score and finish" : "Solve first to lock a score"}
+        >
+          Lock score
+        </button>
+        <button
+          className="btn btn-danger"
+          disabled={!r.canAct || r.readOnly}
+          onClick={() => void r.resign()}
+        >
+          Resign
+        </button>
+      </div>
+    </div>
+  );
+
+  const editorPane = (
+    <Box
+      double
+      title={`[ ${review ? `${review.name}.py` : "solution.py"} ]`}
+      right={
+        <span className={r.readOnly ? "text-ink-faint" : "text-phos"}>
+          {r.readOnly ? "ro" : "rw"}
+        </span>
+      }
+      aria-label="Code editor"
+      className={wide ? "min-h-0 flex-1" : "flex-none"}
+      style={wide ? undefined : { height: "64vh", minHeight: 380 }}
+    >
+      {toolbar}
+      <div className="relative min-h-0 flex-1">
+        <div className="absolute inset-0">
+          <CodeEditor
+            value={value}
+            onChange={(next) => {
+              if (!reviewing.current) r.changeCode(next);
+            }}
+            readOnly={r.readOnly}
+            onSubmit={r.submit}
+            theme={phosphorTheme}
+            fontFamily={EDITOR_FONT}
+            onEditor={(editor) => {
+              editorRef.current = editor;
+              void document.fonts.ready.then(() => monacoEditor.remeasureFonts());
+            }}
+            loading={
+              <p className="text-sm text-ink-dim">
+                loading editor
+                <span className="cursor-block" />
+              </p>
+            }
+          />
+        </div>
+      </div>
+    </Box>
+  );
+
+  const resultsPane = (
+    <Box
+      title={review ? "[ review ]" : "[ results ]"}
+      right={
+        !review && r.result ? (
+          <span className="font-normal text-ink-faint">
+            {Math.round(r.result.timeMs)} ms
+          </span>
+        ) : undefined
+      }
+      aria-label="Results"
+      className="flex-none"
+      style={{ height: wide ? layout.resultsHeight : 260 }}
+    >
+      <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-4 pb-3">
+        {review ? (
+          <ReviewSummary
+            name={review.name}
+            player={room.rankings.find((player) => player.name === review.name)}
+            chars={chars}
+          />
+        ) : (
+          <SubmissionResults result={r.result} pending={r.pending} />
+        )}
+      </div>
+    </Box>
+  );
+
+  const chat = (
+    <ChatDock room={room} layout={layout} onSend={r.sendChat} resizable />
+  );
+
+  if (!wide)
+    return (
+      <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-3 pt-4 pb-4">
+        {problemPane}
+        {editorPane}
+        {resultsPane}
+        {chat}
+      </div>
+    );
+
+  return (
+    <div ref={layout.containerRef} className="flex min-h-0 flex-1 px-3 pt-3 pb-2">
+      {problemPane}
+      <div className="handle" {...layout.handleProps("problem")} />
+      <div
+        ref={layout.columnRef}
+        className="flex min-h-0 flex-col"
+        style={{ flex: `0 0 ${layout.editorWidth}px` }}
+      >
+        {editorPane}
+        <div className="handle handle-h" {...layout.handleProps("results")} />
+        {resultsPane}
+      </div>
+      {chat}
+    </div>
   );
 }
 
 export default function Room() {
-  const [params] = useSearchParams();
-  const roomId = params.get("id") ?? "";
-  const token = sessionToken(roomId);
-  const navigate = useNavigate();
-  const [room, setRoom] = useState<RoomSnapshot | null>(null);
-  const [connected, setConnected] = useState(false);
-  const [error, setError] = useState("");
-  const [pending, setPending] = useState(false);
-  const pendingRef = useRef(false);
-  const [code, setCode] = useState("");
-  const [result, setResult] = useState<Submission | null>(null);
-  const [review, setReview] = useState<{ name: string; code: string } | null>(
-    null,
-  );
-  const [copied, setCopied] = useState(false);
-  const draftKey = room?.problem
-    ? `leetrace:draft:${roomId}:${room.currentRound}:${room.problem.id}`
-    : null;
+  const r = useRoom();
+  const editorRef = useRef<EditorInstance | null>(null);
+  const layout = usePaneLayout({
+    messageCount: r.room?.messages.length ?? 0,
+    onChatClosed: () => editorRef.current?.focus(),
+  });
 
-  useEffect(() => {
-    if (!roomId || !token) return;
-    const subscription = api.roomUpdates.subscribe(
-      { roomId, token },
-      {
-        onStarted() {
-          setConnected(true);
-          setError("");
-        },
-        onConnectionStateChange(state) {
-          setConnected(state.state === "pending");
-        },
-        onData(snapshot) {
-          setRoom(snapshot);
-          setConnected(true);
-        },
-        onError(error) {
-          setConnected(false);
-          setError(errorMessage(error));
-        },
-      },
-    );
-    return () => subscription.unsubscribe();
-  }, [roomId, token]);
-
-  const starterCode = room?.problem?.starterCode;
-  useEffect(() => {
-    if (!draftKey || starterCode === undefined) return;
-    setCode(sessionStorage.getItem(draftKey) ?? starterCode);
-    setResult(null);
-    setReview(null);
-  }, [draftKey, starterCode]);
-
-  async function perform(action: () => Promise<unknown>) {
-    if (pendingRef.current) return false;
-    pendingRef.current = true;
-    setPending(true);
-    setError("");
-    try {
-      await action();
-      return true;
-    } catch (error) {
-      setError(errorMessage(error));
-      return false;
-    } finally {
-      pendingRef.current = false;
-      setPending(false);
-    }
-  }
-
-  function changeCode(value: string) {
-    setCode(value);
-    if (draftKey) sessionStorage.setItem(draftKey, value);
-  }
-
-  function submit() {
-    if (
-      !room ||
-      room.state !== "playing" ||
-      room.me.locked ||
-      room.me.resigned ||
-      review ||
-      !connected
-    )
-      return;
-    void perform(async () => {
-      setResult(await api.submit.mutate({ roomId, code }));
-    });
-  }
-
-  async function leave() {
-    if (await perform(() => api.leave.mutate({ roomId }))) {
-      sessionStorage.removeItem(`leetrace:${roomId}`);
-      navigate("/");
-    }
-  }
-
-  async function copyRoom() {
-    try {
-      await navigator.clipboard.writeText(roomId);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 2000);
-    } catch {
-      setError(`Room code: ${roomId}`);
-    }
-  }
-
-  if (!roomId || !token) return <Navigate to="/" replace />;
+  if (!r.roomId || !r.token) return <Navigate to="/" replace />;
+  const room = r.room;
   if (!room)
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center gap-5">
-        <p className="text-muted">Connecting to room {roomId}...</p>
-        {error && (
-          <p role="alert" className="text-err px-5">
-            {error}
+      <main className="grid h-dvh place-items-center px-5">
+        <div className="flex max-w-lg flex-col gap-4 text-sm">
+          <p className="text-ink-dim">
+            <span aria-hidden="true" className="text-amber-lo">
+              &gt;{" "}
+            </span>
+            ATDT {r.roomId} — dialing room
+            <span className="cursor-block" />
           </p>
-        )}
-        <Link className="text-primary" to="/">
-          Back home
-        </Link>
+          {r.error && (
+            <p role="alert" className="text-alarm">
+              !! {r.error}
+            </p>
+          )}
+          <Link className="btn self-start" to="/">
+            Back to terminal
+          </Link>
+        </div>
       </main>
     );
 
-  const isHost = room.host === room.me.name;
-  const canAct = connected && !pending;
-  const me = room.rankings.find((player) => player.name === room.me.name);
-  const showEditor = room.problem && (room.state === "playing" || review);
-  const readOnly =
-    room.state !== "playing" ||
-    room.me.locked ||
-    room.me.resigned ||
-    review !== null;
+  const workspace =
+    room.problem !== null && (room.state === "playing" || r.review !== null);
 
   return (
-    <main className="min-h-screen flex flex-col">
-      <header className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 bg-surface border-b border-brd">
-        <div className="flex items-center gap-5">
-          <button
-            onClick={() => {
-              void leave();
-            }}
-            disabled={!canAct}
-            className="font-display font-bold tracking-[0.15em] text-lg"
-          >
-            LEET<span className="text-primary">RACE</span>
-          </button>
-          <button
-            onClick={() => {
-              void copyRoom();
-            }}
-            title="Copy room code"
-            className="font-mono tracking-widest text-primary text-sm"
-          >
-            {copied ? "Copied!" : roomId}
-          </button>
-        </div>
-        <div className="flex items-center gap-4">
-          <span className="font-display text-sm text-muted">
-            {room.me.name}
-          </span>
-          <span className={`text-xs ${connected ? "text-ok" : "text-warn"}`}>
-            {connected ? "Connected" : "Reconnecting..."}
-          </span>
-          <button
-            onClick={() => {
-              void leave();
-            }}
-            disabled={!canAct}
-            className="text-muted hover:text-light text-sm disabled:opacity-40"
-          >
-            Leave
-          </button>
-        </div>
-      </header>
-      {error && (
-        <div
-          role="alert"
-          className="flex justify-between gap-3 px-5 py-3 text-err bg-err/10 border-b border-err/20"
-        >
-          <p>{error}</p>
-          <button onClick={() => setError("")} aria-label="Dismiss error">
-            ×
-          </button>
-        </div>
-      )}
-      {room.state === "lobby" && (
-        <section className="m-auto w-full max-w-xl px-5 py-14 text-center">
-          <h1 className="font-display text-3xl font-semibold uppercase tracking-wider mb-3">
-            Room lobby
-          </h1>
-          <p className="text-muted mb-7">
-            Share the room code to invite your friends.
-          </p>
-          <button
-            onClick={() => {
-              void copyRoom();
-            }}
-            className="font-mono text-primary text-4xl tracking-[0.3em] mb-8"
-          >
-            {roomId}
-          </button>
-          <div className="bg-surface border border-brd rounded-xl p-6 mb-7 text-left">
-            <p className="text-xs font-display uppercase tracking-wider text-dim mb-4">
-              Players · {room.players.length}
-            </p>
-            {room.players.map((name) => (
-              <p key={name} className="py-2 font-display text-light">
-                {name}
-                <span className="text-xs text-muted ml-3">
-                  {name === room.host ? "Host" : ""}
-                  {name === room.me.name ? " · You" : ""}
-                </span>
-              </p>
-            ))}
-          </div>
-          <p className="text-muted text-sm mb-6">
-            {room.difficulty ?? "Any difficulty"} ·{" "}
-            {formatTimer(room.timeLimit)} per round · {room.totalRounds}{" "}
-            {room.totalRounds === 1 ? "round" : "rounds"}
-          </p>
-          {isHost ? (
-            <button
-              disabled={!canAct}
-              className={primaryButton}
-              onClick={() => {
-                void perform(() => api.start.mutate({ roomId }));
-              }}
-            >
-              {pending ? "Starting..." : "Start race"}
-            </button>
-          ) : (
-            <p className="text-primary-dim">Waiting for the host to start...</p>
-          )}
-        </section>
-      )}
-      {showEditor && room.problem && (
-        <section className="flex-1 flex flex-col">
-          <div className="flex flex-wrap justify-between items-center gap-3 px-5 py-3 border-b border-brd bg-panel">
-            <div className="flex items-center gap-4">
-              <h1 className="font-display font-semibold">
-                {room.problem.title}
-              </h1>
-              <span
-                className={`text-xs ${room.problem.difficulty === "Easy" ? "text-ok" : room.problem.difficulty === "Hard" ? "text-err" : "text-warn"}`}
-              >
-                {room.problem.difficulty}
-              </span>
-              <span className="text-xs text-dim">
-                Round {room.currentRound}/{room.totalRounds}
-              </span>
-            </div>
-            {review ? (
-              <div className="flex gap-3 items-center text-sm">
-                <span className="text-muted">Reviewing {review.name}</span>
-                <button
-                  className="text-primary"
-                  onClick={() => setReview(null)}
-                >
-                  Back to results
-                </button>
-              </div>
-            ) : (
-              <span
-                className={`font-mono text-xl ${room.remaining <= 30 ? "text-err animate-pulse-danger" : "text-primary"}`}
-              >
-                {formatTimer(room.remaining)}
-              </span>
-            )}
-          </div>
-          <div className="grid lg:grid-cols-[42%_58%] flex-1 min-h-0">
-            <article className="problem-description p-6 border-b lg:border-b-0 lg:border-r border-brd overflow-y-auto lg:max-h-[calc(100vh-9rem)] text-sm leading-relaxed">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {room.problem.statement}
-              </ReactMarkdown>
-            </article>
-            <div className="min-w-0 flex flex-col">
-              <div className="flex items-center justify-between gap-3 px-4 py-2 bg-surface border-b border-brd">
-                <span className="font-mono text-xs text-dim">solution.py</span>
-                <span className="font-mono text-xs text-muted">
-                  {Array.from(review?.code ?? code).length} chars
-                </span>
-              </div>
-              <div className="h-[45vh] min-h-64">
-                <CodeEditor
-                  value={review?.code ?? code}
-                  onChange={changeCode}
-                  readOnly={readOnly}
-                  onSubmit={submit}
-                />
-              </div>
-              {!review && (
-                <div className="flex flex-wrap gap-2 p-3 border-y border-brd bg-surface">
-                  <button
-                    className={primaryButton}
-                    disabled={!canAct || readOnly}
-                    onClick={submit}
-                  >
-                    {pending ? "Running..." : "Submit"}
-                  </button>
-                  <button
-                    className={secondaryButton}
-                    disabled={!canAct || readOnly || !me?.solved}
-                    onClick={() => {
-                      void perform(() => api.lock.mutate({ roomId }));
-                    }}
-                  >
-                    Lock score
-                  </button>
-                  <button
-                    className={secondaryButton}
-                    disabled={!canAct || readOnly}
-                    onClick={() => {
-                      void perform(() => api.resign.mutate({ roomId }));
-                    }}
-                  >
-                    Resign
-                  </button>
-                  {room.me.locked && (
-                    <span className="self-center text-warn text-sm">
-                      Score locked
-                    </span>
-                  )}
-                  {room.me.resigned && (
-                    <span className="self-center text-muted text-sm">
-                      Resigned
-                    </span>
-                  )}
-                </div>
-              )}
-              <div className="p-4 overflow-y-auto max-h-64 bg-panel">
-                {!review && <Output result={result ?? room.me.submission} />}
-              </div>
-            </div>
-          </div>
-          {!review && (
-            <div className="p-4 bg-surface border-t border-brd">
-              <h2 className="font-display text-xs uppercase tracking-wider text-muted">
-                Live scoreboard
-              </h2>
-              <Scoreboard room={room} />
-            </div>
-          )}
-        </section>
-      )}
-      {room.state === "finished" && !review && (
-        <section className="w-full max-w-4xl mx-auto px-5 py-14">
-          <h1 className="text-center font-display text-3xl uppercase tracking-wider mb-3">
-            {room.breakRemaining !== null
-              ? `Round ${room.currentRound} complete`
-              : "Race complete"}
-          </h1>
-          {room.breakRemaining !== null && (
-            <p className="text-center text-muted mb-6">
-              Next round in{" "}
-              <span className="font-mono text-primary">
-                {formatTimer(room.breakRemaining)}
-              </span>
-            </p>
-          )}
-          <Scoreboard
-            room={room}
-            onReview={(name, code) => setReview({ name, code })}
-          />
-          <div className="flex flex-wrap justify-center gap-3 mt-8">
-            {isHost && (
-              <button
-                disabled={!canAct}
-                className={primaryButton}
-                onClick={() => {
-                  void perform(() =>
-                    room.breakRemaining !== null
-                      ? api.skipBreak.mutate({ roomId })
-                      : api.restart.mutate({ roomId }),
-                  );
-                }}
-              >
-                {room.breakRemaining !== null ? "Continue" : "Play again"}
-              </button>
-            )}
-            <button
-              className={secondaryButton}
-              onClick={() => setReview({ name: room.me.name, code })}
-            >
-              View my code
-            </button>
-          </div>
-        </section>
-      )}
-      <Chat
-        room={room}
-        onSend={(message) =>
-          perform(() => api.chat.mutate({ roomId, message }))
-        }
-      />
-    </main>
+    <div className="flex h-dvh flex-col">
+      <Header r={r} room={room} />
+      {r.error && <ErrorBanner r={r} />}
+      {room.state === "playing" && <StandingsStrip room={room} />}
+      {room.state === "playing" && r.finished && <DoneBanner r={r} room={room} />}
+      <main className="flex min-h-0 flex-1 flex-col">
+        {workspace ? (
+          <Workspace r={r} room={room} layout={layout} editorRef={editorRef} />
+        ) : room.state === "lobby" ? (
+          <LobbyView r={r} room={room} layout={layout} />
+        ) : (
+          <FinishedView r={r} room={room} layout={layout} />
+        )}
+      </main>
+      <StatusLine r={r} room={room} layout={layout} />
+    </div>
   );
 }
