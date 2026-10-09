@@ -44,7 +44,7 @@ Rooms live in memory and reset when the server restarts. Run a single backend pr
 
 ## Problem data
 
-The retained corpus originated from [LeetCodeDataset](https://huggingface.co/datasets/newfacade/LeetCodeDataset). Each filename is the problem ID. JSON files retain the title, difficulty, Markdown statement with examples and constraints, Python submission interface, and test inputs with expected outputs. Floating-point problems also retain their comparison tolerances.
+The retained corpus originated from [LeetCodeDataset](https://huggingface.co/datasets/newfacade/LeetCodeDataset). Each filename is the problem ID. JSON files retain the title, difficulty, Markdown statement with examples and constraints, Python submission interface, and test inputs with expected outputs. Example explanations appear as prose outside the input and output snippets. Problems with unavailable illustrations are omitted. Floating-point problems also retain their comparison tolerances.
 
 Tests contain data, not executable assertions. Saved reference solutions, generators, duplicate test functions, topic tags, repair logs, and older problem snapshots have been removed. Linked lists and trees are stored as JSON data and become `ListNode` and `TreeNode` objects when passed to Python solutions. The judge checks in-place mutations where required. Integers beyond JavaScript's safe range use a decimal `$bigint` tag in storage and ordinary Python integers in submissions.
 
