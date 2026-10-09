@@ -170,7 +170,7 @@ export default function Landing() {
               type="text"
               value={name}
               onChange={(event) => setName(event.target.value)}
-              maxLength={20}
+              maxLength={12}
               placeholder="Ada Lovelace"
               className="field"
             />

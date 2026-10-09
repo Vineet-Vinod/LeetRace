@@ -58,29 +58,37 @@ export function StandingsStrip({ room }: { room: RoomSnapshot }) {
 /** Full results table for the finished-round view. */
 export function ResultsTable({
   room,
+  ownCode,
   onReview,
 }: {
   room: RoomSnapshot;
+  ownCode: string;
   onReview: (name: string, code: string) => void;
 }) {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[520px] text-left text-[13px]">
+      <table className="w-full min-w-[640px] table-fixed text-left text-[13px]">
+        <colgroup>
+          <col className="w-[7%]" />
+          <col className="w-[31%]" />
+          <col className="w-[24%]" />
+          <col className="w-[16%]" />
+          <col className="w-[22%]" />
+        </colgroup>
         <thead>
           <tr className="border-b border-line text-[12px] text-fg-subtle">
-            <th scope="col" className="w-12 py-2.5 pl-4 font-medium">#</th>
-            <th scope="col" className="py-2.5 font-medium">Player</th>
-            <th scope="col" className="py-2.5 font-medium">Result</th>
-            <th scope="col" className="py-2.5 font-medium">Tests</th>
-            <th scope="col" className="py-2.5 pr-4 text-right font-medium">
-              <span className="sr-only">Code</span>
-            </th>
+            <th scope="col" className="px-3 py-3 text-center font-medium">#</th>
+            <th scope="col" className="px-3 py-3 font-medium">Player</th>
+            <th scope="col" className="px-3 py-3 font-medium">Result</th>
+            <th scope="col" className="px-3 py-3 text-right font-medium">Tests</th>
+            <th scope="col" className="px-3 py-3 text-right font-medium">Code</th>
           </tr>
         </thead>
         <tbody>
           {room.rankings.map((player) => {
             const me = player.name === room.me.name;
             const winner = player.position === 1 && player.solved;
+            const code = player.code ?? (me ? ownCode : room.problem?.starterCode ?? "");
             return (
               <tr
                 key={player.name}
@@ -89,26 +97,25 @@ export function ResultsTable({
                   me && "bg-accent/[0.04]",
                 )}
               >
-                <td className="py-2.5 pl-4">
+                <td className="px-3 py-3">
                   {winner ? (
-                    <span className="flex size-6 items-center justify-center rounded-md border border-warn/30 bg-warn/10 text-warn">
+                    <span className="mx-auto flex size-6 items-center justify-center rounded-md border border-warn/30 bg-warn/10 text-warn">
                       <Icon.trophy size={13} />
                     </span>
                   ) : (
-                    <span className="flex size-6 items-center justify-center font-mono text-[12px] tabular-nums text-fg-subtle">
+                    <span className="mx-auto flex size-6 items-center justify-center font-mono text-[12px] tabular-nums text-fg-subtle">
                       {player.position}
                     </span>
                   )}
                 </td>
-                <td className="py-2.5">
-                  <span className="flex items-center gap-2.5">
+                <td className="px-3 py-3">
+                  <span className="flex min-w-0 items-center gap-2">
                     <Avatar name={player.name} size={24} />
-                    <span className="truncate font-medium text-fg">{player.name}</span>
-                    {me && <span className="pill">You</span>}
-                    {player.name === room.host && <span className="pill pill-accent">Host</span>}
+                    <span className="truncate font-medium text-fg" title={player.name}>{player.name}</span>
+                    {me && <span className="pill flex-none">You</span>}
                   </span>
                 </td>
-                <td className="py-2.5">
+                <td className="px-3 py-3">
                   <span className="flex flex-wrap items-center gap-1.5">
                     {player.solved ? (
                       <span className="font-mono tabular-nums text-ok">
@@ -120,22 +127,21 @@ export function ResultsTable({
                     <StatusBadges player={player} />
                   </span>
                 </td>
-                <td className="py-2.5 font-mono tabular-nums text-fg-muted">
+                <td className="whitespace-nowrap px-3 py-3 text-right font-mono tabular-nums text-fg-muted">
                   {player.testsPassed}
                   <span className="text-fg-subtle"> / {player.testsTotal}</span>
                 </td>
-                <td className="py-2.5 pr-4 text-right">
-                  {player.code !== null && (
-                    <button
-                      type="button"
-                      className="btn btn-ghost btn-sm"
-                      onClick={() => onReview(player.name, player.code ?? "")}
-                      aria-label={`View ${player.name}'s code`}
-                    >
-                      <Icon.eye size={14} />
-                      View code
-                    </button>
-                  )}
+                <td className="whitespace-nowrap px-3 py-3 text-right">
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
+                    onClick={() => onReview(player.name, code)}
+                    aria-label={`View ${player.name}'s code`}
+                    title={player.code === null && !me ? "View starter code. No submission." : undefined}
+                  >
+                    <Icon.eye size={14} />
+                    View code
+                  </button>
                 </td>
               </tr>
             );
