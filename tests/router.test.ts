@@ -29,6 +29,16 @@ async function serverSetup() {
 }
 
 describe('tRPC transport', () => {
+  it('limits trimmed player names to twelve characters when creating or joining a room', async () => {
+    const { client } = await serverSetup();
+    const host = await client().createRoom.mutate({ name: '  abcdefghijkl  ' });
+    expect(host.name).toBe('abcdefghijkl');
+    await expect(client().createRoom.mutate({ name: 'abcdefghijklm' })).rejects.toThrow('at most 12 characters');
+    await expect(client().joinRoom.mutate({ roomId: host.roomId, name: 'abcdefghijklm' })).rejects.toThrow('at most 12 characters');
+    const guest = await client().joinRoom.mutate({ roomId: host.roomId, name: '  mnopqrstuvwx  ' });
+    expect(guest.name).toBe('mnopqrstuvwx');
+  });
+
   it('validates inputs and authenticates room access over HTTP', async () => {
     const { client } = await serverSetup();
     await expect(client().createRoom.mutate({ name: 'Dark', timeLimit: 1 })).rejects.toThrow();

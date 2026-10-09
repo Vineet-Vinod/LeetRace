@@ -6,7 +6,7 @@ import { RoomStore } from './rooms.js';
 export interface Context { token: string | undefined }
 const t = initTRPC.context<Context>().create({ sse: { ping: { enabled: true, intervalMs: 15_000 } } });
 const roomInput = z.object({ roomId: z.string().trim().toUpperCase().regex(/^[A-F0-9]{6}$/) });
-const name = z.string().trim().min(1).max(20);
+const name = z.string().trim().min(1).max(12, 'Use at most 12 characters for your username.');
 
 export function createRouter(store: RoomStore, problems: ProblemRepository) {
   return t.router({

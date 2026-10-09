@@ -188,7 +188,7 @@ export function Finished({ r }: { r: RoomState }) {
               <DifficultyPill difficulty={room.problem.difficulty} />
             </header>
           )}
-          <ResultsTable room={room} onReview={(name, code) => r.setReview({ name, code })} />
+          <ResultsTable room={room} ownCode={r.code} onReview={(name, code) => r.setReview({ name, code })} />
         </section>
 
         <div className="mt-6 flex flex-wrap items-center justify-end gap-2">
@@ -199,14 +199,6 @@ export function Finished({ r }: { r: RoomState }) {
                 : `${room.host} can skip the break.`}
             </p>
           )}
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={() => r.setReview({ name: room.me.name, code: r.code })}
-          >
-            <Icon.file size={14} />
-            View my code
-          </button>
           {r.isHost && (
             <button
               type="button"
