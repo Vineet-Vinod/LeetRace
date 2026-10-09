@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import "tailwindcss" source("../");
 
 /* =============================================================
    LEETRACE — Velocity Terminal Design System (Tailwind v4)
@@ -111,47 +111,6 @@
   ::-webkit-scrollbar-thumb:hover { background: var(--color-dim); }
 }
 
-/* --- Resize handles (need stateful CSS that Tailwind can't express) --- */
-@layer components {
-  .resize-handle-v {
-    width: 5px;
-    cursor: col-resize;
-    background: var(--color-brd);
-    transition: background 0.15s ease, box-shadow 0.15s ease;
-    flex-shrink: 0;
-    position: relative;
-    z-index: 5;
-  }
-  .resize-handle-v:hover,
-  .resize-handle-v.active {
-    background: var(--color-primary);
-    box-shadow: 0 0 8px rgba(0, 229, 199, 0.25);
-  }
-  .resize-handle-h {
-    height: 5px;
-    cursor: row-resize;
-    background: var(--color-brd);
-    transition: background 0.15s ease, box-shadow 0.15s ease;
-    flex-shrink: 0;
-    position: relative;
-    z-index: 5;
-  }
-  .resize-handle-h:hover,
-  .resize-handle-h.active {
-    background: var(--color-primary);
-    box-shadow: 0 0 8px rgba(0, 229, 199, 0.25);
-  }
-
-  /* Prevent text selection while dragging resize handles */
-  .resizing {
-    user-select: none !important;
-    cursor: col-resize !important;
-  }
-  .resizing-h {
-    user-select: none !important;
-    cursor: row-resize !important;
-  }
-}
 /* Markdown problem statements. */
 .problem-description p { margin: 0 0 1em; }
 .problem-description h2 { margin: 1.5em 0 0.75em; font-weight: 700; font-size: 1.15em; }
