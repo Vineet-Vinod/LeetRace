@@ -15,6 +15,24 @@ export function formatTimer(seconds: number) {
   return `${Math.floor(rounded / 60)}:${String(rounded % 60).padStart(2, "0")}`;
 }
 
+function copySelection(text: string) {
+  const focused = document.activeElement;
+  const input = document.createElement("textarea");
+  input.value = text;
+  input.readOnly = true;
+  input.tabIndex = -1;
+  input.setAttribute("aria-hidden", "true");
+  input.style.cssText = "position:fixed;top:0;left:0;opacity:0";
+  document.body.append(input);
+  try {
+    input.select();
+    if (!document.execCommand("copy")) throw new Error("Copy blocked");
+  } finally {
+    input.remove();
+    if (focused instanceof HTMLElement) focused.focus({ preventScroll: true });
+  }
+}
+
 export function useRoom() {
   const [params] = useSearchParams();
   const roomId = params.get("id") ?? "";
@@ -111,11 +129,20 @@ export function useRoom() {
 
   async function copyRoom() {
     try {
-      await navigator.clipboard.writeText(roomId);
+      if (navigator.clipboard) {
+        try {
+          await navigator.clipboard.writeText(roomId);
+        } catch {
+          copySelection(roomId);
+        }
+      } else {
+        copySelection(roomId);
+      }
+      setError("");
       setCopied(true);
       window.setTimeout(() => setCopied(false), 2000);
     } catch {
-      setError(`Room code: ${roomId}`);
+      setError(`Couldn't copy the code. Copy it manually: ${roomId}`);
     }
   }
 

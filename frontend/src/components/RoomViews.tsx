@@ -21,11 +21,8 @@ export function Lobby({ r }: { r: RoomState }) {
       <motion.div {...enter} className="relative mx-auto w-full max-w-[540px] px-4 py-10 sm:py-14">
         <div className="mb-6 text-center">
           <h1 className="text-[24px] font-semibold tracking-[-0.02em] text-fg">
-            Invite your rivals
+            Room Code
           </h1>
-          <p className="mt-1.5 text-[14px] text-fg-muted">
-            Share this code. Others join from the home page.
-          </p>
         </div>
 
         <section className="pop overflow-hidden">
