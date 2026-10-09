@@ -1,5 +1,7 @@
 import { spawn } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
+import { resolve as resolvePath } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { JsonValue, Problem } from './problems.js';
 import { decodeJsonValue, isJsonValue, jsonValueBytes, jsonValueSize } from './problem-values.js';
@@ -88,7 +90,8 @@ async function execute(code: string, problem: Problem): Promise<SubmissionResult
   const memoryLimitMb = Math.min(512, Math.max(128,
     Math.ceil((largestExpected * 16 + (inputBytes + largestInput) * 8) / MIB) + 64));
   return new Promise((resolve) => {
-    const child = spawn(process.env.PYTHON_BIN ?? 'python3', ['-I', '-X', 'utf8', worker], {
+    const python = process.env.PYTHON_BIN ?? (existsSync('.venv/bin/python3') ? resolvePath('.venv/bin/python3') : 'python3');
+    const child = spawn(python, ['-I', '-X', 'utf8', worker], {
       cwd: tmpdir(), env: { PATH: process.env.PATH }, stdio: ['pipe', 'pipe', 'pipe'],
     });
     let pending = '';

@@ -173,10 +173,28 @@ def main() -> None:
         except (ValueError, OSError):
             pass
     common: Dict[str, object] = {}
-    exec('from typing import *\nfrom collections import *\nfrom functools import *\n'
-         'from itertools import *\nfrom heapq import *\nfrom bisect import *\nfrom math import *\n'
-         'import collections, functools, itertools, heapq, bisect, math, random, re, string\n', common)
-    common.update({'TreeNode': TreeNode, 'ListNode': ListNode, 'pow': pow})
+    exec('''import collections, functools, itertools, heapq, bisect, math, random, re, string
+from typing import *
+from string import *
+from re import *
+from datetime import *
+from collections import *
+from heapq import *
+from bisect import *
+from copy import *
+from math import *
+from random import *
+from statistics import *
+from itertools import *
+from functools import *
+from operator import *
+from io import *
+from sys import *
+from json import *
+from builtins import *
+from sortedcontainers import *
+''', common)
+    common.update({'TreeNode': TreeNode, 'ListNode': ListNode})
     inputs = cast(List[List[JsonValue]], request['inputs'])
     parameters = cast(List[Dict[str, str]], request['parameters'])
     entry_point = cast(str, request['entryPoint'])
@@ -204,6 +222,7 @@ def main() -> None:
                 original = list_nodes(cast(Optional[ListNode], args[0])) if adapter in ('middle-list', 'reuse-list') else []
                 original_values = [node.val for node in original]
                 namespace = dict(common)
+                namespace.update({'stdout': stdout, 'stderr': stderr})
                 exec(compiled, namespace)
                 candidate = cast(Callable[..., object], eval(entry_point, namespace))
                 actual = candidate(*args)

@@ -37,24 +37,39 @@ describe('Python submission runner', () => {
     ]));
     expect(result).toMatchObject({ passed: 1, total: 2, solved: false, error: 'Wrong answer.' });
     expect(result.firstFailure).toEqual({ input: '[3]', expected: '7', actual: '6' });
-    const logs = await runCode('import sys\ndef solve():\n    print("x" * 6000)\n    print("problem", file=sys.stderr)\n    return 1',
+    const logs = await runCode('import sys\ndef solve():\n    print("x" * 6000, file=stdout)\n    print("problem", file=stderr)\n    print("module", file=sys.stderr)\n    return 1',
       problem([{ input: [], expected: 1 }]));
     expect(logs.stdout).toHaveLength(5000);
-    expect(logs.stderr).toBe('problem\n');
+    expect(logs.stderr).toBe('problem\nmodule\n');
   });
 
-  it('supports Python standard-library imports and LeetCode typing annotations', async () => {
+  it('preloads standard-library and sortedcontainers imports without counting them in the score', async () => {
     const fixture = problem([{ input: [[81, 16, 25]], expected: [4, 5] }]);
     fixture.parameters = [{ name: 'values', type: 'List[int]' }];
     fixture.returnType = 'List[int]';
     fixture.entryPoint = 'Solution().solve';
-    const result = await runCode(`import heapq
-from math import isqrt
-class Solution:
+    const code = `class Solution:
     def solve(self, values: List[int]) -> List[int]:
-        return [isqrt(value) for value in heapq.nsmallest(2, values)]
-`, fixture);
-    expect(result.solved).toBe(true);
+        assert ascii_lowercase.startswith('abc')
+        assert fullmatch(r'\\d+', '123')
+        assert datetime(2020, 1, 1) + timedelta(days=1) == datetime(2020, 1, 2)
+        assert Counter(values)[81] == 1
+        assert bisect([1, 2], 2) == 2
+        assert deepcopy(values) == values and deepcopy(values) is not values
+        assert randint(7, 7) == 7 and 0 <= random() < 1
+        assert median([1, 2, 3]) == 2
+        assert list(chain([1], [2])) == [1, 2]
+        assert reduce(add, [1, 2]) == 3
+        assert StringIO('hello').read() == 'hello'
+        assert maxsize > 1000
+        assert loads('{"value": 1}') == {'value': 1}
+        assert pow(2, 3, 5) == 3
+        assert list(SortedSet([2, 1, 2])) == [1, 2]
+        assert list(SortedDict({2: 'b', 1: 'a'})) == [1, 2]
+        return [isqrt(value) for value in SortedList(nsmallest(2, values))]
+`;
+    const result = await runCode(code, fixture);
+    expect(result).toMatchObject({ solved: true, error: null, charCount: code.length });
   });
 
   it('creates a fresh submission namespace for each testcase', async () => {
