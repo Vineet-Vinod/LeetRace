@@ -271,10 +271,7 @@ export function ChatDock({
         <nav
           aria-label="Side panels"
           className="absolute inset-y-0 right-0 flex w-[42px] items-center justify-center"
-          style={{
-            visibility: open ? "hidden" : "visible",
-            transition: open ? "none" : `visibility 0s ${CHAT_MS}ms`,
-          }}
+          style={{ visibility: open ? "hidden" : "visible" }}
         >
           <button
             type="button"
