@@ -176,7 +176,7 @@ function UnreadBadge({ count }: { count: number }) {
 const CHAT_EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
 const CHAT_MS = 240;
 
-/** Chat column on wide screens: animated aside + always-visible rail. */
+/** The chat rail expands into a single resizable pane on wide screens. */
 export function ChatDock({
   room,
   layout,
@@ -244,23 +244,27 @@ export function ChatDock({
     );
 
   return (
-    <>
+    <div
+      className="flex min-h-0"
+      style={{
+        flex: `0 0 ${open ? chatWidth + 60 : 52}px`,
+        transition: dragging ? "none" : `flex-basis ${CHAT_MS}ms ${CHAT_EASE}`,
+      }}
+    >
       <div
+        {...layout.handleProps("chat")}
+        tabIndex={open ? 0 : -1}
         aria-hidden={!open}
-        className="flex min-h-0 overflow-hidden"
-        style={{
-          flex: `0 0 ${open ? chatWidth + 8 : 0}px`,
-          visibility: open ? "visible" : "hidden",
-          transition: dragging
-            ? "none"
-            : `flex-basis ${CHAT_MS}ms ${CHAT_EASE}, visibility 0s linear ${open ? 0 : CHAT_MS}ms`,
-        }}
-      >
-        <div {...layout.handleProps("chat")} className="handle" />
-        <aside
+        className="handle"
+        style={{ width: open ? 8 : 0, visibility: open ? "visible" : "hidden" }}
+      />
+      <aside aria-label="Chat dock" className="panel ml-2 flex min-h-0 min-w-0 flex-1 overflow-hidden">
+        <div
+          role="region"
           aria-label="Room chat"
-          className="panel flex min-h-0 flex-none flex-col overflow-hidden"
-          style={{ width: chatWidth }}
+          aria-hidden={!open}
+          className="min-h-0 min-w-0 flex-1"
+          style={{ visibility: open ? "visible" : "hidden" }}
         >
           <ChatPanel
             room={room}
@@ -268,36 +272,29 @@ export function ChatDock({
             onClose={() => toggleChat(false)}
             inputRef={layout.chatInputRef}
           />
-        </aside>
-      </div>
-      <nav
-        aria-label="Side panels"
-        className="panel ml-2 flex w-11 flex-none flex-col items-center gap-2 py-2"
-      >
-        <button
-          type="button"
-          onClick={() => toggleChat()}
-          aria-label={
-            open ? "Close chat" : unread ? `Open chat, ${unread} unread` : "Open chat"
-          }
-          aria-expanded={open}
-          title={`Chat (${shortcuts.chat.join(" ")})`}
-          className={cx(
-            "relative flex size-8 items-center justify-center rounded-md transition-colors",
-            open
-              ? "bg-accent/12 text-accent shadow-[inset_0_0_0_1px_rgb(139_140_248/0.3)]"
-              : "text-fg-subtle hover:bg-white/5 hover:text-fg",
-          )}
+        </div>
+        <nav
+          aria-label="Side panels"
+          className={cx("flex w-[42px] flex-none items-center justify-center", open && "border-l border-line")}
         >
-          <Icon.chat size={16} />
-          <UnreadBadge count={unread} />
-        </button>
-        <kbd className="kbd !h-auto flex-col gap-0.5 !px-0.5 py-1 !text-[9.5px] leading-none">
-          {shortcuts.chat.map((key) => (
-            <span key={key}>{key}</span>
-          ))}
-        </kbd>
-      </nav>
-    </>
+          <button
+            type="button"
+            onClick={() => toggleChat()}
+            aria-label={open ? "Close chat" : unread ? `Open chat, ${unread} unread` : "Open chat"}
+            aria-expanded={open}
+            title={`Chat (${shortcuts.chat.join(" + ")})`}
+            className={cx(
+              "relative flex size-8 items-center justify-center rounded-md transition-colors",
+              open
+                ? "bg-accent/12 text-accent shadow-[inset_0_0_0_1px_rgb(139_140_248/0.3)]"
+                : "text-fg-subtle hover:bg-white/5 hover:text-fg",
+            )}
+          >
+            <Icon.chat size={16} />
+            <UnreadBadge count={unread} />
+          </button>
+        </nav>
+      </aside>
+    </div>
   );
 }

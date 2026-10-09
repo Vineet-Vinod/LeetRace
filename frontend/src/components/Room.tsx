@@ -64,28 +64,25 @@ function Header({ r }: { r: RoomState }) {
   return (
     <header className="relative grid h-12 flex-none grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 border-b border-line px-3 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
       <div className="flex min-w-0 items-center gap-2.5">
-        <span className="flex flex-none items-center gap-2">
+        <button
+          type="button"
+          onClick={() => {
+            void r.leave();
+          }}
+          disabled={!r.canAct}
+          aria-label="Leave room and go home"
+          title="Leave room and go home"
+          className="flex flex-none items-center gap-2 rounded-md disabled:opacity-45"
+        >
           <LogoMark size={22} />
           <span className="hidden text-[14px] font-semibold tracking-[-0.02em] text-fg xl:inline">
             Leet<span className="text-fg-muted">Race</span>
           </span>
-        </span>
-        <span aria-hidden className="h-4 w-px flex-none bg-line-strong" />
-        <button
-          type="button"
-          onClick={() => {
-            void r.copyRoom();
-          }}
-          title="Copy room code"
-          aria-label={r.copied ? "Room code copied" : `Copy room code ${r.roomId}`}
-          className={cx(
-            "inline-flex h-7 flex-none items-center gap-1.5 rounded-md border border-line bg-surface px-2 font-mono text-[12px] tracking-[0.14em] transition-colors hover:border-line-hover hover:text-fg",
-            r.copied ? "text-ok" : "text-fg-muted",
-          )}
-        >
-          {r.roomId}
-          {r.copied ? <Icon.check size={13} /> : <Icon.copy size={13} className="text-fg-subtle" />}
         </button>
+        <span aria-hidden className="h-4 w-px flex-none bg-line-strong" />
+        <span className="inline-flex h-7 flex-none items-center rounded-md border border-line bg-surface px-2 font-mono text-[12px] tracking-[0.14em] text-fg-muted">
+          {r.roomId}
+        </span>
         {room.state !== "lobby" && (
           <span className="flex-none font-mono text-[12px] tabular-nums text-fg-subtle">
             <span className="hidden font-sans sm:inline">Round </span>
@@ -111,9 +108,7 @@ function Header({ r }: { r: RoomState }) {
               {formatTimer(room.breakRemaining)}
             </span>
           </span>
-        ) : room.state === "lobby" ? (
-          <span className="text-[12.5px] text-fg-subtle">Lobby</span>
-        ) : (
+        ) : room.state === "lobby" ? null : (
           <span className="text-[12.5px] text-fg-subtle">Race complete</span>
         )}
       </div>
@@ -121,19 +116,17 @@ function Header({ r }: { r: RoomState }) {
       <div className="flex min-w-0 items-center justify-end gap-3">
         <span
           role="status"
+          aria-label={r.connected ? "Connected" : "Reconnecting"}
+          title={r.connected ? "Connected" : "Reconnecting"}
           className={cx(
             "flex flex-none items-center gap-1.5 text-[12px]",
             r.connected ? "text-fg-subtle" : "text-warn",
           )}
         >
           <LiveDot tone={r.connected ? "ok" : "warn"} />
-          <span className="hidden lg:inline">{r.connected ? "Connected" : "Reconnecting…"}</span>
         </span>
-        <span className="flex min-w-0 items-center gap-2">
+        <span aria-label={room.me.name} title={room.me.name}>
           <Avatar name={room.me.name} size={22} />
-          <span className="hidden truncate text-[13px] font-medium text-fg sm:inline">
-            {room.me.name}
-          </span>
         </span>
         <button
           type="button"
@@ -141,10 +134,11 @@ function Header({ r }: { r: RoomState }) {
             void r.leave();
           }}
           disabled={!r.canAct}
-          className="btn btn-ghost btn-sm"
+          aria-label="Leave room"
+          title="Leave room"
+          className="btn btn-ghost btn-sm btn-icon"
         >
           <Icon.leave size={14} />
-          <span className="hidden sm:inline">Leave</span>
         </button>
       </div>
 
