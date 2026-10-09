@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import Editor, { loader, type OnMount } from "@monaco-editor/react";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api.js";
 import "monaco-editor/esm/vs/basic-languages/python/python.contribution.js";
@@ -11,11 +11,22 @@ self.MonacoEnvironment = {
 };
 loader.config({ monaco });
 
+export type EditorInstance = monaco.editor.IStandaloneCodeEditor;
+
+export interface EditorTheme {
+  name: string;
+  data: monaco.editor.IStandaloneThemeData;
+}
+
 interface Props {
   value: string;
   onChange: (value: string) => void;
   readOnly: boolean;
   onSubmit: () => void;
+  theme: EditorTheme;
+  fontFamily: string;
+  onEditor?: (editor: EditorInstance) => void;
+  loading?: ReactNode;
 }
 
 export default function CodeEditor({
@@ -23,6 +34,10 @@ export default function CodeEditor({
   onChange,
   readOnly,
   onSubmit,
+  theme,
+  fontFamily,
+  onEditor,
+  loading,
 }: Props) {
   const submit = useRef(onSubmit);
   const currentValue = useRef(value);
@@ -32,30 +47,14 @@ export default function CodeEditor({
   }, [onSubmit]);
 
   const onMount: OnMount = (editor, instance) => {
-    instance.editor.defineTheme("leetrace", {
-      base: "vs-dark",
-      inherit: true,
-      rules: [
-        { token: "comment", foreground: "4e506a", fontStyle: "italic" },
-        { token: "keyword", foreground: "00e5c7" },
-        { token: "string", foreground: "ff5a9d" },
-        { token: "number", foreground: "a855f7" },
-      ],
-      colors: {
-        "editor.background": "#0b0b16",
-        "editor.foreground": "#e4e6f0",
-        "editor.lineHighlightBackground": "#111122",
-        "editor.selectionBackground": "#00e5c730",
-        "editorCursor.foreground": "#00e5c7",
-        "editorLineNumber.foreground": "#4e506a",
-      },
-    });
-    instance.editor.setTheme("leetrace");
+    instance.editor.defineTheme(theme.name, theme.data);
+    instance.editor.setTheme(theme.name);
     editor.addCommand(instance.KeyMod.CtrlCmd | instance.KeyCode.Enter, () =>
       submit.current(),
     );
     editor.setValue(currentValue.current);
     editor.focus();
+    onEditor?.(editor);
   };
 
   return (
@@ -69,7 +68,8 @@ export default function CodeEditor({
       options={{
         readOnly,
         fontSize: 14,
-        fontFamily: "'JetBrains Mono', monospace",
+        fontFamily,
+        fontLigatures: true,
         tabSize: 4,
         wordWrap: "on",
         // Monaco 0.55 leaves occurrence requests unhandled when editors close.
@@ -77,9 +77,17 @@ export default function CodeEditor({
         minimap: { enabled: false },
         scrollBeyondLastLine: false,
         automaticLayout: true,
+        renderLineHighlight: "line",
+        cursorBlinking: "smooth",
+        cursorSmoothCaretAnimation: "on",
+        smoothScrolling: true,
         padding: { top: 12, bottom: 12 },
+        overviewRulerBorder: false,
+        hideCursorInOverviewRuler: true,
+        scrollbar: { verticalScrollbarSize: 6, horizontalScrollbarSize: 6 },
+        bracketPairColorization: { enabled: true },
       }}
-      loading={<p className="p-5 text-muted">Loading editor...</p>}
+      loading={loading}
     />
   );
 }
