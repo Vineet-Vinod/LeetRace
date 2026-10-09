@@ -8,6 +8,8 @@ Install Node.js 24 or newer, pnpm, and Python 3.9 or newer, then run:
 
 ```sh
 pnpm install
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
 pnpm dev
 ```
 
@@ -52,6 +54,8 @@ Large testcase values use a `$json` field containing base64-encoded zlib JSON, w
 
 ## Submission judging
 
-Python submissions complete the supplied starter, usually a method on `Solution`. The TypeScript judge runs code in a separate Python process, with a fresh namespace for every testcase. Expected outputs stay in the parent process. Feedback includes tests passed, runtime, bounded stdout and stderr, and the first failing input and output. Character counts include whitespace.
+Python submissions complete the supplied starter, usually a method on `Solution`. The judge preloads wildcard imports from `typing`, `string`, `re`, `datetime`, `collections`, `heapq`, `bisect`, `copy`, `math`, `random`, `statistics`, `itertools`, `functools`, `operator`, `io`, `sys`, `json`, `builtins`, and `sortedcontainers`, in that order. These imports do not count toward the score. The runner uses `.venv/bin/python3` when available, or `PYTHON_BIN` if set.
+
+The TypeScript judge runs code in a separate Python process, with a fresh namespace for every testcase. Expected outputs stay in the parent process. Feedback includes tests passed, runtime, bounded stdout and stderr, and the first failing input and output. Character counts include whitespace.
 
 The runner limits execution time, output, and concurrency, and applies a memory cap on Linux. Python resource limits do not provide filesystem or network isolation. Public deployments accepting hostile code need operating-system or container isolation around each submission.
