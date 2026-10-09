@@ -122,9 +122,14 @@ export function usePaneLayout({
     return () => window.removeEventListener("keydown", onKeyDown, true);
   }, [chatOpen, toggleChat]);
 
-  const chatWidth = chatOpen ? sizes.chatWidth : 0;
+  const chatWidth = clamp(
+    sizes.chatWidth,
+    MIN_CHAT,
+    containerWidth ? Math.min(MAX_CHAT, containerWidth - MIN_PROBLEM - MIN_EDITOR - 24) : MAX_CHAT,
+  );
+  const chatSpace = chatOpen ? chatWidth + 16 : 52;
   const maxEditor = containerWidth
-    ? containerWidth - MIN_PROBLEM - chatWidth
+    ? containerWidth - MIN_PROBLEM - chatSpace - 8
     : Infinity;
   const editorWidth = clamp(sizes.editorWidth, MIN_EDITOR, maxEditor);
 
@@ -138,7 +143,7 @@ export function usePaneLayout({
           editorWidth: clamp(
             start.editorWidth - delta,
             MIN_EDITOR,
-            width - MIN_PROBLEM - chatWidth,
+            width - MIN_PROBLEM - chatSpace - 8,
           ),
         };
       if (splitter === "chat")
@@ -147,7 +152,7 @@ export function usePaneLayout({
           chatWidth: clamp(
             start.chatWidth - delta,
             MIN_CHAT,
-            Math.min(MAX_CHAT, width - MIN_PROBLEM - editorWidth),
+            Math.min(MAX_CHAT, width - MIN_PROBLEM - editorWidth - 24),
           ),
         };
       return {
@@ -175,7 +180,7 @@ export function usePaneLayout({
         const target = event.currentTarget;
         target.setPointerCapture(event.pointerId);
         const origin = vertical ? event.clientX : event.clientY;
-        const start = { ...sizes, editorWidth };
+        const start = { ...sizes, editorWidth, chatWidth };
         setDragging(splitter);
         document.body.style.cursor = vertical ? "col-resize" : "row-resize";
         document.body.style.userSelect = "none";
@@ -204,7 +209,7 @@ export function usePaneLayout({
         const delta = keys[event.key as keyof typeof keys];
         if (delta === undefined) return;
         event.preventDefault();
-        resize(splitter, { ...sizes, editorWidth }, delta);
+        resize(splitter, { ...sizes, editorWidth, chatWidth }, delta);
       },
     } as const;
   }
@@ -216,7 +221,7 @@ export function usePaneLayout({
     wide,
     dragging,
     editorWidth,
-    chatWidth: sizes.chatWidth,
+    chatWidth,
     resultsHeight: sizes.resultsHeight,
     chatOpen,
     toggleChat,
