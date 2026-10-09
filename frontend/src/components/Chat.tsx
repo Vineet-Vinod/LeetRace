@@ -66,9 +66,6 @@ function ChatPanel({
       >
         {room.messages.length === 0 ? (
           <div className="flex h-full flex-col items-center justify-center gap-2 px-6 text-center">
-            <span className="flex size-9 items-center justify-center rounded-full border border-line bg-raised text-fg-subtle">
-              <Icon.chat size={16} />
-            </span>
             <p className="text-[13px] text-fg-muted">No messages yet</p>
             <p className="text-[12px] text-fg-subtle">
               Everyone in the room can see what you send.
@@ -191,10 +188,11 @@ export function ChatDock({
           onClick={() => toggleChat(true)}
           aria-label={unread ? `Open chat, ${unread} unread` : "Open chat"}
           aria-expanded={open}
-          className={cx(
-            "pop fixed bottom-4 right-4 z-30 flex h-11 items-center gap-2 rounded-full pl-3.5 pr-3 text-[13px] font-medium text-fg transition-opacity",
-            open && "pointer-events-none opacity-0",
-          )}
+          className="pop fixed bottom-4 right-4 z-30 flex h-11 items-center gap-2 rounded-full pl-3.5 pr-3 text-[13px] font-medium text-fg"
+          style={{
+            visibility: open ? "hidden" : "visible",
+            transition: open ? "none" : `visibility 0s ${CHAT_MS}ms`,
+          }}
         >
           <Icon.chat size={16} />
           Chat
@@ -271,7 +269,10 @@ export function ChatDock({
         <nav
           aria-label="Side panels"
           className="absolute inset-y-0 right-0 flex w-[42px] items-center justify-center"
-          style={{ visibility: open ? "hidden" : "visible" }}
+          style={{
+            visibility: open ? "hidden" : "visible",
+            transition: open ? "none" : `visibility 0s ${CHAT_MS}ms`,
+          }}
         >
           <button
             type="button"
