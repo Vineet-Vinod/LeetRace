@@ -124,6 +124,37 @@ describe('game rooms', () => {
     expect(store.snapshot(host.roomId, host.token).me.locked).toBe(false);
   });
 
+  it('stops waiting for players whose room stream closed without leaving', () => {
+    const { store, host, advance } = setup();
+    const guest = store.join(host.roomId, 'Chat');
+    store.listen(host.roomId, host.token, () => {});
+    const closeGuest = store.listen(host.roomId, guest.token, () => {});
+    store.start(host.roomId, host.token);
+    closeGuest();
+    store.resign(host.roomId, host.token);
+    advance(14_000);
+    expect(store.snapshot(host.roomId, host.token).state).toBe('playing');
+    expect(store.snapshot(host.roomId, host.token).rankings.find((player) => player.name === 'Chat')?.away).toBe(false);
+    advance(1_000);
+    const snapshot = store.snapshot(host.roomId, host.token);
+    expect(snapshot.state).toBe('finished');
+    expect(snapshot.rankings.find((player) => player.name === 'Chat')?.away).toBe(true);
+  });
+
+  it('keeps waiting for a player who reconnects within the grace period', () => {
+    const { store, host, advance } = setup();
+    const guest = store.join(host.roomId, 'Chat');
+    store.listen(host.roomId, host.token, () => {});
+    const closeGuest = store.listen(host.roomId, guest.token, () => {});
+    store.start(host.roomId, host.token);
+    closeGuest();
+    advance(5_000);
+    store.listen(host.roomId, guest.token, () => {});
+    store.resign(host.roomId, host.token);
+    advance(20_000);
+    expect(store.snapshot(host.roomId, host.token).state).toBe('playing');
+  });
+
   it('transfers host on leave and removes empty or expired rooms', () => {
     const { store, host, advance } = setup();
     const guest = store.join(host.roomId, 'Chat');
