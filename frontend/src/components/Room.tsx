@@ -61,7 +61,7 @@ function Header({ r }: { r: RoomState }) {
   const progress = playing && room.timeLimit ? Math.max(0, room.remaining / room.timeLimit) : 0;
 
   return (
-    <header className="relative grid h-12 flex-none grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 border-b border-line px-3">
+    <header className="relative grid h-12 flex-none grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 border-b border-line px-4 sm:px-5">
       <div className="flex min-w-0 items-center gap-2.5">
         <button
           type="button"

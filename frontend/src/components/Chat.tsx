@@ -258,8 +258,8 @@ export function ChatDock({
           role="region"
           aria-label="Room chat"
           aria-hidden={!open}
-          className="min-h-0 min-w-0 flex-1"
-          style={{ display: open ? undefined : "none" }}
+          className="min-h-0 flex-none"
+          style={{ display: open ? undefined : "none", width: chatWidth - 2 }}
         >
           <ChatPanel
             room={room}
