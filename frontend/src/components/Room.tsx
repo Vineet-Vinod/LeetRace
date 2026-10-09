@@ -14,6 +14,7 @@ import { StandingsStrip } from "./Standings";
 import { editorFont, graphiteTheme } from "./editorTheme";
 import {
   Avatar,
+  DifficultyPill,
   Icon,
   Kbd,
   LogoMark,
@@ -266,9 +267,12 @@ function Workspace({
           <h2 className="text-[13px] font-medium text-fg">Description</h2>
         </header>
         <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-8 pt-5">
-          <h1 className="mb-5 text-[19px] font-semibold leading-snug tracking-[-0.02em] text-fg">
+          <h1 className="text-[19px] font-semibold leading-snug tracking-[-0.02em] text-fg">
             {problem.title}
           </h1>
+          <div className="mb-5 mt-2">
+            <DifficultyPill difficulty={problem.difficulty} />
+          </div>
           <article className="problem-description">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{problem.statement}</ReactMarkdown>
           </article>
