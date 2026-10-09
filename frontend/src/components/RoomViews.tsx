@@ -16,9 +16,9 @@ export function Lobby({ r }: { r: RoomState }) {
       ? [...room.players.slice(0, 3), null, ...room.players.slice(-2)]
       : room.players;
   return (
-    <div className="relative min-h-0 min-w-0 flex-1 overflow-y-auto">
+    <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto">
       <div aria-hidden className="backdrop-grid pointer-events-none absolute inset-0" />
-      <motion.div {...enter} className="relative mx-auto w-full max-w-[540px] px-4 py-10 sm:py-14">
+      <motion.div {...enter} className="relative mx-auto my-auto w-full max-w-[540px] flex-none px-4 py-10 sm:py-14">
         <div className="mb-6 text-center">
           <h1 className="text-[24px] font-semibold tracking-[-0.02em] text-fg">
             Room Code
