@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { formatTimer, type RoomState } from "../hooks/useRoom";
 import { ResultsTable } from "./Standings";
-import { Avatar, DifficultyPill, Icon, LiveDot, Spinner, cx } from "./ui";
+import { Avatar, DifficultyPill, Icon, Spinner, cx } from "./ui";
 
 const enter = {
   initial: { opacity: 0, y: 8 },
@@ -11,14 +11,15 @@ const enter = {
 
 export function Lobby({ r }: { r: RoomState }) {
   const room = r.room!;
+  const players =
+    room.players.length > 5
+      ? [...room.players.slice(0, 3), null, ...room.players.slice(-2)]
+      : room.players;
   return (
     <div className="relative min-h-0 min-w-0 flex-1 overflow-y-auto">
       <div aria-hidden className="backdrop-grid pointer-events-none absolute inset-0" />
       <motion.div {...enter} className="relative mx-auto w-full max-w-[540px] px-4 py-10 sm:py-14">
         <div className="mb-6 text-center">
-          <span className="pill pill-accent mb-4">
-            <LiveDot tone="accent" /> Lobby open
-          </span>
           <h1 className="text-[24px] font-semibold tracking-[-0.02em] text-fg">
             Invite your rivals
           </h1>
@@ -34,44 +35,38 @@ export function Lobby({ r }: { r: RoomState }) {
               onClick={() => {
                 void r.copyRoom();
               }}
-              aria-label={`Copy room code ${r.roomId}`}
+              aria-label={r.copied ? `Room code ${r.roomId} copied` : `Copy room code ${r.roomId}`}
+              title={r.copied ? "Copied" : "Copy room code"}
               className="group flex gap-1.5 rounded-xl p-1 transition-colors"
             >
               {Array.from(r.roomId).map((char, index) => (
                 <span
                   key={index}
-                  className="flex h-14 w-11 items-center justify-center rounded-lg border border-line-strong bg-sunken font-mono text-[26px] font-medium text-fg shadow-[inset_0_1px_0_rgb(255_255_255/0.03)] transition-colors group-hover:border-line-hover"
+                  className={cx(
+                    "flex h-14 w-9 items-center justify-center rounded-lg border bg-sunken font-mono text-[26px] font-medium shadow-[inset_0_1px_0_rgb(255_255_255/0.03)] transition-colors sm:w-11",
+                    r.copied ? "border-ok/50 text-ok" : "border-line-strong text-fg group-hover:border-line-hover",
+                  )}
                 >
                   {char}
                 </span>
               ))}
             </button>
-            <button
-              type="button"
-              onClick={() => {
-                void r.copyRoom();
-              }}
-              className={cx("btn btn-secondary btn-sm", r.copied && "!text-ok")}
-            >
-              {r.copied ? <Icon.check size={14} /> : <Icon.copy size={14} />}
-              {r.copied ? "Copied to clipboard" : "Copy code"}
-            </button>
           </div>
 
-          <dl className="grid grid-cols-3 border-y border-line bg-surface/60">
-            <div className="flex flex-col gap-1 px-5 py-3.5">
+          <dl className="grid grid-cols-3 border-y border-line bg-surface/60 text-center">
+            <div className="flex flex-col items-center gap-1 px-3 py-3.5 sm:px-5">
               <dt className="section-label">Difficulty</dt>
               <dd>
                 <DifficultyPill difficulty={room.difficulty} />
               </dd>
             </div>
-            <div className="flex flex-col gap-1 border-x border-line px-5 py-3.5">
+            <div className="flex flex-col items-center gap-1 border-x border-line px-3 py-3.5 sm:px-5">
               <dt className="section-label">Time per round</dt>
               <dd className="font-mono text-[14px] tabular-nums text-fg">
                 {formatTimer(room.timeLimit)}
               </dd>
             </div>
-            <div className="flex flex-col gap-1 px-5 py-3.5">
+            <div className="flex flex-col items-center gap-1 px-3 py-3.5 sm:px-5">
               <dt className="section-label">Rounds</dt>
               <dd className="font-mono text-[14px] tabular-nums text-fg">
                 {room.totalRounds}
@@ -79,53 +74,51 @@ export function Lobby({ r }: { r: RoomState }) {
             </div>
           </dl>
 
-          <div className="px-5 py-4">
-            <h2 className="section-label mb-2 flex items-center gap-1.5">
+          <div className="flex flex-col items-center px-5 py-4">
+            <h2 className="section-label mb-3 flex items-center gap-1.5">
               Players
               <span className="font-mono tabular-nums text-fg-muted">
                 {room.players.length}
               </span>
             </h2>
-            <ul className="flex flex-col">
-              {room.players.map((name) => (
+            <ul aria-label="Players" className="flex items-center justify-center gap-3">
+              {players.map((name) => name === null ? (
+                <li
+                  key="more"
+                  aria-label={`${room.players.length - 5} more players`}
+                  title={room.players.slice(3, -2).join(", ")}
+                  className="text-[20px] text-fg-subtle"
+                >
+                  …
+                </li>
+              ) : (
                 <motion.li
-                  key={name}
+                  key={`player:${name}`}
                   layout
                   initial={{ opacity: 0, x: -4 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className="flex h-10 items-center gap-3 border-b border-line/70 last:border-b-0"
+                  aria-label={name}
+                  title={`${name}${name === room.host ? " (host)" : ""}${name === room.me.name ? " (you)" : ""}`}
                 >
-                  <Avatar name={name} size={26} />
-                  <span className="truncate text-[13.5px] font-medium text-fg">{name}</span>
-                  <span className="ml-auto flex gap-1.5">
-                    {name === room.me.name && <span className="pill">You</span>}
-                    {name === room.host && <span className="pill pill-accent">Host</span>}
-                  </span>
+                  <Avatar name={name} size={32} />
                 </motion.li>
               ))}
             </ul>
           </div>
 
-          <footer className="flex items-center justify-between gap-3 border-t border-line bg-surface/60 px-5 py-3.5">
+          <footer className="flex items-center justify-center border-t border-line bg-surface/60 px-5 py-3.5">
             {r.isHost ? (
-              <>
-                <p className="text-[12.5px] text-fg-subtle">
-                  {room.players.length === 1
-                    ? "You can start solo or wait for others."
-                    : `${room.players.length} players ready.`}
-                </p>
-                <button
-                  type="button"
-                  disabled={!r.canAct}
-                  className="btn btn-primary"
-                  onClick={() => {
-                    void r.start();
-                  }}
-                >
-                  {r.pending ? <Spinner /> : <Icon.play size={13} />}
-                  {r.pending ? "Starting…" : "Start race"}
-                </button>
-              </>
+              <button
+                type="button"
+                disabled={!r.canAct}
+                className="btn btn-primary"
+                onClick={() => {
+                  void r.start();
+                }}
+              >
+                {r.pending ? <Spinner /> : <Icon.play size={13} />}
+                {r.pending ? "Starting…" : "Start race"}
+              </button>
             ) : (
               <p className="flex items-center gap-2.5 text-[13px] text-fg-muted">
                 <Spinner className="text-fg-subtle" />
