@@ -245,7 +245,7 @@ export function ChatDock({
 
   return (
     <div
-      className="flex min-h-0"
+      className="flex min-h-0 min-w-0"
       style={{
         flex: `0 0 ${open ? chatWidth + 60 : 52}px`,
         transition: dragging ? "none" : `flex-basis ${CHAT_MS}ms ${CHAT_EASE}`,
@@ -264,7 +264,7 @@ export function ChatDock({
           aria-label="Room chat"
           aria-hidden={!open}
           className="min-h-0 min-w-0 flex-1"
-          style={{ visibility: open ? "visible" : "hidden" }}
+          style={{ display: open ? undefined : "none" }}
         >
           <ChatPanel
             room={room}
