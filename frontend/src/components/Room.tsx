@@ -1,604 +1,481 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { useEffect, useRef, type MutableRefObject } from "react";
+import { Link, Navigate } from "react-router-dom";
+import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import * as monaco from "monaco-editor/esm/vs/editor/editor.api.js";
+import { useRoom, formatTimer, type RoomState } from "../hooks/useRoom";
+import { usePaneLayout, type PaneLayout } from "../hooks/usePaneLayout";
+import CodeEditor, { type EditorInstance } from "./CodeEditor";
+import { ChatDock } from "./Chat";
+import { ResultsPane } from "./Results";
+import { Finished, Lobby } from "./RoomViews";
+import { StandingsStrip } from "./Standings";
+import { editorFont, graphiteTheme } from "./editorTheme";
 import {
-  api,
-  errorMessage,
-  sessionToken,
-  type RoomSnapshot,
-  type Submission,
-} from "../api";
-import CodeEditor from "./CodeEditor";
+  Avatar,
+  DifficultyPill,
+  Icon,
+  Kbd,
+  LiveDot,
+  LogoMark,
+  Spinner,
+  cx,
+  shortcuts,
+} from "./ui";
 
-const primaryButton =
-  "px-5 py-2.5 bg-primary text-inverse rounded-lg font-display text-sm font-semibold uppercase tracking-wider hover:bg-primary-bright disabled:opacity-40 disabled:cursor-not-allowed";
-const secondaryButton =
-  "px-4 py-2.5 border border-brd-light rounded-lg font-display text-sm text-muted hover:text-light hover:border-primary disabled:opacity-40 disabled:cursor-not-allowed";
-
-function formatTimer(seconds: number) {
-  const rounded = Math.max(0, Math.ceil(seconds));
-  return `${Math.floor(rounded / 60)}:${String(rounded % 60).padStart(2, "0")}`;
+function listNames(names: string[]) {
+  if (names.length <= 3) return names.join(", ");
+  return `${names.slice(0, 3).join(", ")} and ${names.length - 3} more`;
 }
 
-function Scoreboard({
-  room,
-  onReview,
-}: {
-  room: RoomSnapshot;
-  onReview?: (name: string, code: string) => void;
-}) {
+function Timer({ remaining, total }: { remaining: number; total: number }) {
+  const danger = remaining <= 30;
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-left text-sm border-separate border-spacing-y-2">
-        <thead className="font-display uppercase text-xs tracking-wider text-dim">
-          <tr>
-            <th className="p-3">Rank</th>
-            <th className="p-3">Player</th>
-            <th className="p-3">Best</th>
-            <th className="p-3">Tests</th>
-            {onReview && <th className="p-3">Code</th>}
-          </tr>
-        </thead>
-        <tbody>
-          {room.rankings.map((player) => (
-            <tr key={player.name} className="bg-elevated">
-              <td className="p-3 rounded-l-lg font-mono text-muted">
-                {player.position}
-              </td>
-              <td
-                className={`p-3 font-display ${player.name === room.me.name ? "text-primary" : "text-light"}`}
-              >
-                {player.name}
-              </td>
-              <td className="p-3 font-mono whitespace-nowrap">
-                <span className={player.solved ? "text-ok" : "text-dim"}>
-                  {player.solved
-                    ? `${player.charCount} chars`
-                    : player.resigned
-                      ? "Resigned"
-                      : "Unsolved"}
-                </span>
-                {player.lockedAt !== null && (
-                  <span className="text-warn text-xs ml-2">Locked</span>
-                )}
-              </td>
-              <td className="p-3 font-mono text-muted">
-                {player.testsPassed}/{player.testsTotal}
-              </td>
-              {onReview && (
-                <td className="p-3 rounded-r-lg">
-                  {player.code !== null && (
-                    <button
-                      className="text-primary hover:underline"
-                      onClick={() => onReview(player.name, player.code ?? "")}
-                    >
-                      View
-                    </button>
-                  )}
-                </td>
-              )}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function Output({ result }: { result: Submission | null }) {
-  if (!result)
-    return (
-      <p className="text-dim">
-        Submit your code to see results. Ctrl/Cmd + Enter submits.
-      </p>
-    );
-  return (
-    <div className="flex flex-col gap-2 font-mono text-sm whitespace-pre-wrap break-words">
-      <p className={result.solved ? "text-ok" : "text-warn"}>
-        {result.solved
-          ? `Solved! ${result.charCount} characters`
-          : `${result.passed}/${result.total} tests passed`}{" "}
-        <span className="text-dim">{Math.round(result.timeMs)} ms</span>
-      </p>
-      {result.error && <p className="text-err">{result.error}</p>}
-      {result.firstFailure && (
-        <div className="p-3 bg-elevated rounded border border-brd">
-          <p className="text-muted mb-2">First failing test</p>
-          <p>Input: {result.firstFailure.input}</p>
-          <p className="text-ok">Expected: {result.firstFailure.expected}</p>
-          <p className="text-err">Received: {result.firstFailure.actual}</p>
-        </div>
+    <div
+      role="timer"
+      aria-label={`${formatTimer(remaining)} remaining`}
+      className={cx(
+        "flex h-8 items-center gap-2 rounded-lg border px-3 transition-colors",
+        danger
+          ? "border-bad/35 bg-bad/10 text-bad"
+          : "border-line bg-surface text-fg",
       )}
-      {result.stdout && (
-        <div className="border-t border-brd pt-2 text-muted">
-          Output:{"\n"}
-          {result.stdout}
-        </div>
-      )}
-      {result.stderr && <div className="text-err">{result.stderr}</div>}
-    </div>
-  );
-}
-
-function Chat({
-  room,
-  onSend,
-}: {
-  room: RoomSnapshot;
-  onSend: (message: string) => Promise<boolean>;
-}) {
-  const [collapsed, setCollapsed] = useState(true);
-  const [text, setText] = useState("");
-  const [sending, setSending] = useState(false);
-  const end = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (!collapsed) end.current?.scrollIntoView();
-  }, [room.messages.length, collapsed]);
-
-  async function send(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!text.trim() || sending) return;
-    setSending(true);
-    if (await onSend(text.trim())) setText("");
-    setSending(false);
-  }
-
-  return (
-    <aside className="fixed bottom-0 right-4 w-72 max-w-[calc(100vw-2rem)] z-30 bg-surface border border-brd rounded-t-lg shadow-panel">
-      <button
-        className="w-full flex justify-between p-3 font-display uppercase tracking-wider text-xs text-muted"
-        onClick={() => setCollapsed(!collapsed)}
-        aria-expanded={!collapsed}
+    >
+      <Icon.clock size={15} className={danger ? "text-bad" : "text-fg-subtle"} />
+      <span
+        className={cx(
+          "font-mono text-[20px] font-medium leading-none tracking-[-0.02em] tabular-nums",
+          danger && "animate-pulse-soft",
+        )}
       >
-        Chat{" "}
-        <span>
-          {collapsed ? "+" : "−"} · {room.messages.length}
+        {formatTimer(remaining)}
+      </span>
+      <span className="sr-only">of {formatTimer(total)}</span>
+    </div>
+  );
+}
+
+function Header({ r }: { r: RoomState }) {
+  const room = r.room!;
+  const playing = room.state === "playing";
+  const progress = playing && room.timeLimit ? Math.max(0, room.remaining / room.timeLimit) : 0;
+
+  return (
+    <header className="relative grid h-12 flex-none grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 border-b border-line px-3 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
+      <div className="flex min-w-0 items-center gap-2.5">
+        <span className="flex flex-none items-center gap-2">
+          <LogoMark size={22} />
+          <span className="hidden text-[14px] font-semibold tracking-[-0.02em] text-fg xl:inline">
+            Leet<span className="text-fg-muted">Race</span>
+          </span>
         </span>
-      </button>
-      {!collapsed && (
-        <>
+        <span aria-hidden className="h-4 w-px flex-none bg-line-strong" />
+        <button
+          type="button"
+          onClick={() => {
+            void r.copyRoom();
+          }}
+          title="Copy room code"
+          aria-label={r.copied ? "Room code copied" : `Copy room code ${r.roomId}`}
+          className={cx(
+            "inline-flex h-7 flex-none items-center gap-1.5 rounded-md border border-line bg-surface px-2 font-mono text-[12px] tracking-[0.14em] transition-colors hover:border-line-hover hover:text-fg",
+            r.copied ? "text-ok" : "text-fg-muted",
+          )}
+        >
+          {r.roomId}
+          {r.copied ? <Icon.check size={13} /> : <Icon.copy size={13} className="text-fg-subtle" />}
+        </button>
+        {room.state !== "lobby" && (
+          <span className="flex-none font-mono text-[12px] tabular-nums text-fg-subtle">
+            <span className="hidden font-sans sm:inline">Round </span>
+            {room.currentRound}/{room.totalRounds}
+          </span>
+        )}
+        {room.problem && room.state !== "lobby" && (
+          <span className="hidden min-w-0 items-center gap-2 md:flex">
+            <span aria-hidden className="text-line-hover">/</span>
+            <span className="truncate text-[13px] font-medium text-fg">{room.problem.title}</span>
+            <DifficultyPill difficulty={room.problem.difficulty} />
+          </span>
+        )}
+      </div>
+
+      <div className="flex justify-center">
+        {playing && !r.review ? (
+          <Timer remaining={room.remaining} total={room.timeLimit} />
+        ) : room.state === "finished" && room.breakRemaining !== null ? (
+          <span className="flex items-center gap-2 text-[12.5px] text-fg-subtle">
+            Next round in
+            <span className="font-mono text-[15px] tabular-nums text-fg">
+              {formatTimer(room.breakRemaining)}
+            </span>
+          </span>
+        ) : room.state === "lobby" ? (
+          <span className="text-[12.5px] text-fg-subtle">Lobby</span>
+        ) : (
+          <span className="text-[12.5px] text-fg-subtle">Race complete</span>
+        )}
+      </div>
+
+      <div className="flex min-w-0 items-center justify-end gap-3">
+        <span
+          role="status"
+          className={cx(
+            "flex flex-none items-center gap-1.5 text-[12px]",
+            r.connected ? "text-fg-subtle" : "text-warn",
+          )}
+        >
+          <LiveDot tone={r.connected ? "ok" : "warn"} />
+          <span className="hidden lg:inline">{r.connected ? "Connected" : "Reconnecting…"}</span>
+        </span>
+        <span className="flex min-w-0 items-center gap-2">
+          <Avatar name={room.me.name} size={22} />
+          <span className="hidden truncate text-[13px] font-medium text-fg sm:inline">
+            {room.me.name}
+          </span>
+        </span>
+        <button
+          type="button"
+          onClick={() => {
+            void r.leave();
+          }}
+          disabled={!r.canAct}
+          className="btn btn-ghost btn-sm"
+        >
+          <Icon.leave size={14} />
+          <span className="hidden sm:inline">Leave</span>
+        </button>
+      </div>
+
+      {playing && !r.review && (
+        <div aria-hidden className="absolute inset-x-0 -bottom-px h-px">
           <div
-            className="h-48 overflow-y-auto p-3 space-y-2 border-t border-brd"
-            role="log"
-            aria-live="polite"
-          >
-            {room.messages.length === 0 && (
-              <p className="text-dim text-xs">No messages yet</p>
+            className={cx(
+              "h-full transition-[width] duration-1000 ease-linear",
+              room.remaining <= 30 ? "bg-bad" : "bg-accent/70",
             )}
-            {room.messages.map((message) => (
-              <div key={message.id} className="text-sm break-words">
-                <span
-                  className={`font-display text-xs ${message.sender === room.me.name ? "text-primary" : "text-muted"}`}
-                >
-                  {message.sender}
-                </span>
-                <p>{message.message}</p>
-              </div>
-            ))}
-            <div ref={end} />
-          </div>
-          <form
-            onSubmit={(event) => {
-              void send(event);
-            }}
-            className="p-2 flex gap-2 border-t border-brd"
-          >
-            <input
-              aria-label="Chat message"
-              className="min-w-0 flex-1 bg-elevated border border-brd rounded p-2 text-sm outline-none focus:border-primary"
-              value={text}
-              onChange={(event) => setText(event.target.value)}
-              maxLength={200}
-              placeholder="Say something..."
-            />
-            <button
-              disabled={sending || !text.trim()}
-              className="text-primary text-sm disabled:opacity-40"
-            >
-              Send
-            </button>
-          </form>
-        </>
+            style={{ width: `${progress * 100}%` }}
+          />
+        </div>
       )}
-    </aside>
+    </header>
+  );
+}
+
+function FinishedBanner({ r }: { r: RoomState }) {
+  const room = r.room!;
+  if (r.review || !r.finished || room.state !== "playing") return null;
+  const waiting = r.waitingOn.length
+    ? `waiting on ${listNames(r.waitingOn)}`
+    : "wrapping up the round";
+  return (
+    <div
+      role="status"
+      className={cx(
+        "flex flex-none items-center gap-2 border-b px-3 py-2 text-[12.5px]",
+        room.me.locked
+          ? "border-warn/15 bg-warn/[0.06] text-warn"
+          : "border-line bg-white/[0.025] text-fg-muted",
+      )}
+    >
+      {room.me.locked ? <Icon.lock size={14} /> : <Icon.flag size={14} />}
+      <span className="min-w-0 truncate">
+        <span className={cx("font-medium", room.me.locked ? "text-warn" : "text-fg")}>
+          {room.me.locked
+            ? `Score locked${r.me?.charCount ? ` at ${r.me.charCount} chars` : ""}`
+            : "You resigned"}
+        </span>
+        <span className="text-fg-muted"> · {waiting}</span>
+      </span>
+      {r.waitingOn.length > 0 && <Spinner className="ml-auto text-fg-subtle" />}
+    </div>
+  );
+}
+
+function EditorToolbar({ r }: { r: RoomState }) {
+  const chars = Array.from(r.review?.code ?? r.code).length;
+  return (
+    <header className="@container flex h-10 flex-none items-center gap-2 border-b border-line pl-3 pr-1.5">
+      <span className="flex flex-none items-center gap-1.5 text-fg-muted">
+        <Icon.file size={14} className="text-fg-subtle" />
+        <span className="font-mono text-[12.5px]">solution.py</span>
+      </span>
+      <span className="hidden whitespace-nowrap font-mono text-[12px] tabular-nums text-fg-subtle @[36rem]:inline">
+        {chars} chars
+      </span>
+      {r.review && (
+        <span className="pill pill-accent ml-1 min-w-0 shrink">
+          <Icon.eye size={11} className="flex-none" />
+          <span className="truncate">
+            {r.review.name === r.room?.me.name ? "Your code" : `${r.review.name}’s code`}
+          </span>
+        </span>
+      )}
+      <div className="ml-auto flex flex-none items-center gap-1.5">
+        {r.review ? (
+          <button type="button" className="btn btn-secondary btn-sm" onClick={() => r.setReview(null)}>
+            <Icon.arrowLeft size={14} />
+            Back to results
+          </button>
+        ) : (
+          <>
+            {!r.finished && (
+              <>
+                <button
+                  type="button"
+                  className="btn btn-danger btn-sm"
+                  disabled={!r.canAct || r.readOnly}
+                  onClick={() => {
+                    void r.resign();
+                  }}
+                  title="Give up this round"
+                >
+                  <Icon.flag size={13} className="hidden @[26rem]:block" />
+                  Resign
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  disabled={!r.canAct || r.readOnly || !r.me?.solved}
+                  onClick={() => {
+                    void r.lock();
+                  }}
+                  title={
+                    r.me?.solved
+                      ? "Lock in your best solution and finish the round"
+                      : "Solve the problem to lock your score"
+                  }
+                >
+                  <Icon.lock size={13} className="hidden @[26rem]:block" />
+                  Lock score
+                </button>
+              </>
+            )}
+            {r.finished ? (
+              <span className="pill mr-1.5">Read-only</span>
+            ) : (
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                disabled={!r.canAct || r.readOnly}
+                onClick={r.submit}
+              >
+                {r.pending ? <Spinner /> : null}
+                {r.pending ? "Running" : "Submit"}
+                {!r.pending && <Kbd keys={shortcuts.submit} className="hidden @[28rem]:inline-flex" />}
+              </button>
+            )}
+          </>
+        )}
+      </div>
+    </header>
+  );
+}
+
+function Workspace({
+  r,
+  layout,
+  editorRef,
+}: {
+  r: RoomState;
+  layout: PaneLayout;
+  editorRef: MutableRefObject<EditorInstance | null>;
+}) {
+  const room = r.room!;
+  const problem = room.problem!;
+  const wide = layout.wide;
+
+  useEffect(
+    () => () => {
+      editorRef.current = null;
+    },
+    [editorRef],
+  );
+
+  return (
+    <>
+      <section
+        aria-label="Problem"
+        className={cx("panel flex min-h-0 flex-col overflow-hidden", !wide && "h-[420px] flex-none")}
+        style={wide ? { flex: "1 1 0", minWidth: 0 } : undefined}
+      >
+        <header className="flex h-10 flex-none items-center gap-2 border-b border-line px-3">
+          <Icon.doc size={14} className="text-fg-subtle" />
+          <h2 className="text-[13px] font-medium text-fg">Description</h2>
+        </header>
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-8 pt-5">
+          <h1 className="text-[19px] font-semibold leading-snug tracking-[-0.02em] text-fg">
+            {problem.title}
+          </h1>
+          <div className="mb-5 mt-2 flex items-center gap-2">
+            <DifficultyPill difficulty={problem.difficulty} />
+            <span className="pill">Python 3</span>
+            <span className="pill">Fewest chars wins</span>
+          </div>
+          <article className="problem-description">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{problem.statement}</ReactMarkdown>
+          </article>
+        </div>
+      </section>
+
+      {wide && <div {...layout.handleProps("problem")} className="handle" />}
+
+      <div
+        ref={layout.columnRef}
+        className={cx("flex min-h-0 flex-col", !wide && "flex-none gap-2")}
+        style={wide ? { flex: `0 0 ${layout.editorWidth}px` } : undefined}
+      >
+        <section
+          aria-label="Editor"
+          className={cx("panel flex min-h-0 flex-col overflow-hidden", wide ? "flex-1" : "h-[460px] flex-none")}
+        >
+          <EditorToolbar r={r} />
+          <FinishedBanner r={r} />
+          <div className="relative min-h-0 flex-1">
+            <div className="absolute inset-0">
+              <CodeEditor
+                value={r.review?.code ?? r.code}
+                onChange={r.changeCode}
+                readOnly={r.readOnly}
+                onSubmit={r.submit}
+                theme={graphiteTheme}
+                fontFamily={editorFont}
+                onEditor={(editor) => {
+                  editorRef.current = editor;
+                  void document.fonts
+                    ?.load(`14px ${editorFont}`)
+                    .then(() => monaco.editor.remeasureFonts());
+                }}
+                loading={
+                  <span className="flex items-center gap-2 text-[13px] text-fg-subtle">
+                    <Spinner /> Loading editor…
+                  </span>
+                }
+              />
+            </div>
+          </div>
+        </section>
+
+        {wide && <div {...layout.handleProps("results")} className="handle" />}
+
+        <section
+          aria-label="Results"
+          className="panel flex flex-none flex-col overflow-hidden"
+          style={{ height: wide ? layout.resultsHeight : 280 }}
+        >
+          <ResultsPane
+            result={r.review ? null : r.result}
+            pending={r.pending && !r.review}
+            review={
+              r.review
+                ? {
+                    name: r.review.name,
+                    row: room.rankings.find((player) => player.name === r.review?.name),
+                  }
+                : null
+            }
+          />
+        </section>
+      </div>
+    </>
+  );
+}
+
+function Toast({ message, onDismiss }: { message: string; onDismiss: () => void }) {
+  return (
+    <div className="pointer-events-none fixed inset-x-0 bottom-5 z-[60] flex justify-center px-4">
+      <AnimatePresence>
+        {message && (
+          <motion.div
+            key="toast"
+            role="alert"
+            initial={{ opacity: 0, y: 8, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 4, scale: 0.98 }}
+            transition={{ duration: 0.18 }}
+            className="pop pointer-events-auto flex max-w-[520px] items-start gap-2.5 py-2.5 pl-3 pr-1.5"
+          >
+            <Icon.alert size={16} className="mt-[1px] flex-none text-bad" />
+            <p className="min-w-0 flex-1 py-[1px] text-[13px] text-fg [overflow-wrap:anywhere]">{message}</p>
+            <button
+              type="button"
+              onClick={onDismiss}
+              aria-label="Dismiss error"
+              className="btn btn-ghost btn-sm btn-icon -my-0.5"
+            >
+              <Icon.x size={14} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function Connecting({ roomId, error }: { roomId: string; error: string }) {
+  return (
+    <main className="relative flex h-full flex-col items-center justify-center gap-4 px-5 text-center">
+      <div aria-hidden className="backdrop-grid pointer-events-none absolute inset-0" />
+      <LogoMark size={36} />
+      <p className="relative flex items-center gap-2 text-[14px] text-fg-muted">
+        {error ? <Icon.wifiOff size={15} className="text-bad" /> : <Spinner />}
+        {error ? "Couldn’t connect to room" : "Connecting to room"}
+        <span className="font-mono tracking-[0.12em] text-fg">{roomId}</span>
+      </p>
+      {error && (
+        <p role="alert" className="relative max-w-sm text-[13px] text-bad">
+          {error}
+        </p>
+      )}
+      <Link to="/" className="btn btn-secondary btn-sm relative">
+        <Icon.arrowLeft size={14} />
+        Back home
+      </Link>
+    </main>
   );
 }
 
 export default function Room() {
-  const [params] = useSearchParams();
-  const roomId = params.get("id") ?? "";
-  const token = sessionToken(roomId);
-  const navigate = useNavigate();
-  const [room, setRoom] = useState<RoomSnapshot | null>(null);
-  const [connected, setConnected] = useState(false);
-  const [error, setError] = useState("");
-  const [pending, setPending] = useState(false);
-  const pendingRef = useRef(false);
-  const [code, setCode] = useState("");
-  const [result, setResult] = useState<Submission | null>(null);
-  const [review, setReview] = useState<{ name: string; code: string } | null>(
-    null,
-  );
-  const [copied, setCopied] = useState(false);
-  const draftKey = room?.problem
-    ? `leetrace:draft:${roomId}:${room.currentRound}:${room.problem.id}`
-    : null;
+  const r = useRoom();
+  const editorRef = useRef<EditorInstance | null>(null);
+  const layout = usePaneLayout({
+    messageCount: r.room?.messages.length ?? 0,
+    onChatClosed: () => editorRef.current?.focus(),
+  });
 
-  useEffect(() => {
-    if (!roomId || !token) return;
-    const subscription = api.roomUpdates.subscribe(
-      { roomId, token },
-      {
-        onStarted() {
-          setConnected(true);
-          setError("");
-        },
-        onConnectionStateChange(state) {
-          setConnected(state.state === "pending");
-        },
-        onData(snapshot) {
-          setRoom(snapshot);
-          setConnected(true);
-        },
-        onError(error) {
-          setConnected(false);
-          setError(errorMessage(error));
-        },
-      },
-    );
-    return () => subscription.unsubscribe();
-  }, [roomId, token]);
+  if (!r.roomId || !r.token) return <Navigate to="/" replace />;
+  if (!r.room) return <Connecting roomId={r.roomId} error={r.error} />;
 
-  const starterCode = room?.problem?.starterCode;
-  useEffect(() => {
-    if (!draftKey || starterCode === undefined) return;
-    setCode(sessionStorage.getItem(draftKey) ?? starterCode);
-    setResult(null);
-    setReview(null);
-  }, [draftKey, starterCode]);
-
-  async function perform(action: () => Promise<unknown>) {
-    if (pendingRef.current) return false;
-    pendingRef.current = true;
-    setPending(true);
-    setError("");
-    try {
-      await action();
-      return true;
-    } catch (error) {
-      setError(errorMessage(error));
-      return false;
-    } finally {
-      pendingRef.current = false;
-      setPending(false);
-    }
-  }
-
-  function changeCode(value: string) {
-    setCode(value);
-    if (draftKey) sessionStorage.setItem(draftKey, value);
-  }
-
-  function submit() {
-    if (
-      !room ||
-      room.state !== "playing" ||
-      room.me.locked ||
-      room.me.resigned ||
-      review ||
-      !connected
-    )
-      return;
-    void perform(async () => {
-      setResult(await api.submit.mutate({ roomId, code }));
-    });
-  }
-
-  async function leave() {
-    if (await perform(() => api.leave.mutate({ roomId }))) {
-      sessionStorage.removeItem(`leetrace:${roomId}`);
-      navigate("/");
-    }
-  }
-
-  async function copyRoom() {
-    try {
-      await navigator.clipboard.writeText(roomId);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 2000);
-    } catch {
-      setError(`Room code: ${roomId}`);
-    }
-  }
-
-  if (!roomId || !token) return <Navigate to="/" replace />;
-  if (!room)
-    return (
-      <main className="min-h-screen flex flex-col items-center justify-center gap-5">
-        <p className="text-muted">Connecting to room {roomId}...</p>
-        {error && (
-          <p role="alert" className="text-err px-5">
-            {error}
-          </p>
-        )}
-        <Link className="text-primary" to="/">
-          Back home
-        </Link>
-      </main>
-    );
-
-  const isHost = room.host === room.me.name;
-  const canAct = connected && !pending;
-  const me = room.rankings.find((player) => player.name === room.me.name);
-  const showEditor = room.problem && (room.state === "playing" || review);
-  const readOnly =
-    room.state !== "playing" ||
-    room.me.locked ||
-    room.me.resigned ||
-    review !== null;
+  const room = r.room;
+  const workspace = room.problem !== null && (room.state === "playing" || r.review !== null);
 
   return (
-    <main className="min-h-screen flex flex-col">
-      <header className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 bg-surface border-b border-brd">
-        <div className="flex items-center gap-5">
-          <button
-            onClick={() => {
-              void leave();
-            }}
-            disabled={!canAct}
-            className="font-display font-bold tracking-[0.15em] text-lg"
-          >
-            LEET<span className="text-primary">RACE</span>
-          </button>
-          <button
-            onClick={() => {
-              void copyRoom();
-            }}
-            title="Copy room code"
-            className="font-mono tracking-widest text-primary text-sm"
-          >
-            {copied ? "Copied!" : roomId}
-          </button>
-        </div>
-        <div className="flex items-center gap-4">
-          <span className="font-display text-sm text-muted">
-            {room.me.name}
-          </span>
-          <span className={`text-xs ${connected ? "text-ok" : "text-warn"}`}>
-            {connected ? "Connected" : "Reconnecting..."}
-          </span>
-          <button
-            onClick={() => {
-              void leave();
-            }}
-            disabled={!canAct}
-            className="text-muted hover:text-light text-sm disabled:opacity-40"
-          >
-            Leave
-          </button>
-        </div>
-      </header>
-      {error && (
+    <MotionConfig reducedMotion="user">
+      <div className="flex h-full flex-col overflow-hidden">
+        <Header r={r} />
+        {room.state === "playing" && !r.review && (
+          <StandingsStrip room={room} racing={r.waitingOn.length} />
+        )}
         <div
-          role="alert"
-          className="flex justify-between gap-3 px-5 py-3 text-err bg-err/10 border-b border-err/20"
+          ref={layout.containerRef}
+          className={cx(
+            "flex min-h-0 flex-1 px-2 pb-2",
+            !(room.state === "playing" && !r.review) && "pt-2",
+            layout.wide ? "flex-row" : "flex-col gap-2 overflow-y-auto",
+          )}
         >
-          <p>{error}</p>
-          <button onClick={() => setError("")} aria-label="Dismiss error">
-            ×
-          </button>
-        </div>
-      )}
-      {room.state === "lobby" && (
-        <section className="m-auto w-full max-w-xl px-5 py-14 text-center">
-          <h1 className="font-display text-3xl font-semibold uppercase tracking-wider mb-3">
-            Room lobby
-          </h1>
-          <p className="text-muted mb-7">
-            Share the room code to invite your friends.
-          </p>
-          <button
-            onClick={() => {
-              void copyRoom();
-            }}
-            className="font-mono text-primary text-4xl tracking-[0.3em] mb-8"
-          >
-            {roomId}
-          </button>
-          <div className="bg-surface border border-brd rounded-xl p-6 mb-7 text-left">
-            <p className="text-xs font-display uppercase tracking-wider text-dim mb-4">
-              Players · {room.players.length}
-            </p>
-            {room.players.map((name) => (
-              <p key={name} className="py-2 font-display text-light">
-                {name}
-                <span className="text-xs text-muted ml-3">
-                  {name === room.host ? "Host" : ""}
-                  {name === room.me.name ? " · You" : ""}
-                </span>
-              </p>
-            ))}
-          </div>
-          <p className="text-muted text-sm mb-6">
-            {room.difficulty ?? "Any difficulty"} ·{" "}
-            {formatTimer(room.timeLimit)} per round · {room.totalRounds}{" "}
-            {room.totalRounds === 1 ? "round" : "rounds"}
-          </p>
-          {isHost ? (
-            <button
-              disabled={!canAct}
-              className={primaryButton}
-              onClick={() => {
-                void perform(() => api.start.mutate({ roomId }));
-              }}
-            >
-              {pending ? "Starting..." : "Start race"}
-            </button>
+          {workspace ? (
+            <Workspace r={r} layout={layout} editorRef={editorRef} />
+          ) : room.state === "lobby" ? (
+            <Lobby r={r} />
           ) : (
-            <p className="text-primary-dim">Waiting for the host to start...</p>
+            <Finished r={r} />
           )}
-        </section>
-      )}
-      {showEditor && room.problem && (
-        <section className="flex-1 flex flex-col">
-          <div className="flex flex-wrap justify-between items-center gap-3 px-5 py-3 border-b border-brd bg-panel">
-            <div className="flex items-center gap-4">
-              <h1 className="font-display font-semibold">
-                {room.problem.title}
-              </h1>
-              <span
-                className={`text-xs ${room.problem.difficulty === "Easy" ? "text-ok" : room.problem.difficulty === "Hard" ? "text-err" : "text-warn"}`}
-              >
-                {room.problem.difficulty}
-              </span>
-              <span className="text-xs text-dim">
-                Round {room.currentRound}/{room.totalRounds}
-              </span>
-            </div>
-            {review ? (
-              <div className="flex gap-3 items-center text-sm">
-                <span className="text-muted">Reviewing {review.name}</span>
-                <button
-                  className="text-primary"
-                  onClick={() => setReview(null)}
-                >
-                  Back to results
-                </button>
-              </div>
-            ) : (
-              <span
-                className={`font-mono text-xl ${room.remaining <= 30 ? "text-err animate-pulse-danger" : "text-primary"}`}
-              >
-                {formatTimer(room.remaining)}
-              </span>
-            )}
-          </div>
-          <div className="grid lg:grid-cols-[42%_58%] flex-1 min-h-0">
-            <article className="problem-description p-6 border-b lg:border-b-0 lg:border-r border-brd overflow-y-auto lg:max-h-[calc(100vh-9rem)] text-sm leading-relaxed">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {room.problem.statement}
-              </ReactMarkdown>
-            </article>
-            <div className="min-w-0 flex flex-col">
-              <div className="flex items-center justify-between gap-3 px-4 py-2 bg-surface border-b border-brd">
-                <span className="font-mono text-xs text-dim">solution.py</span>
-                <span className="font-mono text-xs text-muted">
-                  {Array.from(review?.code ?? code).length} chars
-                </span>
-              </div>
-              <div className="h-[45vh] min-h-64">
-                <CodeEditor
-                  value={review?.code ?? code}
-                  onChange={changeCode}
-                  readOnly={readOnly}
-                  onSubmit={submit}
-                />
-              </div>
-              {!review && (
-                <div className="flex flex-wrap gap-2 p-3 border-y border-brd bg-surface">
-                  <button
-                    className={primaryButton}
-                    disabled={!canAct || readOnly}
-                    onClick={submit}
-                  >
-                    {pending ? "Running..." : "Submit"}
-                  </button>
-                  <button
-                    className={secondaryButton}
-                    disabled={!canAct || readOnly || !me?.solved}
-                    onClick={() => {
-                      void perform(() => api.lock.mutate({ roomId }));
-                    }}
-                  >
-                    Lock score
-                  </button>
-                  <button
-                    className={secondaryButton}
-                    disabled={!canAct || readOnly}
-                    onClick={() => {
-                      void perform(() => api.resign.mutate({ roomId }));
-                    }}
-                  >
-                    Resign
-                  </button>
-                  {room.me.locked && (
-                    <span className="self-center text-warn text-sm">
-                      Score locked
-                    </span>
-                  )}
-                  {room.me.resigned && (
-                    <span className="self-center text-muted text-sm">
-                      Resigned
-                    </span>
-                  )}
-                </div>
-              )}
-              <div className="p-4 overflow-y-auto max-h-64 bg-panel">
-                {!review && <Output result={result ?? room.me.submission} />}
-              </div>
-            </div>
-          </div>
-          {!review && (
-            <div className="p-4 bg-surface border-t border-brd">
-              <h2 className="font-display text-xs uppercase tracking-wider text-muted">
-                Live scoreboard
-              </h2>
-              <Scoreboard room={room} />
-            </div>
-          )}
-        </section>
-      )}
-      {room.state === "finished" && !review && (
-        <section className="w-full max-w-4xl mx-auto px-5 py-14">
-          <h1 className="text-center font-display text-3xl uppercase tracking-wider mb-3">
-            {room.breakRemaining !== null
-              ? `Round ${room.currentRound} complete`
-              : "Race complete"}
-          </h1>
-          {room.breakRemaining !== null && (
-            <p className="text-center text-muted mb-6">
-              Next round in{" "}
-              <span className="font-mono text-primary">
-                {formatTimer(room.breakRemaining)}
-              </span>
-            </p>
-          )}
-          <Scoreboard
-            room={room}
-            onReview={(name, code) => setReview({ name, code })}
-          />
-          <div className="flex flex-wrap justify-center gap-3 mt-8">
-            {isHost && (
-              <button
-                disabled={!canAct}
-                className={primaryButton}
-                onClick={() => {
-                  void perform(() =>
-                    room.breakRemaining !== null
-                      ? api.skipBreak.mutate({ roomId })
-                      : api.restart.mutate({ roomId }),
-                  );
-                }}
-              >
-                {room.breakRemaining !== null ? "Continue" : "Play again"}
-              </button>
-            )}
-            <button
-              className={secondaryButton}
-              onClick={() => setReview({ name: room.me.name, code })}
-            >
-              View my code
-            </button>
-          </div>
-        </section>
-      )}
-      <Chat
-        room={room}
-        onSend={(message) =>
-          perform(() => api.chat.mutate({ roomId, message }))
-        }
-      />
-    </main>
+          <ChatDock room={room} layout={layout} onSend={r.sendChat} />
+        </div>
+        <Toast message={r.error} onDismiss={() => r.setError("")} />
+      </div>
+    </MotionConfig>
   );
 }
