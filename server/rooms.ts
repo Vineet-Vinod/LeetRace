@@ -31,7 +31,11 @@ interface Room {
   messages: { id: number; sender: string; message: string }[];
   messageId: number;
   events: EventEmitter;
+  presence: Map<string, { streams: number; since: number }>;
 }
+
+// Players whose room streams stay closed this long no longer hold up the round.
+const AWAY_AFTER_MS = 15_000;
 export interface RoomSettings {
   name: string;
   timeLimit: number;
@@ -71,7 +75,7 @@ export class RoomStore {
       id, hostToken: token, state: 'lobby', players: new Map([[token, freshPlayer(settings.name)]]),
       timeLimit: settings.timeLimit, difficulty: settings.difficulty, totalRounds: settings.rounds,
       currentRound: 0, problem: null, startedAt: 0, breakUntil: null, touchedAt: this.now(), epoch: 0,
-      messages: [], messageId: 0, events: new EventEmitter(),
+      messages: [], messageId: 0, events: new EventEmitter(), presence: new Map(),
     };
     room.events.setMaxListeners(100);
     this.rooms.set(id, room);
@@ -110,9 +114,18 @@ export class RoomStore {
     room.events.emit('update');
   }
 
+  private away(room: Room, token: string) {
+    const presence = room.presence.get(token);
+    return presence !== undefined && presence.streams === 0 && this.now() - presence.since >= AWAY_AFTER_MS;
+  }
+
+  private everyoneDone(room: Room) {
+    return [...room.players].every(([token, player]) => player.resigned || player.lockedAt !== null || this.away(room, token));
+  }
+
   snapshot(roomId: string, token: string | undefined) {
     const { room, player } = this.authenticate(roomId, token);
-    const rankings = [...room.players.values()].map((entry) => ({
+    const rankings = [...room.players].map(([entryToken, entry]) => ({
       name: entry.name,
       solved: entry.best?.solved ?? false,
       charCount: entry.best?.charCount ?? null,
@@ -120,6 +133,7 @@ export class RoomStore {
       testsTotal: room.problem?.tests.length ?? 0,
       lockedAt: entry.lockedAt,
       resigned: entry.resigned,
+      away: this.away(room, entryToken),
       code: room.state === 'finished' ? entry.bestCode ?? null : null,
     }));
     rankings.sort((left, right) => Number(right.solved) - Number(left.solved)
@@ -148,7 +162,14 @@ export class RoomStore {
     const { room } = this.authenticate(roomId, token);
     if (room.events.listenerCount('update') >= 80) reject('Too many room connections.', 'TOO_MANY_REQUESTS');
     room.events.on('update', listener);
-    return () => { room.events.off('update', listener); };
+    const presence = room.presence.get(token) ?? { streams: 0, since: this.now() };
+    presence.streams += 1;
+    room.presence.set(token, presence);
+    return () => {
+      room.events.off('update', listener);
+      presence.streams -= 1;
+      if (presence.streams === 0) presence.since = this.now();
+    };
   }
 
   start(roomId: string, token: string | undefined) {
@@ -251,7 +272,7 @@ export class RoomStore {
   }
 
   private maybeFinish(room: Room) {
-    if ([...room.players.values()].every((player) => player.resigned || player.lockedAt !== null)) this.finishRound(room);
+    if (this.everyoneDone(room)) this.finishRound(room);
     else this.emit(room);
   }
 
@@ -265,6 +286,7 @@ export class RoomStore {
   leave(roomId: string, token: string | undefined) {
     const { room } = this.authenticate(roomId, token);
     room.players.delete(token ?? '');
+    room.presence.delete(token ?? '');
     if (!room.players.size) this.rooms.delete(room.id);
     else {
       if (room.hostToken === token) room.hostToken = room.players.keys().next().value ?? '';
@@ -277,7 +299,7 @@ export class RoomStore {
     const now = this.now();
     for (const room of this.rooms.values()) {
       if (room.state === 'playing') {
-        if (now >= room.startedAt + room.timeLimit * 1000) this.finishRound(room);
+        if (now >= room.startedAt + room.timeLimit * 1000 || this.everyoneDone(room)) this.finishRound(room);
         else this.emit(room);
       } else if (room.breakUntil !== null) {
         if (now >= room.breakUntil) this.beginRound(room);
