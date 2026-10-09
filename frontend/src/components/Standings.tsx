@@ -110,7 +110,6 @@ export function ResultsTable({
                 </td>
                 <td className="px-3 py-3">
                   <span className="flex min-w-0 items-center justify-center gap-2">
-                    <Avatar name={player.name} size={24} />
                     <span className="truncate font-medium text-fg" title={player.name}>{player.name}</span>
                     {me && <span className="pill flex-none">You</span>}
                   </span>
