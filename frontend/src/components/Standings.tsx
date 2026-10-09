@@ -67,7 +67,7 @@ export function ResultsTable({
 }) {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[640px] table-fixed text-left text-[13px]">
+      <table className="w-full min-w-[640px] table-fixed text-center text-[13px]">
         <colgroup>
           <col className="w-[7%]" />
           <col className="w-[31%]" />
@@ -80,8 +80,8 @@ export function ResultsTable({
             <th scope="col" className="px-3 py-3 text-center font-medium">#</th>
             <th scope="col" className="px-3 py-3 font-medium">Player</th>
             <th scope="col" className="px-3 py-3 font-medium">Result</th>
-            <th scope="col" className="px-3 py-3 text-right font-medium">Tests</th>
-            <th scope="col" className="px-3 py-3 text-right font-medium">Code</th>
+            <th scope="col" className="px-3 py-3 font-medium">Tests</th>
+            <th scope="col" className="px-3 py-3 font-medium">Code</th>
           </tr>
         </thead>
         <tbody>
@@ -109,14 +109,14 @@ export function ResultsTable({
                   )}
                 </td>
                 <td className="px-3 py-3">
-                  <span className="flex min-w-0 items-center gap-2">
+                  <span className="flex min-w-0 items-center justify-center gap-2">
                     <Avatar name={player.name} size={24} />
                     <span className="truncate font-medium text-fg" title={player.name}>{player.name}</span>
                     {me && <span className="pill flex-none">You</span>}
                   </span>
                 </td>
                 <td className="px-3 py-3">
-                  <span className="flex flex-wrap items-center gap-1.5">
+                  <span className="flex flex-wrap items-center justify-center gap-1.5">
                     {player.solved ? (
                       <span className="font-mono tabular-nums text-ok">
                         {player.charCount} chars
@@ -127,11 +127,11 @@ export function ResultsTable({
                     <StatusBadges player={player} />
                   </span>
                 </td>
-                <td className="whitespace-nowrap px-3 py-3 text-right font-mono tabular-nums text-fg-muted">
+                <td className="whitespace-nowrap px-3 py-3 font-mono tabular-nums text-fg-muted">
                   {player.testsPassed}
                   <span className="text-fg-subtle"> / {player.testsTotal}</span>
                 </td>
-                <td className="whitespace-nowrap px-3 py-3 text-right">
+                <td className="whitespace-nowrap px-3 py-3">
                   <button
                     type="button"
                     className="btn btn-ghost btn-sm"
