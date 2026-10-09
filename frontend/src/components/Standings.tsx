@@ -22,14 +22,14 @@ function StatusBadges({ player }: { player: Ranking }) {
 export function StandingsStrip({ room }: { room: RoomSnapshot }) {
   return (
     <section aria-label="Live standings" className="flex-none px-2 py-2">
-      <ol className="grid grid-cols-2 gap-1.5 sm:grid-cols-4 lg:flex">
+      <ol className="panel grid grid-cols-2 gap-1.5 p-1.5 sm:grid-cols-4 lg:grid-cols-8">
         {room.rankings.map((player) => (
           <li
             key={player.name}
             aria-current={player.name === room.me.name || undefined}
             title={player.name}
             className={cx(
-              "flex min-w-0 items-center gap-2 rounded-md border px-2 py-1.5 lg:flex-1",
+              "flex min-w-0 items-center gap-2 rounded-md border px-2 py-1.5",
               player.name === room.me.name
                 ? "border-accent/35 bg-accent/[0.07]"
                 : "border-line bg-surface",
