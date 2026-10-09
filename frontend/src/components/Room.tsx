@@ -105,32 +105,36 @@ function Header({ r }: { r: RoomState }) {
       </div>
 
       <div className="flex min-w-0 items-center justify-end gap-2 sm:gap-3">
-        <span
-          role="status"
-          aria-label={r.connected ? "Connected" : "Reconnecting"}
-          title={r.connected ? "Connected" : "Reconnecting"}
-          className={cx(
-            "flex flex-none items-center gap-1.5 text-[12px]",
-            r.connected ? "text-fg-subtle" : "text-warn",
-          )}
-        >
-          <LiveDot tone={r.connected ? "ok" : "warn"} />
-        </span>
+        {room.state !== "lobby" && (
+          <span
+            role="status"
+            aria-label={r.connected ? "Connected" : "Reconnecting"}
+            title={r.connected ? "Connected" : "Reconnecting"}
+            className={cx(
+              "flex flex-none items-center gap-1.5 text-[12px]",
+              r.connected ? "text-fg-subtle" : "text-warn",
+            )}
+          >
+            <LiveDot tone={r.connected ? "ok" : "warn"} />
+          </span>
+        )}
         <span aria-label={room.me.name} title={room.me.name}>
           <Avatar name={room.me.name} size={22} />
         </span>
-        <button
-          type="button"
-          onClick={() => {
-            void r.leave();
-          }}
-          disabled={!r.canAct}
-          aria-label="Leave room"
-          title="Leave room"
-          className="btn btn-ghost btn-sm btn-icon"
-        >
-          <Icon.leave size={14} />
-        </button>
+        {room.state !== "lobby" && (
+          <button
+            type="button"
+            onClick={() => {
+              void r.leave();
+            }}
+            disabled={!r.canAct}
+            aria-label="Leave room"
+            title="Leave room"
+            className="btn btn-ghost btn-sm btn-icon"
+          >
+            <Icon.leave size={14} />
+          </button>
+        )}
       </div>
 
       {playing && !r.review && (
