@@ -13,6 +13,24 @@ function problem(tests: Problem['tests'], comparison?: Problem['comparison']): P
 }
 
 describe('Python submission runner', () => {
+  it('runs decoded inputs from smallest to largest while preserving expected results and equal-size order', async () => {
+    const large = 'a'.repeat(200);
+    const medium = 'b'.repeat(100);
+    const json = JSON.stringify(large);
+    const compressed = { $json: deflateSync(json).toString('base64'), bytes: Buffer.byteLength(json) };
+    const fixture = problem([
+      { input: [compressed], expected: large },
+      { input: [medium], expected: 'wrong medium' },
+      { input: ['x'], expected: 'wrong first' },
+      { input: ['y'], expected: 'wrong second' },
+    ]);
+    const result = await runCode('def solve(value):\n    print(len(value))\n    return value', fixture);
+    expect(result.stdout).toBe('1\n1\n100\n200\n');
+    expect(result.passed).toBe(1);
+    expect(result.firstFailure).toEqual({ input: '["x"]', expected: '"wrong first"', actual: '"x"' });
+    expect(fixture.tests[0]?.input[0]).toEqual(compressed);
+  });
+
   it('runs Python and reports the first failure with bounded captured output', async () => {
     const result = await runCode('def solve(value: int) -> int:\n    return value * 2', problem([
       { input: [2], expected: 4 }, { input: [3], expected: 7 },

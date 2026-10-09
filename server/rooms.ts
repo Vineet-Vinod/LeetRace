@@ -85,7 +85,7 @@ export class RoomStore {
   join(roomId: string, name: string) {
     const room = this.get(roomId);
     if (room.state !== 'lobby') reject('This game has already started.');
-    if (room.players.size >= 20) reject('This room is full.');
+    if (room.players.size >= 8) reject('This room is full.');
     if ([...room.players.values()].some((player) => player.name === name)) reject('This name is already taken.');
     const token = randomBytes(24).toString('hex');
     room.players.set(token, freshPlayer(name));

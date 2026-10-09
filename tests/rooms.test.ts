@@ -22,6 +22,14 @@ function setup(rounds = 1, execute: (code: string, problem: Problem) => Promise<
 }
 
 describe('game rooms', () => {
+  it('allows eight players including the host and rejects the ninth', () => {
+    const { store, host } = setup();
+    for (let index = 1; index < 8; index++) store.join(host.roomId, `Player ${index}`);
+    expect(store.snapshot(host.roomId, host.token).players).toHaveLength(8);
+    expect(() => store.join(host.roomId, 'Player 8')).toThrow('This room is full.');
+    expect(store.snapshot(host.roomId, host.token).players).toHaveLength(8);
+  });
+
   it('requires the host token and rejects duplicate display names', () => {
     const { store, host } = setup();
     const guest = store.join(host.roomId, 'Chat');

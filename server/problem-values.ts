@@ -57,3 +57,19 @@ export function jsonValueBytes(value: JsonValue): number {
   }
   return Buffer.byteLength(JSON.stringify(value));
 }
+
+export function jsonValueSize(value: JsonValue): number {
+  if (typeof value === 'string') {
+    return value.length;
+  }
+  if (Array.isArray(value)) {
+    return 1 + value.reduce<number>((size, item) => size + jsonValueSize(item), 0);
+  }
+  if (value !== null && typeof value === 'object') {
+    if (typeof value.$bigint === 'string') {
+      return 1;
+    }
+    return 1 + Object.values(value).reduce<number>((size, item) => size + jsonValueSize(item), 0);
+  }
+  return 1;
+}

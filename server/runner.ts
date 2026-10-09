@@ -2,7 +2,7 @@ import { spawn } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import type { JsonValue, Problem } from './problems.js';
-import { decodeJsonValue, isJsonValue, jsonValueBytes } from './problem-values.js';
+import { decodeJsonValue, isJsonValue, jsonValueBytes, jsonValueSize } from './problem-values.js';
 
 export interface SubmissionResult {
   passed: number;
@@ -62,6 +62,7 @@ async function execute(code: string, problem: Problem): Promise<SubmissionResult
   let inputBytes = 0;
   let largestInput = 0;
   let inputs: JsonValue[][];
+  let tests: Problem['tests'];
   try {
     for (const test of problem.tests) {
       const bytes = jsonValueBytes(test.expected);
@@ -71,7 +72,12 @@ async function execute(code: string, problem: Problem): Promise<SubmissionResult
       inputBytes += inputSize;
       largestInput = Math.max(largestInput, inputSize);
     }
-    inputs = problem.tests.map((test) => test.input.map(decodeJsonValue));
+    const ordered = problem.tests.map((test) => {
+      const input = test.input.map(decodeJsonValue);
+      return { test, input, size: jsonValueSize(input) };
+    }).sort((left, right) => left.size - right.size);
+    tests = ordered.map(({ test }) => test);
+    inputs = ordered.map(({ input }) => input);
   } catch {
     return { ...result, error: 'Invalid compressed problem input or metadata.', timeMs: Math.round(performance.now() - started) };
   }
@@ -107,7 +113,7 @@ async function execute(code: string, problem: Problem): Promise<SubmissionResult
         pending = pending.slice(end + 1);
         try {
           const record = JSON.parse(line) as { error?: string; output?: string; stdout?: string; stderr?: string };
-          const test = problem.tests[received];
+          const test = tests[received];
           if (!test) {
             stop('Invalid runner output.');
             return;
