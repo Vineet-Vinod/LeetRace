@@ -253,7 +253,7 @@ export function ChatDock({
         className="handle"
         style={{ width: open ? 8 : 0, visibility: open ? "visible" : "hidden" }}
       />
-      <aside aria-label="Chat dock" className="panel ml-2 flex min-h-0 min-w-0 flex-1 overflow-hidden">
+      <aside aria-label="Chat dock" className="panel relative ml-2 flex min-h-0 min-w-0 flex-1 overflow-hidden">
         <div
           role="region"
           aria-label="Room chat"
@@ -270,8 +270,11 @@ export function ChatDock({
         </div>
         <nav
           aria-label="Side panels"
-          className="flex w-[42px] flex-none items-center justify-center"
-          style={{ display: open ? "none" : undefined }}
+          className="absolute inset-y-0 right-0 flex w-[42px] items-center justify-center"
+          style={{
+            visibility: open ? "hidden" : "visible",
+            transition: open ? "none" : `visibility 0s ${CHAT_MS}ms`,
+          }}
         >
           <button
             type="button"
