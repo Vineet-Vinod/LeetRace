@@ -189,10 +189,7 @@ export function ChatDock({
           aria-label={unread ? `Open chat, ${unread} unread` : "Open chat"}
           aria-expanded={open}
           className="pop fixed bottom-4 right-4 z-30 flex h-11 items-center gap-2 rounded-full pl-3.5 pr-3 text-[13px] font-medium text-fg"
-          style={{
-            visibility: open ? "hidden" : "visible",
-            transition: open ? "none" : `visibility 0s ${CHAT_MS}ms`,
-          }}
+          style={{ visibility: open ? "hidden" : "visible" }}
         >
           <Icon.chat size={16} />
           Chat
@@ -269,10 +266,7 @@ export function ChatDock({
         <nav
           aria-label="Side panels"
           className="absolute inset-y-0 right-0 flex w-[42px] items-center justify-center"
-          style={{
-            visibility: open ? "hidden" : "visible",
-            transition: open ? "none" : `visibility 0s ${CHAT_MS}ms`,
-          }}
+          style={{ visibility: open ? "hidden" : "visible" }}
         >
           <button
             type="button"
