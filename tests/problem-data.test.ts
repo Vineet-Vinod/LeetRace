@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 import { inflateSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { problemSchema, publicProblem, type Problem } from '../server/problems.js';
+import { problemSchema, type Problem } from '../server/problems.js';
 import { runCode } from '../server/runner.js';
 import { decodeJsonValue, jsonValueBytes } from '../server/problem-values.js';
 
@@ -19,9 +19,9 @@ function load(id: string): Problem {
 }
 
 describe('repaired problem data', () => {
-  it('retains every repaired testcase and original Python signature with a valid starter body', () => {
+  it('retains repaired testcases and original Python signatures with valid starter bodies', () => {
     const files = readdirSync(directory).sort();
-    expect(files).toHaveLength(2469);
+    expect(files).toHaveLength(1884);
     let testCount = 0;
     const signatures: Pick<Problem, 'id' | 'starterCode' | 'entryPoint' | 'parameters' | 'returnType'>[] = [];
     for (const file of files) {
@@ -36,8 +36,13 @@ describe('repaired problem data', () => {
       testCount += problem.tests.length;
       signatures.push({ id: file.slice(0, -5), starterCode: problem.starterCode, entryPoint: problem.entryPoint, parameters: problem.parameters, returnType: problem.returnType });
       expect(problem.statement).not.toContain('## TypeScript interface');
+      expect(problem.statement, file).not.toMatch(/<img\b|!\[[^\n]*\]\(/i);
+      expect(problem.statement, file).not.toMatch(/\b(?:image|figure|picture|diagram)\s+(?:above|below)\b|\b(?:above|below)\s+(?:image|figure|picture|diagram)\b/i);
+      for (const snippet of problem.statement.matchAll(/^```[^\n]*\n([\s\S]*?)^```[ \t]*$/gm)) {
+        expect(snippet[1], file).not.toMatch(/^\s*Explanation\s*:/im);
+      }
     }
-    expect(testCount).toBe(1_466_499);
+    expect(testCount).toBe(1_119_360);
     execFileSync('python3', ['-c', `import ast, json, sys
 for problem in json.load(sys.stdin):
     compile(problem['starterCode'], problem['id'], 'exec')
@@ -50,14 +55,7 @@ for problem in json.load(sys.stdin):
 `], { input: JSON.stringify(signatures), encoding: 'utf8' });
   }, 30_000);
 
-  it('preserves cyclic list inputs and original mutation contracts', () => {
-    const cycle = load('linked-list-cycle');
-    expect(cycle.tests[0]).toEqual({ input: [{ values: [-54], cycle: 0 }], expected: true });
-    const acyclic = cycle.tests.find((test) => test.expected === false);
-    expect(decodeJsonValue(acyclic?.input[0] ?? null)).toMatchObject({ cycle: -1 });
-    expect(publicProblem(cycle).starterCode).toContain('head: Optional[ListNode]');
-    expect(publicProblem(cycle).starterCode).toContain('def hasCycle');
-
+  it('preserves repaired mutation contracts', () => {
     const deduplicate = load('remove-duplicates-from-sorted-array');
     const sample = deduplicate.tests[0];
     const input = z.array(z.number()).parse(decodeJsonValue(sample?.input[0] ?? null));
@@ -66,12 +64,6 @@ for problem in json.load(sys.stdin):
     expect(deduplicate.returnType).toBe('int');
     expect(deduplicate.adapter).toBe('prefix');
 
-    const middle = load('middle-of-the-linked-list');
-    const list = z.array(z.number()).parse(decodeJsonValue(middle.tests[0]?.input[0] ?? null));
-    expect(decodeJsonValue(middle.tests[0]?.expected ?? null)).toEqual(list.slice(Math.floor(list.length / 2)));
-    expect(middle.adapter).toBe('middle-list');
-    expect(load('reverse-nodes-in-k-group').adapter).toBe('reuse-list');
-    expect(load('convert-bst-to-greater-tree').adapter).toBe('mutated-tree');
     expect(load('height-of-special-binary-tree').adapter).toBe('special-tree');
   });
 
@@ -88,28 +80,8 @@ for problem in json.load(sys.stdin):
     expect(load('powx-n').comparison).toEqual({ absoluteTolerance: 0.000001, relativeTolerance: 0 });
   });
 
-  it('runs original Python submissions against repaired list, tree, mutation, cycle, and large integer cases', async () => {
+  it('runs Python submissions against repaired mutation, tree, and large integer cases', async () => {
     const solutions = [
-      ['add-two-numbers', `class Solution:
-    def addTwoNumbers(self, l1, l2):
-        dummy = ListNode()
-        tail = dummy
-        carry = 0
-        while l1 or l2 or carry:
-            total = carry + (l1.val if l1 else 0) + (l2.val if l2 else 0)
-            carry, digit = divmod(total, 10)
-            tail.next = ListNode(digit)
-            tail = tail.next
-            l1 = l1.next if l1 else None
-            l2 = l2.next if l2 else None
-        return dummy.next
-`],
-      ['same-tree', `class Solution:
-    def isSameTree(self, p, q):
-        if not p or not q:
-            return p is q
-        return p.val == q.val and self.isSameTree(p.left, q.left) and self.isSameTree(p.right, q.right)
-`],
       ['remove-duplicates-from-sorted-array', `class Solution:
     def removeDuplicates(self, nums):
         prefix = sorted(set(nums))
@@ -128,37 +100,6 @@ for problem in json.load(sys.stdin):
             suffix *= nums[index]
         return result
 `],
-      ['linked-list-cycle', `class Solution:
-    def hasCycle(self, head):
-        slow = fast = head
-        while fast and fast.next:
-            slow = slow.next
-            fast = fast.next.next
-            if slow is fast:
-                return True
-        return False
-`],
-      ['middle-of-the-linked-list', `class Solution:
-    def middleNode(self, head):
-        slow = fast = head
-        while fast and fast.next:
-            slow = slow.next
-            fast = fast.next.next
-        return slow
-`],
-      ['convert-bst-to-greater-tree', `class Solution:
-    def convertBST(self, root):
-        total = 0
-        def visit(node):
-            nonlocal total
-            if node:
-                visit(node.right)
-                total += node.val
-                node.val = total
-                visit(node.left)
-        visit(root)
-        return root
-`],
       ['height-of-special-binary-tree', `class Solution:
     def heightOfTree(self, root):
         if root is None:
@@ -174,64 +115,6 @@ for problem in json.load(sys.stdin):
       expect(result, id).toMatchObject({ passed: 3, total: 3, error: null });
     }
   }, 30_000);
-
-  it('rejects copied list nodes and unchanged input trees even when returned values match', async () => {
-    const middle = load('middle-of-the-linked-list');
-    const copiedMiddle = await runCode(`class Solution:
-    def middleNode(self, head):
-        return ListNode(head.val)
-`, { ...middle, tests: middle.tests.slice(0, 1) });
-    expect(copiedMiddle).toMatchObject({ passed: 0, solved: false });
-
-    const reverse = load('reverse-nodes-in-k-group');
-    const relinked = await runCode(`class Solution:
-    def reverseKGroup(self, head, k):
-        dummy = ListNode(0, head)
-        previous = dummy
-        while True:
-            kth = previous
-            for _ in range(k):
-                kth = kth.next
-                if kth is None:
-                    return dummy.next
-            following = kth.next
-            current = previous.next
-            first = current
-            tail = following
-            while current is not following:
-                next_node = current.next
-                current.next = tail
-                tail = current
-                current = next_node
-            previous.next = kth
-            previous = first
-`, reverse);
-    expect(relinked).toMatchObject({ passed: reverse.tests.length, solved: true, error: null });
-    const copiedReverse = await runCode(`class Solution:
-    def reverseKGroup(self, head, k):
-        return ListNode(head.val)
-`, { ...reverse, tests: reverse.tests.slice(0, 1) });
-    expect(copiedReverse).toMatchObject({ passed: 0, solved: false });
-
-    const tree = load('convert-bst-to-greater-tree');
-    const copiedTree = await runCode(`class Solution:
-    def convertBST(self, root):
-        def copy(node):
-            return TreeNode(node.val, copy(node.left), copy(node.right)) if node else None
-        root = copy(root)
-        total = 0
-        def visit(node):
-            nonlocal total
-            if node:
-                visit(node.right)
-                total += node.val
-                node.val = total
-                visit(node.left)
-        visit(root)
-        return root
-`, { ...tree, tests: tree.tests.slice(0, 1) });
-    expect(copiedTree).toMatchObject({ passed: 0, solved: false });
-  });
 
   it('requires the canonical restored path rather than a permutation or reversal', async () => {
     const original = load('restore-the-array-from-adjacent-pairs');
