@@ -64,7 +64,7 @@ export function publicProblem(problem: Problem) {
     id: problem.id,
     title: problem.title,
     difficulty: problem.difficulty,
-    statement: problem.statement,
+    statement: problem.statement.replace(/^\s*(?:[-*]\s*)?(?:Note|Follow-up):\s*This (?:question|problem) is the same as\s+\d+\s*:.*$/gim, '').trim(),
     starterCode: problem.starterCode,
   };
 }
