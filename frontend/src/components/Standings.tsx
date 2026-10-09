@@ -19,77 +19,38 @@ function StatusBadges({ player }: { player: Ranking }) {
   );
 }
 
-function Score({ player }: { player: Ranking }) {
-  if (player.solved)
-    return (
-      <span className="font-mono text-[12px] tabular-nums text-ok">
-        {player.charCount}
-        <span className="text-ok/60"> ch</span>
-      </span>
-    );
+export function StandingsStrip({ room }: { room: RoomSnapshot }) {
   return (
-    <span className="font-mono text-[12px] tabular-nums text-fg-muted">
-      {player.testsPassed}
-      <span className="text-fg-subtle">/{player.testsTotal}</span>
-    </span>
-  );
-}
-
-/** Compact live standings bar shown under the header while racing. */
-export function StandingsStrip({
-  room,
-  racing,
-}: {
-  room: RoomSnapshot;
-  racing: number;
-}) {
-  return (
-    <section
-      aria-label="Live standings"
-      className="flex h-11 flex-none items-center gap-3 px-3"
-    >
-      <h2 className="section-label hidden flex-none items-center gap-1.5 sm:flex">
-        <Icon.trophy size={13} />
-        Standings
-      </h2>
-      <ol className="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto py-1 [scrollbar-width:none]">
-        {room.rankings.map((player) => {
-          const me = player.name === room.me.name;
-          return (
-            <li
-              key={player.name}
-              aria-current={me || undefined}
-              className={cx(
-                "flex h-7 flex-none items-center gap-2 rounded-md border pl-1.5 pr-2 transition-colors",
-                me
-                  ? "border-accent/35 bg-accent/[0.07]"
-                  : "border-line bg-surface",
-                (player.resigned || player.away) && "opacity-60",
-              )}
-            >
-              <span
-                className={cx(
-                  "w-4 text-center font-mono text-[11px] tabular-nums",
-                  player.position === 1 && player.solved ? "text-warn" : "text-fg-subtle",
-                )}
-              >
-                {player.position}
-              </span>
-              <Avatar name={player.name} size={18} />
-              <span className="max-w-[120px] truncate text-[12.5px] font-medium text-fg">
-                {player.name}
-                {me && <span className="font-normal text-fg-subtle"> (you)</span>}
-              </span>
-              <Score player={player} />
-              <StatusBadges player={player} />
-            </li>
-          );
-        })}
+    <section aria-label="Live standings" className="flex-none px-2 py-2">
+      <ol className="grid grid-cols-2 gap-1.5 sm:grid-cols-4 lg:flex">
+        {room.rankings.map((player) => (
+          <li
+            key={player.name}
+            aria-current={player.name === room.me.name || undefined}
+            title={player.name}
+            className={cx(
+              "flex min-w-0 items-center gap-2 rounded-md border px-2 py-1.5 lg:flex-1",
+              player.name === room.me.name
+                ? "border-accent/35 bg-accent/[0.07]"
+                : "border-line bg-surface",
+            )}
+          >
+            <Avatar name={player.name} size={22} />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[12px] font-medium text-fg">{player.name}</p>
+              <p className={cx("flex items-center gap-1 text-[11px]", player.solved ? "text-ok" : "text-fg-subtle")}>
+                {player.solved ? (
+                  <>
+                    <Icon.check size={11} />
+                    <span className="sr-only">Solved, </span>
+                    <span className="font-mono tabular-nums">{player.charCount} chars</span>
+                  </>
+                ) : "Unsolved"}
+              </p>
+            </div>
+          </li>
+        ))}
       </ol>
-      <p className="hidden flex-none items-center gap-1.5 text-[12px] text-fg-subtle md:flex">
-        <span className="font-mono tabular-nums text-fg-muted">{racing}</span>
-        of {room.rankings.length} still racing
-      </p>
     </section>
   );
 }

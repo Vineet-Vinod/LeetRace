@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type FormEvent, type RefObject } from "rea
 import { AnimatePresence, motion } from "framer-motion";
 import type { RoomSnapshot } from "../api";
 import type { PaneLayout } from "../hooks/usePaneLayout";
-import { Avatar, Icon, Kbd, cx, shortcuts } from "./ui";
+import { Avatar, Icon, cx, shortcuts } from "./ui";
 
 const MAX_LENGTH = 200;
 
@@ -45,11 +45,11 @@ function ChatPanel({
           {room.messages.length}
         </span>
         <span className="ml-auto flex items-center gap-1">
-          <Kbd keys={["Esc"]} className="hidden sm:inline-flex" />
           <button
             type="button"
             onClick={onClose}
             aria-label="Close chat"
+            title={`Close chat (${shortcuts.chat.join(" + ")})`}
             className="btn btn-ghost btn-sm btn-icon"
           >
             <Icon.x size={14} />
@@ -154,11 +154,6 @@ function ChatPanel({
             <Icon.send size={14} />
           </button>
         </div>
-        <p className="mt-1.5 flex items-center gap-1 px-1 text-[11px] text-fg-subtle">
-          <Kbd keys={["↵"]} /> to send
-          <span className="mx-1 text-line-strong">·</span>
-          <Kbd keys={shortcuts.chat} /> to toggle
-        </p>
       </form>
     </div>
   );
@@ -247,7 +242,7 @@ export function ChatDock({
     <div
       className="flex min-h-0 min-w-0"
       style={{
-        flex: `0 0 ${open ? chatWidth + 60 : 52}px`,
+        flex: `0 0 ${open ? chatWidth + 16 : 52}px`,
         transition: dragging ? "none" : `flex-basis ${CHAT_MS}ms ${CHAT_EASE}`,
       }}
     >
@@ -275,7 +270,8 @@ export function ChatDock({
         </div>
         <nav
           aria-label="Side panels"
-          className={cx("flex w-[42px] flex-none items-center justify-center", open && "border-l border-line")}
+          className="flex w-[42px] flex-none items-center justify-center"
+          style={{ display: open ? "none" : undefined }}
         >
           <button
             type="button"

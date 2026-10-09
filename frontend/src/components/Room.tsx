@@ -14,7 +14,6 @@ import { StandingsStrip } from "./Standings";
 import { editorFont, graphiteTheme } from "./editorTheme";
 import {
   Avatar,
-  DifficultyPill,
   Icon,
   Kbd,
   LiveDot,
@@ -36,7 +35,7 @@ function Timer({ remaining, total }: { remaining: number; total: number }) {
       role="timer"
       aria-label={`${formatTimer(remaining)} remaining`}
       className={cx(
-        "flex h-8 items-center gap-2 rounded-lg border px-3 transition-colors",
+        "flex h-8 items-center gap-2 rounded-lg border px-2 transition-colors sm:px-3",
         danger
           ? "border-bad/35 bg-bad/10 text-bad"
           : "border-line bg-surface text-fg",
@@ -45,7 +44,7 @@ function Timer({ remaining, total }: { remaining: number; total: number }) {
       <Icon.clock size={15} className={danger ? "text-bad" : "text-fg-subtle"} />
       <span
         className={cx(
-          "font-mono text-[20px] font-medium leading-none tracking-[-0.02em] tabular-nums",
+          "font-mono text-[18px] font-medium leading-none tracking-[-0.02em] tabular-nums sm:text-[20px]",
           danger && "animate-pulse-soft",
         )}
       >
@@ -62,7 +61,7 @@ function Header({ r }: { r: RoomState }) {
   const progress = playing && room.timeLimit ? Math.max(0, room.remaining / room.timeLimit) : 0;
 
   return (
-    <header className="relative grid h-12 flex-none grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 border-b border-line px-3 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
+    <header className="relative grid h-12 flex-none grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 border-b border-line px-3">
       <div className="flex min-w-0 items-center gap-2.5">
         <button
           type="button"
@@ -79,26 +78,18 @@ function Header({ r }: { r: RoomState }) {
             Leet<span className="text-fg-muted">Race</span>
           </span>
         </button>
-        <span aria-hidden className="h-4 w-px flex-none bg-line-strong" />
-        <span className="inline-flex h-7 flex-none items-center rounded-md border border-line bg-surface px-2 font-mono text-[12px] tracking-[0.14em] text-fg-muted">
+        <span aria-hidden className="hidden h-4 w-px flex-none bg-line-strong sm:block" />
+        <span className="hidden h-7 flex-none items-center rounded-md border border-line bg-surface px-2 font-mono text-[12px] tracking-[0.14em] text-fg-muted sm:inline-flex">
           {r.roomId}
         </span>
-        {room.state !== "lobby" && (
-          <span className="flex-none font-mono text-[12px] tabular-nums text-fg-subtle">
-            <span className="hidden font-sans sm:inline">Round </span>
-            {room.currentRound}/{room.totalRounds}
-          </span>
-        )}
-        {room.problem && room.state !== "lobby" && (
-          <span className="hidden min-w-0 items-center gap-2 md:flex">
-            <span aria-hidden className="text-line-hover">/</span>
-            <span className="truncate text-[13px] font-medium text-fg">{room.problem.title}</span>
-            <DifficultyPill difficulty={room.problem.difficulty} />
-          </span>
-        )}
       </div>
 
-      <div className="flex justify-center">
+      <div className="flex items-center justify-center gap-2 sm:gap-3">
+        {room.state !== "lobby" && (
+          <span className="flex-none whitespace-nowrap text-[12px] tabular-nums text-fg-muted">
+            Round {room.currentRound}/{room.totalRounds}
+          </span>
+        )}
         {playing && !r.review ? (
           <Timer remaining={room.remaining} total={room.timeLimit} />
         ) : room.state === "finished" && room.breakRemaining !== null ? (
@@ -113,7 +104,7 @@ function Header({ r }: { r: RoomState }) {
         )}
       </div>
 
-      <div className="flex min-w-0 items-center justify-end gap-3">
+      <div className="flex min-w-0 items-center justify-end gap-2 sm:gap-3">
         <span
           role="status"
           aria-label={r.connected ? "Connected" : "Reconnecting"}
@@ -299,14 +290,9 @@ function Workspace({
           <h2 className="text-[13px] font-medium text-fg">Description</h2>
         </header>
         <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-8 pt-5">
-          <h1 className="text-[19px] font-semibold leading-snug tracking-[-0.02em] text-fg">
+          <h1 className="mb-5 text-[19px] font-semibold leading-snug tracking-[-0.02em] text-fg">
             {problem.title}
           </h1>
-          <div className="mb-5 mt-2 flex items-center gap-2">
-            <DifficultyPill difficulty={problem.difficulty} />
-            <span className="pill">Python 3</span>
-            <span className="pill">Fewest chars wins</span>
-          </div>
           <article className="problem-description">
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{problem.statement}</ReactMarkdown>
           </article>
@@ -449,7 +435,7 @@ export default function Room() {
       <div className="flex h-full flex-col overflow-hidden">
         <Header r={r} />
         {room.state === "playing" && !r.review && (
-          <StandingsStrip room={room} racing={r.waitingOn.length} />
+          <StandingsStrip room={room} />
         )}
         <div
           ref={layout.containerRef}
