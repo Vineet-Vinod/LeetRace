@@ -67,6 +67,33 @@ for problem in json.load(sys.stdin):
     expect(load('height-of-special-binary-tree').adapter).toBe('special-tree');
   });
 
+  it('checks Remove Element mutations across its complete testcase suite', async () => {
+    const problem = load('remove-element');
+    const countOnly = await runCode(`class Solution:
+    def removeElement(self, nums, val):
+        return sum(value != val for value in nums)
+`, problem);
+    expect(countOnly).toMatchObject({ solved: false, error: 'Wrong answer.' });
+
+    const reordered = await runCode(`class Solution:
+    def removeElement(self, nums, val):
+        nums[:] = sorted(value for value in nums if value != val)
+        return len(nums)
+`, problem);
+    expect(reordered).toMatchObject({ solved: false, error: 'Wrong answer.' });
+
+    const correct = await runCode(`class Solution:
+    def removeElement(self, nums, val):
+        k = 0
+        for value in nums:
+            if value != val:
+                nums[k] = value
+                k += 1
+        return k
+`, problem);
+    expect(correct).toMatchObject({ passed: problem.tests.length, solved: true, error: null });
+  }, 30_000);
+
   it('stores exact Python integer products and repaired floating point tolerances', () => {
     const problem = load('product-of-array-except-self');
     expect(problem.returnType).toBe('List[int]');
