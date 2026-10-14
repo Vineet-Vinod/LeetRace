@@ -61,7 +61,7 @@ export default function CodeEditor({
     <Editor
       language="python"
       path="file:///solution.py"
-      keepCurrentModel
+      saveViewState={false}
       value={value}
       onChange={(value) => onChange(value ?? "")}
       onMount={onMount}

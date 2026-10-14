@@ -49,9 +49,12 @@ export function useRoom() {
     null,
   );
   const [copied, setCopied] = useState(false);
-  const draftKey = room?.problem
-    ? `leetrace:draft:${roomId}:${room.currentRound}:${room.problem.id}`
-    : null;
+
+  useEffect(() => {
+    for (const key of Object.keys(sessionStorage)) {
+      if (key.startsWith("leetrace:draft:")) sessionStorage.removeItem(key);
+    }
+  }, []);
 
   useEffect(() => {
     if (!roomId || !token) return;
@@ -79,12 +82,12 @@ export function useRoom() {
   }, [roomId, token]);
 
   const starterCode = room?.problem?.starterCode;
+  const roundId = room?.roundId;
   useEffect(() => {
-    if (!draftKey || starterCode === undefined) return;
-    setCode(sessionStorage.getItem(draftKey) ?? starterCode);
+    setCode(starterCode ?? "");
     setResult(null);
     setReview(null);
-  }, [draftKey, starterCode]);
+  }, [roomId, roundId, starterCode]);
 
   const perform = useCallback(async (action: () => Promise<unknown>) => {
     if (pendingRef.current) return false;
@@ -102,11 +105,6 @@ export function useRoom() {
       setPending(false);
     }
   }, []);
-
-  function changeCode(value: string) {
-    setCode(value);
-    if (draftKey) sessionStorage.setItem(draftKey, value);
-  }
 
   const finished = room ? room.me.locked || room.me.resigned : false;
   const readOnly =
@@ -167,7 +165,7 @@ export function useRoom() {
     pending,
     canAct,
     code,
-    changeCode,
+    changeCode: setCode,
     result: result ?? room?.me.submission ?? null,
     review,
     setReview,

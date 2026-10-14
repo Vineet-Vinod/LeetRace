@@ -113,6 +113,25 @@ describe('game rooms', () => {
     expect(replay.currentRound).toBe(1);
   });
 
+  it('gives repeated problems distinct round identities across rounds and replays', () => {
+    const { store, host } = setup(2);
+    store.start(host.roomId, host.token);
+    const first = store.snapshot(host.roomId, host.token);
+    store.resign(host.roomId, host.token);
+    expect(store.snapshot(host.roomId, host.token).roundId).toBe(first.roundId);
+    store.skipBreak(host.roomId, host.token);
+    const second = store.snapshot(host.roomId, host.token);
+    expect(second.problem?.id).toBe(first.problem?.id);
+    expect(second.roundId).toBeGreaterThan(first.roundId);
+    store.resign(host.roomId, host.token);
+    store.restart(host.roomId, host.token);
+    store.start(host.roomId, host.token);
+    const replay = store.snapshot(host.roomId, host.token);
+    expect(replay.currentRound).toBe(first.currentRound);
+    expect(replay.problem?.id).toBe(first.problem?.id);
+    expect(replay.roundId).toBeGreaterThan(second.roundId);
+  });
+
   it('rejects concurrent submissions and discards results from an old round', async () => {
     let finish: ((value: SubmissionResult) => void) | undefined;
     const execution = new Promise<SubmissionResult>((resolve) => { finish = resolve; });

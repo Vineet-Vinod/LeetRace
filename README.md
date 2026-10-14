@@ -40,7 +40,7 @@ One package and lockfile cover both frontend and backend.
 - `tests/` checks judging, room transitions, transport, and the problem corpus.
 - `problems/` contains one JSON file per repaired problem. There is no separate index.
 
-The client infers request and response types from the tRPC router. Zod validates incoming requests and problem files. [tRPC subscriptions](https://trpc.io/docs/server/subscriptions) send personalized room snapshots over server-sent events. Room membership uses a random player token, stored in session storage, so refreshing the tab restores the session and draft. Opponent code appears only after the round ends.
+The client infers request and response types from the tRPC router. Zod validates incoming requests and problem files. [tRPC subscriptions](https://trpc.io/docs/server/subscriptions) send personalized room snapshots over server-sent events. Room membership uses a random player token, stored in session storage, so refreshing the tab restores membership. Code is never stored in the browser: refreshing or starting a new round resets the editor to the Python starter. Opponent code appears only after the round ends.
 
 Rooms live in memory and reset when the server restarts. Run a single backend process per deployment.
 

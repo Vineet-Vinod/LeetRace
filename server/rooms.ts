@@ -23,6 +23,7 @@ interface Room {
   difficulty: Difficulty | null;
   totalRounds: number;
   currentRound: number;
+  roundId: number;
   problem: Problem | null;
   lastProblemId?: string;
   startedAt: number;
@@ -75,7 +76,7 @@ export class RoomStore {
     const room: Room = {
       id, hostToken: token, state: 'lobby', players: new Map([[token, freshPlayer(settings.name)]]),
       timeLimit: settings.timeLimit, difficulty: settings.difficulty, totalRounds: settings.rounds,
-      currentRound: 0, problem: null, startedAt: 0, breakUntil: null, touchedAt: this.now(), epoch: 0,
+      currentRound: 0, roundId: 0, problem: null, startedAt: 0, breakUntil: null, touchedAt: this.now(), epoch: 0,
       messages: [], messageId: 0, events: new EventEmitter(), presence: new Map(),
     };
     room.events.setMaxListeners(100);
@@ -149,6 +150,7 @@ export class RoomStore {
       timeLimit: room.timeLimit,
       difficulty: room.difficulty,
       currentRound: room.currentRound,
+      roundId: room.roundId,
       totalRounds: room.totalRounds,
       remaining: room.state === 'playing' ? Math.max(0, Math.ceil((room.startedAt + room.timeLimit * 1000 - this.now()) / 1000)) : 0,
       breakRemaining: room.breakUntil === null ? null : Math.max(0, Math.ceil((room.breakUntil - this.now()) / 1000)),
@@ -187,6 +189,7 @@ export class RoomStore {
     room.lastProblemId = problem.id;
     room.state = 'playing';
     room.currentRound += 1;
+    room.roundId += 1;
     room.startedAt = this.now();
     room.touchedAt = this.now();
     room.breakUntil = null;

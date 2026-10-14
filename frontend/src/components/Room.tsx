@@ -292,6 +292,7 @@ function Workspace({
           <div className="relative min-h-0 flex-1">
             <div className="absolute inset-0">
               <CodeEditor
+                key={room.roundId}
                 value={r.review?.code ?? r.code}
                 onChange={r.changeCode}
                 readOnly={r.readOnly}
