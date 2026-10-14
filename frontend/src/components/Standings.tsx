@@ -38,6 +38,16 @@ export function StandingsStrip({ room }: { room: RoomSnapshot }) {
             <Avatar name={player.name} size={18} />
             <div className="flex min-w-0 flex-1 items-center gap-1.5">
               <p className="min-w-0 flex-1 truncate text-[12px] font-medium text-fg">{player.name}</p>
+              {player.lockedAt !== null && (
+                <span role="img" aria-label="Locked" title="Score locked" className="flex-none text-warn">
+                  <Icon.lock size={12} strokeWidth={2} />
+                </span>
+              )}
+              {player.resigned && (
+                <span role="img" aria-label="Resigned" title="Resigned" className="flex-none text-bad">
+                  <Icon.x size={12} strokeWidth={2} />
+                </span>
+              )}
               <p className={cx("flex flex-none items-center gap-1 text-[11px]", player.solved ? "text-ok" : "text-fg-subtle")}>
                 {player.solved ? (
                   <>
