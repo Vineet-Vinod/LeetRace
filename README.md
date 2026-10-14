@@ -40,13 +40,15 @@ One package and lockfile cover both frontend and backend.
 - `tests/` checks judging, room transitions, transport, and the problem corpus.
 - `problems/` contains one JSON file per repaired problem. There is no separate index.
 
-The client infers request and response types from the tRPC router. Zod validates incoming requests and problem files. [tRPC subscriptions](https://trpc.io/docs/server/subscriptions) send personalized room snapshots over server-sent events. Room membership uses a random player token, stored in session storage, so refreshing the tab restores the session and draft. Opponent code appears only after the round ends.
+The client infers request and response types from the tRPC router. Zod validates incoming requests and problem files. [tRPC subscriptions](https://trpc.io/docs/server/subscriptions) send personalized room snapshots over server-sent events. Room membership uses a random player token, stored in session storage, so refreshing the tab restores membership. Code is never stored in the browser: refreshing or starting a new round resets the editor to the Python starter. Opponent code appears only after the round ends.
 
 Rooms live in memory and reset when the server restarts. Run a single backend process per deployment.
 
 ## Problem data
 
 The retained corpus originated from [LeetCodeDataset](https://huggingface.co/datasets/newfacade/LeetCodeDataset). Each filename is the problem ID. JSON files retain the title, difficulty, Markdown statement with examples and constraints, Python submission interface, and test inputs with expected outputs. Example explanations appear as prose outside the input and output snippets. Problems with unavailable illustrations are omitted. Floating-point problems also retain their comparison tolerances.
+
+Statements support inline code and LaTeX. Use `$$x_{i}$$` for inline math and put `$$` delimiters on their own lines for display equations. Single dollar signs remain literal for prices and string examples. Plain powers such as `10^5` render as exponents in prose; code snippets remain unchanged.
 
 Tests contain data, not executable assertions. Saved reference solutions, generators, duplicate test functions, topic tags, repair logs, and older problem snapshots have been removed. Linked lists and trees are stored as JSON data and become `ListNode` and `TreeNode` objects when passed to Python solutions. The judge checks in-place mutations where required. Integers beyond JavaScript's safe range use a decimal `$bigint` tag in storage and ordinary Python integers in submissions.
 

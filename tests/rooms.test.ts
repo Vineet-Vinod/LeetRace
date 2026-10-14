@@ -68,6 +68,38 @@ describe('game rooms', () => {
     expect(store.snapshot(host.roomId, host.token).rankings[0]?.code).toBe('first');
   });
 
+  it('reports when the shortest correct submission was sent, independent of judging, later attempts and locking', async () => {
+    let now = 0;
+    const store = new RoomStore(() => problem, async (code) => {
+      now += 800;
+      return { ...solved, solved: code !== 'bad', passed: code === 'bad' ? 0 : 1, charCount: code.length };
+    }, () => now);
+    const host = store.create({ name: 'Dark', timeLimit: 30, difficulty: null, rounds: 1 });
+    const guest = store.join(host.roomId, 'Unsolved');
+    store.start(host.roomId, host.token);
+    expect(store.snapshot(host.roomId, host.token).rankings[0]?.solveTime).toBeNull();
+    now = 1234;
+    await store.submit(host.roomId, host.token, 'long correct solution');
+    expect(store.snapshot(host.roomId, host.token).rankings[0]?.solveTime).toBe(1.234);
+    now = 9876;
+    await store.submit(host.roomId, host.token, 'short');
+    now = 12_345;
+    await store.submit(host.roomId, host.token, 'short');
+    now = 14_000;
+    await store.submit(host.roomId, host.token, 'bad');
+    await store.submit(host.roomId, guest.token, 'bad');
+    now = 16_000;
+    await store.submit(host.roomId, host.token, 'long correct solution');
+    now = 20_000;
+    store.resign(host.roomId, guest.token);
+    store.lock(host.roomId, host.token);
+    const final = store.snapshot(host.roomId, host.token);
+    expect(final.rankings[0]).toMatchObject({ solveTime: 9.876, charCount: 5, lockedAt: 20, code: 'short' });
+    expect(final.rankings[1]?.solveTime).toBeNull();
+    store.restart(host.roomId, host.token);
+    expect(store.snapshot(host.roomId, host.token).rankings.every((entry) => entry.solveTime === null)).toBe(true);
+  });
+
   it('runs a 30 second break and does not let an old break skip a later round', () => {
     const { store, host, advance } = setup(3);
     store.start(host.roomId, host.token);
@@ -111,6 +143,25 @@ describe('game rooms', () => {
     expect(replay.problem?.id).toBe('next');
     expect(replay.difficulty).toBe('Easy');
     expect(replay.currentRound).toBe(1);
+  });
+
+  it('gives repeated problems distinct round identities across rounds and replays', () => {
+    const { store, host } = setup(2);
+    store.start(host.roomId, host.token);
+    const first = store.snapshot(host.roomId, host.token);
+    store.resign(host.roomId, host.token);
+    expect(store.snapshot(host.roomId, host.token).roundId).toBe(first.roundId);
+    store.skipBreak(host.roomId, host.token);
+    const second = store.snapshot(host.roomId, host.token);
+    expect(second.problem?.id).toBe(first.problem?.id);
+    expect(second.roundId).toBeGreaterThan(first.roundId);
+    store.resign(host.roomId, host.token);
+    store.restart(host.roomId, host.token);
+    store.start(host.roomId, host.token);
+    const replay = store.snapshot(host.roomId, host.token);
+    expect(replay.currentRound).toBe(first.currentRound);
+    expect(replay.problem?.id).toBe(first.problem?.id);
+    expect(replay.roundId).toBeGreaterThan(second.roundId);
   });
 
   it('rejects concurrent submissions and discards results from an old round', async () => {

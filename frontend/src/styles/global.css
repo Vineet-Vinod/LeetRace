@@ -419,6 +419,12 @@
 }
 .problem-description sup { top: -0.5em; }
 .problem-description sub { bottom: -0.25em; }
+.problem-description .katex { font-size: 1.05em; }
+.problem-description .katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.35em 0;
+}
 
 @media (prefers-reduced-motion: reduce) {
   *,

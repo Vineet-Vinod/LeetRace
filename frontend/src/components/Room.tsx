@@ -1,14 +1,13 @@
 import { useEffect, useRef, type MutableRefObject } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { AnimatePresence, MotionConfig, motion } from "framer-motion";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api.js";
 import { useRoom, formatTimer, type RoomState } from "../hooks/useRoom";
 import { usePaneLayout, type PaneLayout } from "../hooks/usePaneLayout";
 import CodeEditor, { type EditorInstance } from "./CodeEditor";
 import { ChatDock } from "./Chat";
 import { ResultsPane } from "./Results";
+import { ProblemDescription } from "./ProblemDescription";
 import { Finished, Lobby } from "./RoomViews";
 import { StandingsStrip } from "./Standings";
 import { editorFont, graphiteTheme } from "./editorTheme";
@@ -273,9 +272,7 @@ function Workspace({
           <div className="mb-5 mt-2">
             <DifficultyPill difficulty={problem.difficulty} />
           </div>
-          <article className="problem-description">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{problem.statement}</ReactMarkdown>
-          </article>
+          <ProblemDescription statement={problem.statement} />
         </div>
       </section>
 
@@ -295,6 +292,7 @@ function Workspace({
           <div className="relative min-h-0 flex-1">
             <div className="absolute inset-0">
               <CodeEditor
+                key={room.roundId}
                 value={r.review?.code ?? r.code}
                 onChange={r.changeCode}
                 readOnly={r.readOnly}

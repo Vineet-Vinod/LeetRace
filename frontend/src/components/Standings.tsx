@@ -1,5 +1,6 @@
 import type { RoomSnapshot } from "../api";
 import type { Ranking } from "../hooks/useRoom";
+import { formatSolveTime } from "../formatSolveTime";
 import { Avatar, Icon, cx } from "./ui";
 
 function StatusBadges({ player }: { player: Ranking }) {
@@ -38,6 +39,16 @@ export function StandingsStrip({ room }: { room: RoomSnapshot }) {
             <Avatar name={player.name} size={18} />
             <div className="flex min-w-0 flex-1 items-center gap-1.5">
               <p className="min-w-0 flex-1 truncate text-[12px] font-medium text-fg">{player.name}</p>
+              {player.lockedAt !== null && (
+                <span role="img" aria-label="Locked" title="Score locked" className="flex-none text-warn">
+                  <Icon.lock size={12} strokeWidth={2} />
+                </span>
+              )}
+              {player.resigned && (
+                <span role="img" aria-label="Resigned" title="Resigned" className="flex-none text-bad">
+                  <Icon.x size={12} strokeWidth={2} />
+                </span>
+              )}
               <p className={cx("flex flex-none items-center gap-1 text-[11px]", player.solved ? "text-ok" : "text-fg-subtle")}>
                 {player.solved ? (
                   <>
@@ -67,13 +78,14 @@ export function ResultsTable({
 }) {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[640px] table-fixed text-center text-[13px]">
+      <table className="w-full min-w-[720px] table-fixed text-center text-[13px]">
         <colgroup>
           <col className="w-[7%]" />
-          <col className="w-[31%]" />
+          <col className="w-[21%]" />
           <col className="w-[24%]" />
+          <col className="w-[14%]" />
           <col className="w-[16%]" />
-          <col className="w-[22%]" />
+          <col className="w-[18%]" />
         </colgroup>
         <thead>
           <tr className="border-b border-line text-[12px] text-fg-subtle">
@@ -81,6 +93,7 @@ export function ResultsTable({
             <th scope="col" className="px-3 py-3 font-medium">Player</th>
             <th scope="col" className="px-3 py-3 font-medium">Result</th>
             <th scope="col" className="px-3 py-3 font-medium">Tests</th>
+            <th scope="col" className="px-3 py-3 font-medium">Solve time</th>
             <th scope="col" className="px-3 py-3 font-medium">Code</th>
           </tr>
         </thead>
@@ -129,6 +142,9 @@ export function ResultsTable({
                 <td className="whitespace-nowrap px-3 py-3 font-mono tabular-nums text-fg-muted">
                   {player.testsPassed}
                   <span className="text-fg-subtle"> / {player.testsTotal}</span>
+                </td>
+                <td className="whitespace-nowrap px-3 py-3 font-mono tabular-nums text-fg-muted">
+                  {player.solveTime === null ? "-" : formatSolveTime(player.solveTime)}
                 </td>
                 <td className="whitespace-nowrap px-3 py-3">
                   <button
