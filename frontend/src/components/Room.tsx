@@ -74,7 +74,7 @@ function Header({ r }: { r: RoomState }) {
         >
           <LogoMark size={22} />
           <span className="hidden text-[14px] font-semibold tracking-[-0.02em] text-fg xl:inline">
-            Leet<span className="text-fg-muted">Race</span>
+            terse<span className="text-fg-muted">.codes</span>
           </span>
         </button>
         <span aria-hidden className="hidden h-4 w-px flex-none bg-line-strong sm:block" />

@@ -4,7 +4,7 @@ export const editorFont =
   "'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
 
 export const graphiteTheme: EditorTheme = {
-  name: "leetrace-graphite",
+  name: "terse-codes-graphite",
   data: {
     base: "vs-dark",
     inherit: true,

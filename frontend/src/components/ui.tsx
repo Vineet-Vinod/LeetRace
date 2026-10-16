@@ -132,7 +132,7 @@ export function Wordmark({ size = 24 }: { size?: number }) {
         className="font-semibold tracking-[-0.02em] text-fg"
         style={{ fontSize: Math.round(size * 0.62) }}
       >
-        Leet<span className="text-fg-muted">Race</span>
+        terse<span className="text-fg-muted">.codes</span>
       </span>
     </span>
   );
