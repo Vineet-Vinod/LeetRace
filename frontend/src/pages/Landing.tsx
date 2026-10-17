@@ -1,5 +1,5 @@
 import { useRef, useState, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import { api, errorMessage, saveSession, type RouterInputs } from "../api";
 import { Icon, Kbd, Spinner, Wordmark, cx, difficultyDot } from "../components/ui";
@@ -85,6 +85,8 @@ function Stepper({
 
 export default function Landing() {
   const navigate = useNavigate();
+  const { roomId: inviteCode } = useParams();
+  const joiningFromLink = inviteCode !== undefined;
   const nameInput = useRef<HTMLInputElement>(null);
   const [name, setName] = useState("");
   const [difficulty, setDifficulty] = useState<Difficulty>(null);
@@ -96,6 +98,11 @@ export default function Landing() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>, mode: RoomMode) {
     event.preventDefault();
+    if (pending !== null) return;
+    if (joiningFromLink && !/^[A-F0-9]{6}$/i.test(inviteCode)) {
+      setError("This join link is invalid. Ask the host for a new link.");
+      return;
+    }
     if (!name.trim()) {
       setError("Enter your username.");
       nameInput.current?.focus();
@@ -113,7 +120,7 @@ export default function Landing() {
               rounds,
             })
           : await api.joinRoom.mutate({
-              roomId: roomCode.trim().toUpperCase(),
+              roomId: (inviteCode ?? roomCode).trim().toUpperCase(),
               name: name.trim(),
             });
       saveSession(session);
@@ -146,7 +153,7 @@ export default function Landing() {
         >
           <Wordmark size={64} />
           <h1 className="mt-4 text-[20px] font-medium tracking-[-0.02em] text-fg-muted sm:text-[22px]">
-            Competitive Code Golf
+            {joiningFromLink ? "Enter your name to join the room" : "Competitive Code Golf"}
           </h1>
         </motion.header>
 
@@ -163,7 +170,7 @@ export default function Landing() {
             <input
               ref={nameInput}
               id="name"
-              form="create-room"
+              form={joiningFromLink ? "join-room" : "create-room"}
               required
               autoFocus
               autoComplete="nickname"
@@ -190,7 +197,8 @@ export default function Landing() {
             </AnimatePresence>
           </div>
 
-          <div className="grid grid-cols-1 gap-7 md:grid-cols-[1fr_auto_1fr]">
+          <div className={joiningFromLink ? "mx-auto w-full max-w-sm" : "grid grid-cols-1 gap-7 md:grid-cols-[1fr_auto_1fr]"}>
+            {!joiningFromLink && <>
             <form
               id="create-room"
               aria-labelledby="create-heading"
@@ -276,8 +284,10 @@ export default function Landing() {
             </form>
 
             <div aria-hidden className="border-t border-dotted border-fg-subtle/50 md:border-l md:border-t-0" />
+            </>}
 
             <form
+              id="join-room"
               aria-labelledby="join-heading"
               onSubmit={(event) => {
                 void handleSubmit(event, "join");
@@ -285,9 +295,9 @@ export default function Landing() {
               className="pop flex min-w-0 flex-col gap-5 bg-raised/90 p-5 backdrop-blur-xl sm:p-6"
             >
               <h2 id="join-heading" className="text-[16px] font-semibold text-fg">
-                Join a room
+                {joiningFromLink ? `Join room ${inviteCode.toUpperCase()}` : "Join a room"}
               </h2>
-              <div className="flex flex-col gap-1.5">
+              {!joiningFromLink && <div className="flex flex-col gap-1.5">
                 <label htmlFor="room-code" className="text-[12.5px] font-medium text-fg-muted">
                   Room code
                 </label>
@@ -310,7 +320,7 @@ export default function Landing() {
                 <p className="text-[12px] text-fg-subtle">
                   Ask the host for the 6-character code shown in their lobby.
                 </p>
-              </div>
+              </div>}
               <button type="submit" disabled={pending !== null} className="btn btn-primary btn-lg mt-auto w-full">
                 {pending === "join" ? (
                   <>

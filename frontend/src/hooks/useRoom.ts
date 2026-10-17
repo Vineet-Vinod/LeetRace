@@ -48,7 +48,10 @@ export function useRoom() {
   const [review, setReview] = useState<{ name: string; code: string } | null>(
     null,
   );
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState<"code" | "link" | null>(null);
+  const copyTimer = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => () => clearTimeout(copyTimer.current), []);
 
   useEffect(() => {
     for (const key of Object.keys(sessionStorage)) {
@@ -125,22 +128,24 @@ export function useRoom() {
     }
   }
 
-  async function copyRoom() {
+  async function copyRoom(kind: "code" | "link" = "code") {
+    const text = kind === "link" ? `https://terse.codes/join/${roomId}` : roomId;
     try {
       if (navigator.clipboard) {
         try {
-          await navigator.clipboard.writeText(roomId);
+          await navigator.clipboard.writeText(text);
         } catch {
-          copySelection(roomId);
+          copySelection(text);
         }
       } else {
-        copySelection(roomId);
+        copySelection(text);
       }
       setError("");
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 2000);
+      setCopied(kind);
+      clearTimeout(copyTimer.current);
+      copyTimer.current = setTimeout(() => setCopied(null), 2000);
     } catch {
-      setError(`Couldn't copy the code. Copy it manually: ${roomId}`);
+      setError(`Couldn't copy the ${kind}. Copy it manually: ${text}`);
     }
   }
 

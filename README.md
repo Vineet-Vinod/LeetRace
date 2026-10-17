@@ -2,6 +2,8 @@
 
 Race friends to solve the same problem in Python. Create a room, share its six-character code, and complete the Python starter in the Monaco editor. Correct solutions rank by character count, then lock time. Unsolved solutions rank by tests passed. Rooms support timed rounds, chat, resignation, and code review after each round.
 
+Use **Copy join link** in the lobby to share `https://terse.codes/join/<room-code>`. The link asks the joiner only for their name before entering the room. Clicking the room code still copies just the code.
+
 ## Run locally
 
 Install Node.js 24 or newer, pnpm, and Python 3.9 or newer, then run:

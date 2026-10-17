@@ -32,8 +32,8 @@ export function Lobby({ r }: { r: RoomState }) {
               onClick={() => {
                 void r.copyRoom();
               }}
-              aria-label={r.copied ? `Room code ${r.roomId} copied` : `Copy room code ${r.roomId}`}
-              title={r.copied ? "Copied" : "Copy room code"}
+              aria-label={r.copied === "code" ? `Room code ${r.roomId} copied` : `Copy room code ${r.roomId}`}
+              title={r.copied === "code" ? "Copied" : "Copy room code"}
               className="group flex gap-1.5 rounded-xl p-1 transition-colors"
             >
               {Array.from(r.roomId).map((char, index) => (
@@ -41,12 +41,19 @@ export function Lobby({ r }: { r: RoomState }) {
                   key={index}
                   className={cx(
                     "flex h-14 w-9 items-center justify-center rounded-lg border bg-sunken font-mono text-[26px] font-medium shadow-[inset_0_1px_0_rgb(255_255_255/0.03)] transition-colors sm:w-11",
-                    r.copied ? "border-ok/50 text-ok" : "border-line-strong text-fg group-hover:border-line-hover",
+                    r.copied === "code" ? "border-ok/50 text-ok" : "border-line-strong text-fg group-hover:border-line-hover",
                   )}
                 >
                   {char}
                 </span>
               ))}
+            </button>
+            <button
+              type="button"
+              onClick={() => { void r.copyRoom("link"); }}
+              className="btn btn-secondary"
+            >
+              <span aria-live="polite">{r.copied === "link" ? "Link copied!" : "Copy join link"}</span>
             </button>
           </div>
 

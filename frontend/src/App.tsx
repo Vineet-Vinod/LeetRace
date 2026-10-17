@@ -16,6 +16,7 @@ export default function App() {
     >
       <Routes>
         <Route path="/" element={<Landing />} />
+        <Route path="/join/:roomId" element={<Landing />} />
         <Route path="/room" element={<Room />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
