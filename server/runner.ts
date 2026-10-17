@@ -21,7 +21,7 @@ export interface SubmissionResult {
 
 const MAX_CONCURRENT = 1;
 const MAX_ACCEPTED = 8;
-const QUEUE_TIMEOUT_MS = 30_000;
+const QUEUE_TIMEOUT_MS = MAX_ACCEPTED * 60_000;
 const MIB = 1024 * 1024;
 let running = 0;
 const waiting: { resolve: (accepted: boolean) => void; timer: ReturnType<typeof setTimeout> }[] = [];

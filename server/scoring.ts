@@ -1,7 +1,4 @@
-/**
- * Two thirds of the maximum score reward character efficiency; one third rewards
- * time remaining after locking. An unlocked solve receives no time bonus.
- */
+/** Scores a solve with `100 * (2 * minSolvedChars / charCount + timeBonus) / 3`; an unlocked solve has a zero time bonus. */
 export function roundPoints(
   charCount: number | null,
   finishTime: number | null,

@@ -79,14 +79,46 @@ describe('game rooms', () => {
     expect(changes).toBeGreaterThan(0);
   });
 
+  it('bounds account streams and releases the slot when a tab closes', () => {
+    const { store, host } = setup();
+    const tabs = Array.from({ length: 7 }, () => store.listen(host.roomId, host.userId, () => {}));
+    expect(() => store.listen(host.roomId, host.userId, () => {})).toThrow('Too many account connections.');
+    tabs[0]?.();
+    const replacement = store.listen(host.roomId, host.userId, () => {});
+    expect(store.snapshot(host.roomId, host.userId).members[0]?.online).toBe(true);
+    replacement();
+    for (const close of tabs.slice(1)) close();
+  });
+
   it('keeps a round result after a member leaves and forbids further room access', async () => {
-    const { store, host } = setup(1);
+    const events: import('../server/rooms.js').RoomEvent[] = [];
+    const store = new RoomStore(() => problem, async () => solved, Date.now, { onEvent: (event) => events.push(event) });
+    const host = createHost(store, { name: 'Dark', timeLimit: 30, difficulty: null, rounds: 1 });
+    store.listen(host.roomId, host.userId, () => {});
     const guest = joinAs(store, host.roomId, 'Chat');
     store.start(host.roomId, host.userId);
     await store.submit(host.roomId, guest.userId, 'correct');
+    await store.submit(host.roomId, guest.userId, 'also correct');
+    expect(events.filter((event) => event.type === 'problem_solved')).toHaveLength(1);
+    expect(events.some((event) => event.type === 'round_finished')).toBe(false);
     store.leave(host.roomId, guest.userId);
     expect(() => store.snapshot(host.roomId, guest.userId)).toThrow('Rejoin');
     expect(store.snapshot(host.roomId, host.userId).rankings.find((entry) => entry.userId === guest.userId)?.solved).toBe(true);
+  });
+
+  it('does not record a correct result from a submission pending when its member is kicked', async () => {
+    let finish: ((result: SubmissionResult) => void) | undefined;
+    const pendingRun = new Promise<SubmissionResult>((resolve) => { finish = resolve; });
+    const events: import('../server/rooms.js').RoomEvent[] = [];
+    const store = new RoomStore(() => problem, async () => pendingRun, Date.now, { onEvent: (event) => events.push(event) });
+    const host = createHost(store, { name: 'Dark', timeLimit: 30, difficulty: null, rounds: 1 });
+    const guest = joinAs(store, host.roomId, 'Chat');
+    store.start(host.roomId, host.userId);
+    const submission = store.submit(host.roomId, guest.userId, 'pending correct');
+    store.kick(host.roomId, host.userId, guest.userId);
+    finish?.(solved);
+    await expect(submission).rejects.toThrow('round ended');
+    expect(events.some((event) => event.type === 'problem_solved')).toBe(false);
   });
 
   it('bans a kicked account for the room lifetime and preserves their round score', async () => {
@@ -121,6 +153,23 @@ describe('game rooms', () => {
     expect(settled?.type === 'tournament_settled' && settled.departedUserIds).toEqual([]);
   });
 
+  it('awards the current round to the remaining solver when a shorter solver departs', async () => {
+    const events: import('../server/rooms.js').RoomEvent[] = [];
+    const store = new RoomStore(() => problem, async (code) => ({ ...solved, charCount: code.length }), () => 0, {
+      onEvent: (event) => events.push(event),
+    });
+    const host = createHost(store, { name: 'Dark', timeLimit: 30, difficulty: null, rounds: 1 });
+    const guest = joinAs(store, host.roomId, 'Chat');
+    store.start(host.roomId, host.userId);
+    await store.submit(host.roomId, host.userId, 'host-code');
+    await store.submit(host.roomId, guest.userId, 'short');
+    store.leave(host.roomId, guest.userId);
+    store.lock(host.roomId, host.userId);
+    const round = events.find((event) => event.type === 'round_finished');
+    expect(round?.type === 'round_finished' && round.results[0]).toMatchObject({ userId: host.userId, position: 1, departed: false, points: 100 });
+    expect(round?.type === 'round_finished' && round.results[1]).toMatchObject({ userId: guest.userId, position: 2, departed: true, points: 0 });
+  });
+
   it('does not emit empty lobby settlements or repeat a completed tournament settlement', async () => {
     const events: import('../server/rooms.js').RoomEvent[] = [];
     const store = new RoomStore(() => problem, async () => solved, Date.now, { onEvent: (event) => events.push(event) });
@@ -139,7 +188,10 @@ describe('game rooms', () => {
   });
 
   it('does not award solo points and counts unique solved problems', async () => {
-    const { store, host } = setup(2);
+    const events: import('../server/rooms.js').RoomEvent[] = [];
+    const store = new RoomStore(() => problem, async () => solved, Date.now, { onEvent: (event) => events.push(event) });
+    const host = createHost(store, { name: 'Dark', timeLimit: 30, difficulty: null, rounds: 2 });
+    store.listen(host.roomId, host.userId, () => {});
     store.start(host.roomId, host.userId);
     await store.submit(host.roomId, host.userId, 'solve');
     store.lock(host.roomId, host.userId);
@@ -147,6 +199,8 @@ describe('game rooms', () => {
     expect(firstRound.standings).toEqual([]);
     expect(firstRound.me.soloProblemsSolved).toBe(1);
     expect(store.snapshot(host.roomId, host.userId).rankings[0]?.solved).toBe(true);
+    const finished = events.find((event) => event.type === 'round_finished');
+    expect(finished?.type === 'round_finished' && finished.results[0]?.points).toBe(0);
   });
 
   it('refreshes an active account heartbeat and evicts stale members after thirty seconds', () => {
@@ -247,6 +301,45 @@ describe('game rooms', () => {
     const tiedRanks = tied.store.snapshot(tied.host.roomId, tied.host.userId).rankings;
     expect(tiedRanks[0]?.position).toBe(1);
     expect(tiedRanks[1]?.position).toBe(1);
+  });
+
+  it('rewards an earlier lock over an earlier unlocked solve at equal length', async () => {
+    let now = 0;
+    const events: import('../server/rooms.js').RoomEvent[] = [];
+    const store = new RoomStore(() => problem, async () => solved, () => now, { onEvent: (event) => events.push(event) });
+    const host = createHost(store, { name: 'Dark', timeLimit: 30, difficulty: null, rounds: 1 });
+    const guest = joinAs(store, host.roomId, 'Chat');
+    store.start(host.roomId, host.userId);
+    await store.submit(host.roomId, host.userId, 'host solution');
+    now = 5_000;
+    await store.submit(host.roomId, guest.userId, 'guest solution');
+    now = 10_000;
+    store.lock(host.roomId, guest.userId);
+    store.resign(host.roomId, host.userId);
+
+    const round = events.find((event) => event.type === 'round_finished');
+    expect(round?.type === 'round_finished' && round.results.map((result) => result.userId)).toEqual(['guest', 'host']);
+    if (round?.type !== 'round_finished') throw new Error('Expected a finished round event.');
+    const guestResult = round.results.find((result) => result.userId === guest.userId);
+    const hostResult = round.results.find((result) => result.userId === host.userId);
+    expect(guestResult?.solveTime).toBe(5);
+    expect(guestResult?.points).toBeGreaterThan(hostResult?.points ?? Infinity);
+    expect(hostResult?.points).toBeCloseTo(200 / 3, 10);
+  });
+
+  it('keeps shorter solves first even when the longer solve locks earlier', async () => {
+    let now = 0;
+    const store = new RoomStore(() => problem, async (code) => ({ ...solved, charCount: code.length }), () => now);
+    const host = createHost(store, { name: 'Dark', timeLimit: 30, difficulty: null, rounds: 1 });
+    const guest = joinAs(store, host.roomId, 'Chat');
+    store.start(host.roomId, host.userId);
+    await store.submit(host.roomId, host.userId, 'a much longer solution');
+    await store.submit(host.roomId, guest.userId, 'short');
+    store.lock(host.roomId, guest.userId);
+    now = 1_000;
+    store.lock(host.roomId, host.userId);
+    const ranks = store.snapshot(host.roomId, host.userId).rankings;
+    expect(ranks.map((entry) => entry.userId)).toEqual([guest.userId, host.userId]);
   });
 
   it('reports when the shortest correct submission was sent, independent of judging, later attempts and locking', async () => {
@@ -380,6 +473,24 @@ describe('game rooms', () => {
     expect(() => store.lock(host.roomId, host.userId)).toThrow('not playing');
     expect(store.snapshot(host.roomId, host.userId).state).toBe('finished');
     expect(store.snapshot(host.roomId, host.userId).me.locked).toBe(false);
+  });
+
+  it.each(['lock', 'resign'] as const)('rejects a late %s while another on-time submission is pending', async (action) => {
+    let now = 0;
+    let finish: ((result: SubmissionResult) => void) | undefined;
+    const pendingRun = new Promise<SubmissionResult>((resolve) => { finish = resolve; });
+    const store = new RoomStore(() => problem, async (code) => code === 'pending' ? pendingRun : solved, () => now);
+    const host = createHost(store, { name: 'Dark', timeLimit: 30, difficulty: null, rounds: 1 });
+    const guest = joinAs(store, host.roomId, 'Chat');
+    store.start(host.roomId, host.userId);
+    const pending = store.submit(host.roomId, host.userId, 'pending');
+    await store.submit(host.roomId, guest.userId, 'solved');
+
+    now = 30_001;
+    expect(() => store[action](host.roomId, guest.userId)).toThrow('not playing');
+    finish?.(solved);
+    await expect(pending).resolves.toMatchObject({ solved: true });
+    expect(store.snapshot(host.roomId, host.userId).state).toBe('finished');
   });
 
   it('stops waiting for players whose room stream closed without leaving', () => {

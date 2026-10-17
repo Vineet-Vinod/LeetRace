@@ -56,7 +56,8 @@ export function createRouter(store: RoomStore, accountService?: Accounts, flush 
       return store.join(input.roomId, ctx.profile.username, ctx.identity.userId);
     }),
     room: authenticated.input(roomInput).query(({ input, ctx }) => store.snapshot(input.roomId, ctx.identity.userId)),
-    roomUpdates: t.procedure.input(roomInput.extend({ token: z.string().min(1).max(8192) })).subscription(async function* ({ input, signal }) {
+    roomUpdates: t.procedure.input(roomInput.extend({ token: z.string().min(1).max(8192) })).subscription(async function* ({ input, signal, ctx }) {
+      limits.check(`streams:${ctx.ip ?? 'local'}`, 120, 60_000);
       const identity = await accounts.verify(input.token);
       await accounts.profile(identity);
       let dirty = true;
@@ -65,9 +66,9 @@ export function createRouter(store: RoomStore, accountService?: Accounts, flush 
       let nextAuthCheck = Date.now() + 10_000;
       const notify = () => { dirty = true; wake?.(); };
       const invalidate = () => { revoked = true; notify(); };
+      const stop = store.listen(input.roomId, identity.userId, notify);
       const timer = setInterval(() => wake?.(), 10_000);
       timer.unref();
-      const stop = store.listen(input.roomId, identity.userId, notify);
       sessions.on(identity.sessionId, invalidate);
       signal?.addEventListener('abort', notify);
       try {

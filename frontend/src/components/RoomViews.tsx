@@ -158,7 +158,9 @@ export function Lobby({ r }: { r: RoomState }) {
 export function Finished({ r }: { r: RoomState }) {
   const room = r.room!;
   const breakLeft = room.breakRemaining;
-  const leader = room.rankings[0];
+  const firstPlaceSolvers = room.rankings.filter((player) => player.position === 1 && player.solved);
+  const leader = firstPlaceSolvers[0];
+  const competitive = room.rankings.length > 1;
   const lastRound = breakLeft === null;
 
   return (
@@ -173,7 +175,11 @@ export function Finished({ r }: { r: RoomState }) {
               {lastRound ? "Race complete" : `Round ${room.currentRound} complete`}
             </h1>
             <p className="mt-1.5 text-[14px] text-fg-muted">
-              {leader?.solved ? (
+              {firstPlaceSolvers.length > 1 ? (
+                "Tied first place."
+              ) : leader && !competitive ? (
+                "Solo round solved."
+              ) : leader ? (
                 <>
                   <span className="font-medium text-fg">
                     {leader.userId === room.me.userId ? "You" : leader.name}
@@ -248,6 +254,10 @@ export function Finished({ r }: { r: RoomState }) {
 
 export function TournamentResults({ r }: { r: RoomState }) {
   const room = r.room!;
+  const standings = [...room.standings].sort((left, right) => right.points - left.points);
+  let rank = 0;
+  let previousPoints: number | null = null;
+
   return (
     <main className="relative h-full overflow-y-auto px-4 py-8 sm:px-6 sm:py-12">
       <div aria-hidden className="backdrop-grid pointer-events-none absolute inset-0" />
@@ -265,13 +275,17 @@ export function TournamentResults({ r }: { r: RoomState }) {
           <table className="w-full text-left text-[13px]">
             <thead><tr className="border-b border-line text-fg-subtle"><th scope="col" className="px-4 py-3">#</th><th scope="col" className="px-4 py-3">Player</th><th scope="col" className="px-4 py-3 text-right">Points</th></tr></thead>
             <tbody>
-              {room.standings.map((standing, index) => (
-                <tr key={standing.userId} className={`border-b border-line last:border-b-0 ${standing.userId === room.me.userId ? "bg-accent/[0.05]" : ""}`}>
-                  <td className="px-4 py-3 font-mono tabular-nums text-fg-subtle">{index + 1}</td>
-                  <td className="px-4 py-3 font-medium text-fg">{standing.name}{standing.userId === room.me.userId ? <span className="pill ml-2">You</span> : null}</td>
-                  <td className="px-4 py-3 text-right font-mono tabular-nums text-fg">{standing.points}</td>
-                </tr>
-              ))}
+              {standings.map((standing, index) => {
+                if (standing.points !== previousPoints) rank = index + 1;
+                previousPoints = standing.points;
+                return (
+                  <tr key={standing.userId} className={`border-b border-line last:border-b-0 ${standing.userId === room.me.userId ? "bg-accent/[0.05]" : ""}`}>
+                    <td className="px-4 py-3 font-mono tabular-nums text-fg-subtle">{rank}</td>
+                    <td className="px-4 py-3 font-medium text-fg">{standing.name}{standing.userId === room.me.userId ? <span className="pill ml-2">You</span> : null}</td>
+                    <td className="px-4 py-3 text-right font-mono tabular-nums text-fg">{new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(standing.points)}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </section>

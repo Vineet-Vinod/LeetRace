@@ -25,7 +25,7 @@ test("isolated users join through invite, a kick blocks rejoin, and the race set
     await hostPage.getByRole("button", { name: "Create room" }).click();
     await expect(hostPage.getByRole("heading", { name: "Room Invite" })).toBeVisible();
     const roomId = new URL(hostPage.url()).searchParams.get("id");
-    expect(roomId).toMatch(/^[A-F0-9]{6}$/);
+    expect(roomId).toMatch(/^[A-Za-z0-9_-]{24}$/);
     if (!roomId) throw new Error("Room creation did not provide an invite ID.");
 
     await signInTestAccount(guestPage, guest);
@@ -54,11 +54,15 @@ test("isolated users join through invite, a kick blocks rejoin, and the race set
     await hostPage.getByRole("button", { name: "Resign" }).click();
 
     await expect(hostPage.getByRole("heading", { name: "Race complete" })).toBeVisible();
-    await expect(hostPage.getByRole("table").getByText(host.username)).toBeVisible();
-    await expect(hostPage.getByRole("table").getByText(guest.username)).toBeVisible();
+    const standings = hostPage.getByRole("table");
+    await expect(standings.getByText(host.username)).toBeVisible();
+    await expect(standings.getByText(guest.username)).toBeVisible();
+    await expect(standings).not.toContainText(host.email);
+    await expect(standings).not.toContainText(guest.email);
     await hostPage.getByRole("link", { name: "Open player profile" }).click();
     await expect(hostPage.getByRole("heading", { name: host.username })).toBeVisible();
     await expect(hostPage.getByText("Career points")).toBeVisible();
+    await expect(hostPage.locator("main")).not.toContainText(host.email);
     expect(errors).toEqual([]);
   } finally {
     await Promise.all([guestContext.close(), removedContext.close()]);

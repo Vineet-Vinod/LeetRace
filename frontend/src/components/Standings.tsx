@@ -102,6 +102,11 @@ export function ResultsTable({
   isHost: boolean;
   onKick: (userId: string) => void;
 }) {
+  const firstPlaceSolvers = room.rankings.filter((player) => player.position === 1 && player.solved);
+  const soleCompetitiveWinner = room.rankings.length > 1 && firstPlaceSolvers.length === 1
+    ? firstPlaceSolvers[0]?.userId
+    : null;
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full min-w-[720px] table-fixed text-center text-[13px]">
@@ -126,7 +131,7 @@ export function ResultsTable({
         <tbody>
           {room.rankings.map((player) => {
             const me = player.userId === room.me.userId;
-            const winner = player.position === 1 && player.solved;
+            const winner = player.userId === soleCompetitiveWinner;
             const code = player.code ?? (me ? ownCode : room.problem?.starterCode ?? "");
             return (
               <tr

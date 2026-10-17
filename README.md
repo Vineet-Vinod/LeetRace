@@ -1,8 +1,8 @@
 # LeetRace
 
-Race friends to solve the same problem in Python. Create a room, share its six-character code, and complete the Python starter in the Monaco editor. Correct solutions rank by character count, then lock time. Unsolved solutions rank by tests passed. Rooms support timed rounds, chat, resignation, and code review after each round.
+Race friends to solve the same problem in Python. Create a room, share its private invite link, and complete the Python starter in the Monaco editor. Correct solutions rank by character count, then lock time. Unsolved solutions rank by tests passed. Rooms support timed rounds, chat, resignation, and code review after each round.
 
-Use **Copy join link** in the lobby to share `https://terse.codes/join/<room-code>`. The link asks the joiner only for their name before entering the room. Clicking the room code still copies just the code.
+Use **Copy join link** in the lobby to share `https://terse.codes/join/<room-code>`. Joiners must sign in or create an account before entering the room. Clicking the room code still copies just the code.
 
 ## Run locally
 
@@ -67,14 +67,14 @@ Python submissions complete the supplied starter, usually a method on `Solution`
 
 The TypeScript judge runs code in a separate Python process, with a fresh namespace for every testcase. Expected outputs stay in the parent process. Feedback includes tests passed, runtime, bounded stdout and stderr, and the first failing input and output. Character counts include whitespace.
 
-The runner limits execution time, output, and concurrency, and applies a memory cap on Linux. Python resource limits do not provide filesystem or network isolation. Public deployments accepting hostile code need operating-system or container isolation around each submission.
+The runner limits execution time, output, concurrency, and memory. Production additionally requires the Linux sandbox described below. Development execution is a plain subprocess and must remain on a trusted development machine.
 
 
 ## Scoring and statistics
 
-Round placement sorts solved submissions by character count, then lock time. At equal length, any locked solution beats an unlocked one; earlier locks beat later locks. Unlocked ties use the first submission time of that best solution. A later attempt replaces a correct best solution only when it is shorter. Timely submissions may finish judging after the deadline; the round waits for accepted jobs before finalizing.
+Round placement sorts solved submissions by character count, then lock time. At equal length, any locked solution beats an unlocked one; earlier locks beat later locks. Unlocked ties use the first submission time of that best solution. A later attempt replaces a correct best solution only when it is shorter. Timely submissions may finish judging after the deadline; the round waits for accepted jobs before finalizing. A correct judged submission counts as a unique solved problem immediately, even if the player leaves before the round ends.
 
-For solved competitive entries, round points are `100 × (2 × shortestCharacters / characters + 1 − submissionTime / roundDuration) / 3`, rounded to two decimals. Character counts are actual source lengths, including whitespace. The character component has twice the normalized time component's weight. Unsolved entries earn zero. Tournament standings sum completed round points. Placement and tournament points are different: a longer but faster submission can earn more points. True placement ties receive no arbitrary winner.
+For solved competitive entries, round points are `100 × (2 × shortestCharacters / characters + timeBonus) / 3`, where `timeBonus = 1 − lockTime / roundDuration` for locked entries and zero for unlocked entries. Full precision is retained internally. Character counts are actual source lengths, including whitespace. The character component has twice the normalized time component's weight. Unsolved entries earn zero. Tournament standings sum completed round points. Placement and tournament points are different: a longer but faster submission can earn more points. True placement ties receive no arbitrary winner.
 
 Solo rounds contribute only unique solved problems. Competitive round and tournament wins have separate current and best streaks. Ties and losses reset the corresponding competitive streak. Ratings start at 1000 and use pairwise Elo with K=32 divided by the initial opponent count. Equal scores produce no rating change. On departure, only completed rounds settle comparisons against the remaining players; each pair settles once. Remaining comparisons settle at the tournament's end. Events are idempotent, and stats writes retry while the server remains alive.
 

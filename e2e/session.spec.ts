@@ -14,10 +14,9 @@ test("tabs in one browser share a valid account session", async ({ browser }) =>
 
     await firstTab.getByRole("button", { name: "Create room" }).click();
     await expect(firstTab.getByRole("heading", { name: "Room Invite" })).toBeVisible();
-    await expect(secondTab.getByRole("link", { name: "Rejoin your active room" })).toBeVisible();
     await secondTab.reload();
     await expect(secondTab.getByText(`Signed in as ${account.username}`)).toBeVisible();
-    await expect(secondTab.getByRole("link", { name: "Rejoin your active room" })).toBeVisible();
+    await expect(secondTab.getByRole("link", { name: "Resume your active room" })).toBeVisible();
   } finally {
     await context.close();
   }
@@ -36,10 +35,8 @@ test("a newer login for the same account replaces the prior browser session", as
 
     await expect(newPage.getByText(`Signed in as ${account.username}`)).toBeVisible();
     await oldPage.reload();
-    await expect(oldPage.getByRole("heading", { name: "Couldn’t connect your account" })).toBeVisible({
-      timeout: 30_000,
-    });
-    await expect(oldPage.getByRole("alert")).toContainText(/no longer active|replaced/i);
+    await expect(oldPage).toHaveURL(/\/sign-in/);
+    await expect(oldPage.locator(".cl-signIn-root")).toBeVisible();
   } finally {
     await Promise.all([oldContext.close(), newContext.close()]);
   }

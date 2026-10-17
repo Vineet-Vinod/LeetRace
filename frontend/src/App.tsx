@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState, type ReactNode } from "react";
+import { lazy, Suspense, useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { SignIn, SignUp, useAuth, useClerk } from "@clerk/react";
 import { Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import Landing from "./pages/Landing";
@@ -9,6 +9,9 @@ import { Icon, LogoMark, Spinner } from "./components/ui";
 const Room = lazy(() => import("./components/Room"));
 
 const sessions = new Map<string, Promise<UserState>>();
+const usernamePattern = "[A-Za-z0-9_]{4,12}";
+const validUsername = /^[A-Za-z0-9_]{4,12}$/;
+const usernameMessage = "Use 4–12 letters, numbers, or underscores.";
 
 function returnPath(value: string | null) {
   const hasControlCharacter = value?.split("").some((character) => {
@@ -36,6 +39,8 @@ function AuthCard({ children }: { children: ReactNode }) {
 
 function AuthPages() {
   const location = useLocation();
+  const signupRef = useRef<HTMLDivElement>(null);
+  const isSignUp = location.pathname.startsWith("/sign-up");
   const query = new URLSearchParams(location.search);
   const redirect = returnPath(query.get("redirect_url"));
   const appearance = {
@@ -64,10 +69,41 @@ function AuthPages() {
     },
   } as const;
 
+  useEffect(() => {
+    const root = signupRef.current;
+    if (!isSignUp || !root) return;
+
+    const configureUsernameInputs = () => {
+      const inputs = root.querySelectorAll<HTMLInputElement>('input[name="username"]');
+      inputs.forEach((input) => {
+        input.pattern = usernamePattern;
+        input.minLength = 4;
+        input.maxLength = 12;
+        input.required = true;
+        input.setCustomValidity(input.value && !validUsername.test(input.value) ? usernameMessage : "");
+      });
+    };
+
+    configureUsernameInputs();
+    const observer = new MutationObserver(configureUsernameInputs);
+    observer.observe(root, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, [isSignUp]);
+
+  function validateUsernameInput(event: FormEvent<HTMLDivElement>) {
+    const input = event.target;
+    if (!(input instanceof HTMLInputElement) || input.name !== "username") return;
+    input.pattern = usernamePattern;
+    input.minLength = 4;
+    input.maxLength = 12;
+    input.required = true;
+    input.setCustomValidity(input.value && !validUsername.test(input.value) ? usernameMessage : "");
+  }
+
   return (
     <AuthCard>
-      {location.pathname.startsWith("/sign-up") ? (
-        <div className="flex flex-col items-center gap-3">
+      {isSignUp ? (
+        <div ref={signupRef} onInputCapture={validateUsernameInput} className="flex flex-col items-center gap-3">
           <p className="max-w-[360px] text-center text-[12.5px] text-fg-muted">Choose a unique username using 4–12 letters, numbers, or underscores. Players will see this name in rooms.</p>
           <SignUp
             routing="path"
@@ -161,7 +197,10 @@ export default function App() {
   }, [getToken, isLoaded, isSignedIn, retry, sessionId]);
 
   if (!isLoaded) return <Loading label="Loading account…" />;
-  if (authPage) return <AuthPages />;
+  if (authPage) {
+    const destination = returnPath(new URLSearchParams(location.search).get("redirect_url"));
+    return isSignedIn ? <Navigate to={destination} replace /> : <AuthPages />;
+  }
   if (!isSignedIn) {
     const redirect = `${location.pathname}${location.search}${location.hash}`;
     return <Navigate to={`/sign-in?redirect_url=${encodeURIComponent(returnPath(redirect))}`} replace />;

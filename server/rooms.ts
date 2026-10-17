@@ -18,6 +18,7 @@ interface Player {
   submission: Submission | null;
   best: Submission | null;
   bestCode: string | null;
+  solveRecorded: boolean;
   lockedAt: number | null;
   resigned: boolean;
   pending: boolean;
@@ -80,6 +81,13 @@ export interface RoomSettings {
 
 export type RoomEvent =
   | {
+      type: 'problem_solved';
+      userId: string;
+      problemId: string;
+      tournamentId: string;
+      roundId: string;
+    }
+  | {
       type: 'tournament_started';
       roomId: string;
       tournamentId: string;
@@ -128,7 +136,7 @@ function tournamentId(): string {
 function freshPlayer(userId: string, name: string, now: number, generation: number): Player {
   return {
     userId, name, joinedAt: now, generation, streams: 0, offlineSince: now, lastHeartbeat: now,
-    submission: null, best: null, bestCode: null, lockedAt: null, resigned: false, pending: false,
+    submission: null, best: null, bestCode: null, solveRecorded: false, lockedAt: null, resigned: false, pending: false,
   };
 }
 
@@ -136,6 +144,7 @@ function resetRound(player: Player): void {
   player.submission = null;
   player.best = null;
   player.bestCode = null;
+  player.solveRecorded = false;
   player.lockedAt = null;
   player.resigned = false;
   player.pending = false;
@@ -266,11 +275,13 @@ export class RoomStore {
   }
 
   private rank(room: Room) {
-    const ranked = [...room.roundRoster.values()].sort(rankCompare);
+    const compare = (left: Player, right: Player) => Number(room.departedRoundUsers.has(left.userId))
+      - Number(room.departedRoundUsers.has(right.userId)) || rankCompare(left, right);
+    const ranked = [...room.roundRoster.values()].sort(compare);
     let previous: Player | undefined;
     let previousPosition = 0;
     return ranked.map((player, index) => {
-      const position = previous && rankCompare(previous, player) === 0 ? previousPosition : index + 1;
+      const position = previous && compare(previous, player) === 0 ? previousPosition : index + 1;
       previous = player;
       previousPosition = position;
       return { player, position };
@@ -330,6 +341,7 @@ export class RoomStore {
 
   listen(roomId: string, userId: string, listener: () => void) {
     const { room, player } = this.authenticate(roomId, userId);
+    if (player.streams >= 8) reject('Too many account connections.', 'TOO_MANY_REQUESTS');
     if (room.events.listenerCount('update') >= 80) reject('Too many room connections.', 'TOO_MANY_REQUESTS');
     room.events.on('update', listener);
     const generation = player.generation;
@@ -444,7 +456,7 @@ export class RoomStore {
 
   private requirePlaying(room: Room) {
     if (room.state === 'playing' && this.now() >= room.startedAt + room.timeLimit * 1000) this.completeRound(room);
-    if (room.state !== 'playing') reject('The round is not playing.');
+    if (room.state !== 'playing' || this.now() >= room.startedAt + room.timeLimit * 1000) reject('The round is not playing.');
   }
 
   skipBreak(roomId: string, userId: string | undefined) {
@@ -499,6 +511,16 @@ export class RoomStore {
         reject('This round ended while your submission was running.');
       }
       const submission = { ...result, submitTime };
+      if (result.solved && !player.solveRecorded) {
+        player.solveRecorded = true;
+        this.report({
+          type: 'problem_solved',
+          userId: player.userId,
+          problemId: room.problem.id,
+          tournamentId: room.tournamentId,
+          roundId: `${room.tournamentId}:${room.roundId}`,
+        });
+      }
       player.submission = submission;
       if (!player.best || better(submission, player.best)) {
         player.best = submission;

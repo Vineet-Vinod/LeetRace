@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import { api, errorMessage, type RouterInputs, type UserState } from "../api";
@@ -87,12 +87,42 @@ export default function Landing({ userState }: { userState: UserState }) {
   const navigate = useNavigate();
   const { roomId: inviteCode } = useParams();
   const joiningFromLink = inviteCode !== undefined;
+  const [currentUserState, setCurrentUserState] = useState(userState);
   const [difficulty, setDifficulty] = useState<Difficulty>(null);
   const [timeLimit, setTimeLimit] = useState(5);
   const [rounds, setRounds] = useState(1);
   const [roomCode, setRoomCode] = useState("");
   const [error, setError] = useState("");
-  const [pending, setPending] = useState<RoomMode | null>(null);
+  const [refreshError, setRefreshError] = useState("");
+  const [pending, setPending] = useState<RoomMode | "leave" | null>(null);
+  const refreshPending = useRef(false);
+  const mounted = useRef(false);
+
+  const refreshUserState = useCallback(async () => {
+    if (refreshPending.current) return;
+    refreshPending.current = true;
+    setRefreshError("");
+    try {
+      const freshState = await api.me.query();
+      if (mounted.current) setCurrentUserState(freshState);
+    } catch (failure) {
+      if (mounted.current) setRefreshError(errorMessage(failure));
+    } finally {
+      refreshPending.current = false;
+    }
+  }, []);
+
+  useEffect(() => {
+    mounted.current = true;
+    setCurrentUserState(userState);
+    void refreshUserState();
+    const refreshOnFocus = () => void refreshUserState();
+    window.addEventListener("focus", refreshOnFocus);
+    return () => {
+      mounted.current = false;
+      window.removeEventListener("focus", refreshOnFocus);
+    };
+  }, [refreshUserState, userState]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>, mode: RoomMode) {
     event.preventDefault();
@@ -110,9 +140,25 @@ export default function Landing({ userState }: { userState: UserState }) {
           : await api.joinRoom.mutate({
               roomId: parseRoomId(inviteCode ?? roomCode),
             });
+      setCurrentUserState((current) => ({ ...current, roomId: session.roomId }));
       navigate(`/room?id=${session.roomId}`);
     } catch (error) {
       setError(errorMessage(error));
+    } finally {
+      setPending(null);
+    }
+  }
+
+  async function leaveActiveRoom() {
+    const activeRoomId = currentUserState.roomId;
+    if (!activeRoomId || pending !== null) return;
+    setError("");
+    setPending("leave");
+    try {
+      await api.leave.mutate({ roomId: activeRoomId });
+      setCurrentUserState((current) => ({ ...current, roomId: null }));
+    } catch (failure) {
+      setError(errorMessage(failure));
     } finally {
       setPending(null);
     }
@@ -129,6 +175,15 @@ export default function Landing({ userState }: { userState: UserState }) {
     }
     return trimmed;
   }
+
+  const targetRoomId = joiningFromLink
+    ? parseRoomId(inviteCode)
+    : roomCode.trim()
+      ? parseRoomId(roomCode)
+      : null;
+  const joiningDifferentRoom = currentUserState.roomId !== null
+    && targetRoomId !== null
+    && currentUserState.roomId !== targetRoomId;
 
   return (
     <MotionConfig reducedMotion="user">
@@ -162,12 +217,20 @@ export default function Landing({ userState }: { userState: UserState }) {
           className="relative w-full max-w-3xl"
         >
           <div className="mx-auto mb-7 flex w-full max-w-sm flex-col gap-1.5 text-center">
-            <p className="text-[13px] text-fg-muted">Signed in as <span className="font-medium text-fg">{userState.profile.username}</span></p>
-            {userState.roomId && (
-              <Link to={`/room?id=${encodeURIComponent(userState.roomId)}`} className="text-[12px] text-accent hover:text-fg">
-                Rejoin your active room
-              </Link>
+            <p className="text-[13px] text-fg-muted">Signed in as <span className="font-medium text-fg">{currentUserState.profile.username}</span></p>
+            {currentUserState.roomId && (
+              <div className="flex flex-col items-center gap-1.5">
+                <Link to={`/room?id=${encodeURIComponent(currentUserState.roomId)}`} className="text-[12px] text-accent hover:text-fg">
+                  Resume your active room
+                </Link>
+                {joiningDifferentRoom && (
+                  <button type="button" className="text-[12px] text-fg-subtle underline decoration-line-strong underline-offset-2 hover:text-fg" disabled={pending !== null} onClick={() => void leaveActiveRoom()}>
+                    {pending === "leave" ? "Leaving active room…" : "Leave active room first"}
+                  </button>
+                )}
+              </div>
             )}
+            {refreshError && <p role="status" className="text-[11.5px] text-fg-subtle">Couldn’t refresh active room status. <button type="button" className="text-accent hover:text-fg" onClick={() => void refreshUserState()}>Retry</button></p>}
             <AnimatePresence>
               {error && (
                 <motion.p

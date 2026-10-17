@@ -94,6 +94,22 @@ describe('durable user data', () => {
     });
   });
 
+  it('counts accepted solves immediately and deduplicates them against the completed round', async () => {
+    const t = database();
+    await createUser(t, 'user-1', 'Dark_');
+    const solve = { secret, userId: 'user-1', problemId: 'sum' };
+    expect(await t.mutation(api.results.recordSolve, solve)).toEqual({ recorded: true });
+    expect(await t.mutation(api.results.recordSolve, solve)).toEqual({ recorded: false });
+    expect(await t.mutation(api.results.recordRound, {
+      ...solve, eventId: 'solve-round', roundId: 'round-1', competitive: false,
+      solved: true, points: 0, position: 1, winner: false,
+    })).toEqual({ recorded: true });
+    const profile = await t.query(api.users.requireSession, {
+      secret, userId: 'user-1', sessionId: 'user-1-session',
+    });
+    expect(profile.solvedProblems).toBe(1);
+  });
+
   it('applies round streaks and tournament ratings once, with no win for a shared high score', async () => {
     const t = database();
     await createUser(t, 'user-1', 'Dark_');
@@ -190,6 +206,9 @@ describe('durable user data', () => {
     await createUser(t, 'user-1', 'Dark_');
     await createUser(t, 'user-2', 'Chat_');
     await t.mutation(api.users.deleteUser, { secret, userId: 'user-1' });
+    expect(await t.mutation(api.results.recordSolve, {
+      secret, userId: 'user-1', problemId: 'sum',
+    })).toEqual({ recorded: false });
     await t.mutation(api.results.recordRound, {
       secret, eventId: 'deleted-round', userId: 'user-1', roundId: 'round-1', problemId: 'sum',
       competitive: true, solved: true, points: 12, position: 1, winner: true,
@@ -204,11 +223,13 @@ describe('durable user data', () => {
     const stored = await t.run(async (ctx) => ({
       user: await ctx.db.query('users').withIndex('by_clerk_user_id', (q) => q.eq('clerkUserId', 'user-1')).unique(),
       results: await ctx.db.query('roundResults').withIndex('by_event_id', (q) => q.eq('eventId', 'deleted-round')).unique(),
+      solvedProblem: await ctx.db.query('solvedProblems').withIndex('by_user_problem', (q) => q.eq('userId', 'user-1').eq('problemId', 'sum')).unique(),
     }));
     expect(stored.user).toMatchObject({
       deleted: true, roundWins: 0, careerPoints: 0, solvedProblems: 0, rating: 1000, tournamentWins: 0,
     });
     expect(stored.results).toMatchObject({ userId: 'user-1', points: 12, winner: true });
+    expect(stored.solvedProblem).toBeNull();
     await expect(t.query(api.users.requireSession, {
       secret, userId: 'user-2', sessionId: 'user-2-session',
     })).resolves.toMatchObject({ rating: 984, tournamentWins: 0, tournamentWinStreak: 0 });

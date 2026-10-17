@@ -39,6 +39,10 @@ export class Persistence {
 
   private async save(event: RoomEvent) {
     const { client, secret } = databaseClient();
+    if (event.type === 'problem_solved') {
+      await client.mutation(api.results.recordSolve, { secret, userId: event.userId, problemId: event.problemId });
+      return;
+    }
     if (event.type === 'tournament_started') {
       const profiles = await client.query(api.users.getProfiles, { secret, userIds: event.userIds });
       this.ratings.set(event.tournamentId, new Map(profiles.map((profile) => [profile.userId, profile.rating])));
