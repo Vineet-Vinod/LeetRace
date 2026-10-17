@@ -1,7 +1,7 @@
-import { useRef, useState, type FormEvent } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useState, type FormEvent } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { AnimatePresence, MotionConfig, motion } from "framer-motion";
-import { api, errorMessage, saveSession, type RouterInputs } from "../api";
+import { api, errorMessage, type RouterInputs, type UserState } from "../api";
 import { Icon, Kbd, Spinner, Wordmark, cx, difficultyDot } from "../components/ui";
 
 type Difficulty = RouterInputs["createRoom"]["difficulty"];
@@ -83,12 +83,10 @@ function Stepper({
   );
 }
 
-export default function Landing() {
+export default function Landing({ userState }: { userState: UserState }) {
   const navigate = useNavigate();
   const { roomId: inviteCode } = useParams();
   const joiningFromLink = inviteCode !== undefined;
-  const nameInput = useRef<HTMLInputElement>(null);
-  const [name, setName] = useState("");
   const [difficulty, setDifficulty] = useState<Difficulty>(null);
   const [timeLimit, setTimeLimit] = useState(5);
   const [rounds, setRounds] = useState(1);
@@ -99,37 +97,37 @@ export default function Landing() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>, mode: RoomMode) {
     event.preventDefault();
     if (pending !== null) return;
-    if (joiningFromLink && !/^[A-F0-9]{6}$/i.test(inviteCode)) {
-      setError("This join link is invalid. Ask the host for a new link.");
-      return;
-    }
-    if (!name.trim()) {
-      setError("Enter your username.");
-      nameInput.current?.focus();
-      return;
-    }
     setError("");
     setPending(mode);
     try {
       const session =
         mode === "create"
           ? await api.createRoom.mutate({
-              name: name.trim(),
               difficulty,
               timeLimit: Math.round(timeLimit * 60),
               rounds,
             })
           : await api.joinRoom.mutate({
-              roomId: (inviteCode ?? roomCode).trim().toUpperCase(),
-              name: name.trim(),
+              roomId: parseRoomId(inviteCode ?? roomCode),
             });
-      saveSession(session);
       navigate(`/room?id=${session.roomId}`);
     } catch (error) {
       setError(errorMessage(error));
     } finally {
       setPending(null);
     }
+  }
+
+  function parseRoomId(value: string) {
+    const trimmed = value.trim();
+    try {
+      const url = new URL(trimmed);
+      const match = url.pathname.match(/\/join\/([^/]+)/);
+      if (match?.[1]) return decodeURIComponent(match[1]);
+    } catch {
+      // The field also accepts a raw invite ID.
+    }
+    return trimmed;
   }
 
   return (
@@ -153,7 +151,7 @@ export default function Landing() {
         >
           <Wordmark size={64} />
           <h1 className="mt-4 text-[20px] font-medium tracking-[-0.02em] text-fg-muted sm:text-[22px]">
-            {joiningFromLink ? "Enter your name to join the room" : "Competitive Code Golf"}
+            {joiningFromLink ? "Join your room" : "Competitive Code Golf"}
           </h1>
         </motion.header>
 
@@ -163,24 +161,13 @@ export default function Landing() {
           transition={{ duration: 0.5, delay: 0.08, ease }}
           className="relative w-full max-w-3xl"
         >
-          <div className="mx-auto mb-7 flex w-full max-w-sm flex-col gap-1.5">
-            <label htmlFor="name" className="text-[12.5px] font-medium text-fg-muted">
-              Username
-            </label>
-            <input
-              ref={nameInput}
-              id="name"
-              form={joiningFromLink ? "join-room" : "create-room"}
-              required
-              autoFocus
-              autoComplete="nickname"
-              type="text"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              maxLength={12}
-              placeholder="Ada Lovelace"
-              className="field"
-            />
+          <div className="mx-auto mb-7 flex w-full max-w-sm flex-col gap-1.5 text-center">
+            <p className="text-[13px] text-fg-muted">Signed in as <span className="font-medium text-fg">{userState.profile.username}</span></p>
+            {userState.roomId && (
+              <Link to={`/room?id=${encodeURIComponent(userState.roomId)}`} className="text-[12px] text-accent hover:text-fg">
+                Rejoin your active room
+              </Link>
+            )}
             <AnimatePresence>
               {error && (
                 <motion.p
@@ -295,7 +282,7 @@ export default function Landing() {
               className="pop flex min-w-0 flex-col gap-5 bg-raised/90 p-5 backdrop-blur-xl sm:p-6"
             >
               <h2 id="join-heading" className="text-[16px] font-semibold text-fg">
-                {joiningFromLink ? `Join room ${inviteCode.toUpperCase()}` : "Join a room"}
+                  {joiningFromLink ? "Join room" : "Join a room"}
               </h2>
               {!joiningFromLink && <div className="flex flex-col gap-1.5">
                 <label htmlFor="room-code" className="text-[12.5px] font-medium text-fg-muted">
@@ -304,21 +291,18 @@ export default function Landing() {
                 <input
                   id="room-code"
                   required
-                  minLength={6}
-                  maxLength={6}
-                  pattern="[A-Fa-f0-9]{6}"
                   type="text"
                   autoComplete="off"
                   spellCheck={false}
                   value={roomCode}
                   onChange={(event) =>
-                    setRoomCode(event.target.value.toUpperCase().slice(0, 6))
+                    setRoomCode(event.target.value)
                   }
-                  placeholder="ABC123"
-                  className="field h-12 text-center font-mono text-[20px] tracking-[0.42em] uppercase placeholder:tracking-[0.42em] placeholder:text-fg-subtle/60"
+                  placeholder="Paste a room link or invite ID"
+                  className="field h-12 text-center font-mono text-[14px]"
                 />
                 <p className="text-[12px] text-fg-subtle">
-                  Ask the host for the 6-character code shown in their lobby.
+                  Ask the host for their room link or invite ID.
                 </p>
               </div>}
               <button type="submit" disabled={pending !== null} className="btn btn-primary btn-lg mt-auto w-full">

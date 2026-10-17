@@ -12,10 +12,13 @@ Install Node.js 24 or newer, pnpm, and Python 3.9 or newer, then run:
 pnpm install
 python3 -m venv .venv
 .venv/bin/python -m pip install -r requirements.txt
+pnpm setup:dev
 pnpm dev
 ```
 
-Open http://localhost:3000. Vite proxies tRPC requests to the backend on port 8000. Copy `.env.example` to `.env` to change `FRONTEND_PORT` and `BACKEND_PORT`.
+Create `.env` from `.env.example` and supply Clerk development keys before starting. `pnpm setup:dev` configures Convex and a shared server secret without displaying it. The Convex CLI can use a local development deployment or a linked cloud project. `.env.local` overrides `.env`; both are gitignored.
+
+Open http://localhost:3000. Vite proxies tRPC requests to port 8000. `pnpm dev` runs the frontend, API, and Convex development watcher. Use `APP_ORIGIN` if accessing the frontend through a different host or forwarded URL.
 
 For the production build:
 
@@ -42,9 +45,11 @@ One package and lockfile cover both frontend and backend.
 - `tests/` checks judging, room transitions, transport, and the problem corpus.
 - `problems/` contains one JSON file per repaired problem. There is no separate index.
 
-The client infers request and response types from the tRPC router. Zod validates incoming requests and problem files. [tRPC subscriptions](https://trpc.io/docs/server/subscriptions) send personalized room snapshots over server-sent events. Room membership uses a random player token, stored in session storage, so refreshing the tab restores membership. Code is never stored in the browser: refreshing or starting a new round resets the editor to the Python starter. Opponent code appears only after the round ends.
+The client infers request and response types from the tRPC router. Zod validates incoming requests and problem files. Clerk handles Google, GitHub, and username/password authentication. Every API call verifies the Clerk session, and Convex enforces the newest active session per account. Names come from the verified account; emails never enter room snapshots or public profiles.
 
-Rooms live in memory and reset when the server restarts. Run a single backend process per deployment.
+[tRPC subscriptions](https://trpc.io/docs/server/subscriptions) send personalized room snapshots over server-sent events. Multiple tabs in the same session share one player slot. Heartbeats keep membership alive; after the last connection disappears or stops sending heartbeats, a player has 30 seconds to reconnect. The host can kick a player for the lifetime of the room. New entrants can join only in the lobby. Invite links use random 144-bit identifiers.
+
+Rooms and source code live only in server memory and reset when the server restarts. Run exactly one backend process and one Fly Machine per deployment. The last member leaving or expiring closes the room and invalidates its invite. Convex retains numeric results, unique solved problems, ratings, wins, career points, and current/best streaks. Source code stays available only for the latest round review, then is discarded when the next round or tournament starts or the room closes. It is never written to Convex or application logs. Players can copy code during review. Refreshing the editor resets its unsubmitted draft.
 
 ## Problem data
 
@@ -63,3 +68,37 @@ Python submissions complete the supplied starter, usually a method on `Solution`
 The TypeScript judge runs code in a separate Python process, with a fresh namespace for every testcase. Expected outputs stay in the parent process. Feedback includes tests passed, runtime, bounded stdout and stderr, and the first failing input and output. Character counts include whitespace.
 
 The runner limits execution time, output, and concurrency, and applies a memory cap on Linux. Python resource limits do not provide filesystem or network isolation. Public deployments accepting hostile code need operating-system or container isolation around each submission.
+
+
+## Scoring and statistics
+
+Round placement sorts solved submissions by character count, then lock time. At equal length, any locked solution beats an unlocked one; earlier locks beat later locks. Unlocked ties use the first submission time of that best solution. A later attempt replaces a correct best solution only when it is shorter. Timely submissions may finish judging after the deadline; the round waits for accepted jobs before finalizing.
+
+For solved competitive entries, round points are `100 × (2 × shortestCharacters / characters + 1 − submissionTime / roundDuration) / 3`, rounded to two decimals. Character counts are actual source lengths, including whitespace. The character component has twice the normalized time component's weight. Unsolved entries earn zero. Tournament standings sum completed round points. Placement and tournament points are different: a longer but faster submission can earn more points. True placement ties receive no arbitrary winner.
+
+Solo rounds contribute only unique solved problems. Competitive round and tournament wins have separate current and best streaks. Ties and losses reset the corresponding competitive streak. Ratings start at 1000 and use pairwise Elo with K=32 divided by the initial opponent count. Equal scores produce no rating change. On departure, only completed rounds settle comparisons against the remaining players; each pair settles once. Remaining comparisons settle at the tournament's end. Events are idempotent, and stats writes retry while the server remains alive.
+
+## Browser testing
+
+Run the dev server first, then:
+
+```sh
+pnpm exec playwright install chromium
+pnpm test:e2e
+```
+
+Playwright uses the real Clerk development instance and local API/Convex deployment. It creates clearly scoped test accounts; it does not modify existing users or use production keys. Reports and failure traces go under `/tmp/leetrace-playwright-*`. Test accounts remain available for inspecting results in Clerk. Unit tests use isolated in-process Convex state and never need credentials.
+
+## Production on Fly
+
+Production setup is separate from local development. No Fly runtime validation is performed by the local test suite.
+
+1. Configure the Clerk production instance for Google/GitHub, required verified email, required immutable username of 4–12 characters, and password authentication. Supply production OAuth credentials and complete Clerk's DNS setup.
+2. Link the Convex CLI to the intended project and deploy the functions with `pnpm exec convex deploy`. Configure a random `TERSE_SERVER_SECRET` of at least 32 characters in the production Convex environment, and provide the identical value to Fly. The Convex functions accept only this server credential; browsers access application data through authenticated tRPC.
+3. Set Fly runtime secrets `CLERK_SECRET_KEY`, `CONVEX_URL`, `TERSE_SERVER_SECRET`, and `CLERK_WEBHOOK_SIGNING_SECRET`. Set `APP_ORIGIN` to the exact HTTPS application origin. Secrets must never use a `VITE_` prefix.
+4. Register Clerk's webhook at `https://YOUR_DOMAIN/webhooks/clerk` for `user.deleted`, `session.ended`, `session.revoked`, and `session.removed`; use its signing secret on Fly. Webhook signatures are verified, deleted accounts are tombstoned, and stale session events cannot revoke a newer session.
+5. Build with `VITE_CLERK_PUBLISHABLE_KEY` set to the matching `pk_live_...` value, for example `fly deploy --build-arg VITE_CLERK_PUBLISHABLE_KEY=pk_live_...`. This publishable value is embedded in the frontend and passed to the runtime by the Dockerfile. Private keys are never build arguments.
+6. Keep exactly one Fly Machine: use `fly scale count 1`, and deploy with `fly deploy --ha=false` to avoid provisioning a second Machine. Multiple replicas cannot share ephemeral rooms. Deployments and process restarts end active rooms; schedule deployments accordingly.
+7. Check `/health` and exercise the production sign-in, judge isolation, room lifecycle, and webhook flow before opening access. Linux namespace support must be checked on the actual target. The runner refuses unsafe fallback execution in production.
+
+The Docker image includes Bubblewrap. Each production submission gets isolated user/process/network/mount namespaces, no application files or credentials, a read-only Python runtime, and disposable scratch space. CPU, memory, output, process, and wall-time limits constrain the worker. The initial limit is one concurrent judge and eight accepted jobs globally; excess submissions receive a busy response. Development subprocess execution on macOS is not a security boundary and must not be exposed as a public judge.

@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import contextlib
 import __future__
+import errno
 import io
 import json
 import math
+import os
 import resource
 import signal
 import sys
@@ -149,6 +151,52 @@ def special_tree(root: Optional[TreeNode]) -> None:
         leaf.right = leaves[(index + 1) % len(leaves)]
 
 
+def install_seccomp() -> None:
+    import ctypes
+
+    machine = os.uname().machine
+    syscall_numbers = {
+        'x86_64': (0xC000003E, [56, 57, 58, 59, 101, 155, 161, 165, 166, 169, 175, 176, 246,
+                               248, 249, 250, 272, 288, 298, 303, 304, 308, 310, 311, 313, 321,
+                               322, 425, 435, 438, 41, 42, 53]),
+        'aarch64': (0xC00000B7, [39, 40, 41, 51, 97, 104, 105, 106, 117, 142, 198, 199, 203,
+                                217, 218, 219, 220, 221, 241, 264, 265, 268, 270, 271, 273, 280,
+                                281, 425, 435, 438]),
+    }
+    architecture = syscall_numbers.get(machine)
+    if architecture is None:
+        raise OSError('Unsupported seccomp architecture.')
+
+    class SockFilter(ctypes.Structure):
+        _fields_ = [
+            ('code', ctypes.c_ushort),
+            ('jump_true', ctypes.c_ubyte),
+            ('jump_false', ctypes.c_ubyte),
+            ('value', ctypes.c_uint32),
+        ]
+
+    class SockProgram(ctypes.Structure):
+        _fields_ = [('length', ctypes.c_ushort), ('filter', ctypes.POINTER(SockFilter))]
+
+    instructions: List[tuple[int, int, int, int]] = [(0x20, 0, 0, 4), (0x15, 1, 0, architecture[0]),
+                                                       (0x06, 0, 0, 0x00050000 | errno.EPERM),
+                                                       (0x20, 0, 0, 0), (0x35, 0, 1, 0x40000000),
+                                                       (0x06, 0, 0, 0x00050000 | errno.EPERM)]
+    for syscall_number in architecture[1]:
+        instructions.extend(((0x15, 0, 1, syscall_number),
+                             (0x06, 0, 0, 0x00050000 | errno.EPERM)))
+    instructions.append((0x06, 0, 0, 0x7FFF0000))
+    filters = (SockFilter * len(instructions))(*(SockFilter(*instruction) for instruction in instructions))
+    program = SockProgram(len(filters), filters)
+    libc = ctypes.CDLL(None, use_errno=True)
+    libc.prctl.argtypes = [ctypes.c_int, ctypes.c_ulong, ctypes.c_void_p, ctypes.c_ulong, ctypes.c_ulong]
+    libc.prctl.restype = ctypes.c_int
+    if libc.prctl(39, 0, None, 0, 0) != 1:
+        raise OSError('Bubblewrap did not set no-new-privileges.')
+    if libc.prctl(22, 2, ctypes.byref(program), 0, 0) != 0:
+        raise OSError(ctypes.get_errno(), 'Could not enable syscall filtering.')
+
+
 class CapturedOutput(io.TextIOBase):
     def __init__(self) -> None:
         self.value = ''
@@ -162,16 +210,29 @@ def main() -> None:
     request = cast(Dict[str, object], json.load(sys.stdin))
     memory = cast(int, request['memoryLimitMb']) * 1024 * 1024
     cpu = cast(int, request['cpuLimitSeconds'])
+    strict_limits = cast(bool, request.get('strictResourceLimits', False))
     for limit, bounds in (
         (resource.RLIMIT_CPU, (cpu, cpu + 1)),
         (resource.RLIMIT_AS, (memory, memory)),
         (resource.RLIMIT_FSIZE, (1024 * 1024, 1024 * 1024)),
         (resource.RLIMIT_NPROC, (0, 0)),
+        (resource.RLIMIT_NOFILE, (64, 64)),
+        (resource.RLIMIT_CORE, (0, 0)),
     ):
         try:
             resource.setrlimit(limit, bounds)
         except (ValueError, OSError):
-            pass
+            if strict_limits:
+                raise
+    if strict_limits:
+        try:
+            import ctypes
+            libc = ctypes.CDLL(None, use_errno=True)
+            if libc.prctl(1, signal.SIGKILL, 0, 0, 0) != 0:
+                raise OSError(ctypes.get_errno(), 'prctl')
+        except (AttributeError, OSError) as error:
+            sys.stderr.write('Could not enable parent-death handling: ' + str(error)[:200] + '\n')
+            os._exit(70)
     common: Dict[str, object] = {}
     exec('''import collections, functools, itertools, heapq, bisect, math, random, re, string
 from typing import *
@@ -195,6 +256,19 @@ from builtins import *
 from sortedcontainers import *
 ''', common)
     common.update({'TreeNode': TreeNode, 'ListNode': ListNode})
+    if strict_limits:
+        try:
+            install_seccomp()
+        except (AttributeError, OSError) as error:
+            sys.stderr.write('Could not enable syscall filtering: ' + str(error)[:200] + '\n')
+            os._exit(70)
+    if request.get('probe') is True:
+        parent_netns = cast(str, request['parentNetNs'])
+        if os.path.exists('/app/package.json') or os.readlink('/proc/self/ns/net') == parent_netns:
+            os._exit(71)
+        sys.stdout.write('{"probe":"ok"}\n')
+        sys.stdout.flush()
+        return
     inputs = cast(List[List[JsonValue]], request['inputs'])
     parameters = cast(List[Dict[str, str]], request['parameters'])
     entry_point = cast(str, request['entryPoint'])

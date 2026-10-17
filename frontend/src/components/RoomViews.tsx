@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import { formatTimer, type RoomState } from "../hooks/useRoom";
 import { ResultsTable } from "./Standings";
 import { Avatar, DifficultyPill, Icon, Spinner, cx } from "./ui";
@@ -11,17 +12,17 @@ const enter = {
 
 export function Lobby({ r }: { r: RoomState }) {
   const room = r.room!;
-  const players =
-    room.players.length > 5
-      ? [...room.players.slice(0, 3), null, ...room.players.slice(-2)]
-      : room.players;
+  const members = room.members;
+  const players = members.length > 5
+    ? [...members.slice(0, 3), null, ...members.slice(-2)]
+    : members;
   return (
     <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto">
       <div aria-hidden className="backdrop-grid pointer-events-none absolute inset-0" />
       <motion.div {...enter} className="relative mx-auto my-auto w-full max-w-[540px] flex-none px-4 py-10 sm:py-14">
         <div className="mb-6 text-center">
           <h1 className="text-[24px] font-semibold tracking-[-0.02em] text-fg">
-            Room Code
+            Room Invite
           </h1>
         </div>
 
@@ -34,19 +35,14 @@ export function Lobby({ r }: { r: RoomState }) {
               }}
               aria-label={r.copied === "code" ? `Room code ${r.roomId} copied` : `Copy room code ${r.roomId}`}
               title={r.copied === "code" ? "Copied" : "Copy room code"}
-              className="group flex gap-1.5 rounded-xl p-1 transition-colors"
+              className="group max-w-full rounded-xl p-1 transition-colors"
             >
-              {Array.from(r.roomId).map((char, index) => (
-                <span
-                  key={index}
-                  className={cx(
-                    "flex h-14 w-9 items-center justify-center rounded-lg border bg-sunken font-mono text-[26px] font-medium shadow-[inset_0_1px_0_rgb(255_255_255/0.03)] transition-colors sm:w-11",
-                    r.copied === "code" ? "border-ok/50 text-ok" : "border-line-strong text-fg group-hover:border-line-hover",
-                  )}
-                >
-                  {char}
-                </span>
-              ))}
+              <span className={cx(
+                "block max-w-full break-all rounded-lg border bg-sunken px-4 py-3 font-mono text-[16px] font-medium shadow-[inset_0_1px_0_rgb(255_255_255/0.03)] transition-colors sm:text-[18px]",
+                r.copied === "code" ? "border-ok/50 text-ok" : "border-line-strong text-fg group-hover:border-line-hover",
+              )}>
+                {r.roomId}
+              </span>
             </button>
             <button
               type="button"
@@ -82,29 +78,49 @@ export function Lobby({ r }: { r: RoomState }) {
             <h2 className="section-label mb-3 flex items-center gap-1.5">
               Players
               <span className="font-mono tabular-nums text-fg-muted">
-                {room.players.length}
+                {members.length}
               </span>
             </h2>
-            <ul aria-label="Players" className="flex items-center justify-center gap-3">
-              {players.map((name) => name === null ? (
+            <ul aria-label="Players" className="flex flex-wrap items-center justify-center gap-3">
+              {players.map((member) => member === null ? (
                 <li
                   key="more"
-                  aria-label={`${room.players.length - 5} more players`}
-                  title={room.players.slice(3, -2).join(", ")}
+                  aria-label={`${members.length - 5} more players`}
+                  title={members.slice(3, -2).map((player) => player.name).join(", ")}
                   className="text-[20px] text-fg-subtle"
                 >
                   …
                 </li>
               ) : (
                 <motion.li
-                  key={`player:${name}`}
+                  key={`player:${member.userId}`}
                   layout
                   initial={{ opacity: 0, x: -4 }}
                   animate={{ opacity: 1, x: 0 }}
-                  aria-label={name}
-                  title={`${name}${name === room.host ? " (host)" : ""}${name === room.me.name ? " (you)" : ""}`}
+                  className="group relative flex items-center gap-1 rounded-full"
+                  aria-label={`${member.name}${member.online ? ", online" : ", offline"}`}
+                  title={`${member.name}${member.host ? " (host)" : ""}${member.userId === room.me.userId ? " (you)" : ""}`}
                 >
-                  <Avatar name={name} size={32} />
+                  <span className="relative">
+                    <Avatar name={member.name} size={32} />
+                    <span
+                      role="img"
+                      aria-label={member.online ? "Online" : "Offline"}
+                      title={member.online ? "Online" : "Offline"}
+                      className={`absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full border-2 border-raised ${member.online ? "bg-ok" : "bg-bad"}`}
+                    />
+                  </span>
+                  {r.isHost && member.userId !== room.me.userId && (
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm btn-icon kick-reveal rounded-full text-bad"
+                      onClick={() => void r.kick(member.userId)}
+                      aria-label={`Remove ${member.name} from room`}
+                      title={`Remove ${member.name}`}
+                    >
+                      <Icon.x size={13} />
+                    </button>
+                  )}
                 </motion.li>
               ))}
             </ul>
@@ -160,7 +176,7 @@ export function Finished({ r }: { r: RoomState }) {
               {leader?.solved ? (
                 <>
                   <span className="font-medium text-fg">
-                    {leader.name === room.me.name ? "You" : leader.name}
+                    {leader.userId === room.me.userId ? "You" : leader.name}
                   </span>{" "}
                   took the round with{" "}
                   <span className="font-mono tabular-nums text-ok">{leader.charCount}</span>{" "}
@@ -195,12 +211,17 @@ export function Finished({ r }: { r: RoomState }) {
               <DifficultyPill difficulty={room.problem.difficulty} />
             </header>
           )}
-          <ResultsTable room={room} ownCode={r.code} onReview={(name, code) => r.setReview({ name, code })} />
+          <ResultsTable room={room} ownCode={r.code} onReview={(userId, name, code) => r.setReview({ userId, name, code })} isHost={r.isHost} onKick={r.kick} />
         </section>
 
         <div className="mt-6 flex flex-wrap items-center justify-end gap-2">
+          {lastRound && (
+            <Link className="btn btn-secondary mr-auto" to={`/room/results?id=${encodeURIComponent(r.roomId)}`}>
+              <Icon.trophy size={14} /> Tournament results
+            </Link>
+          )}
           {!r.isHost && (
-            <p className="mr-auto text-[12.5px] text-fg-subtle">
+            <p className="text-[12.5px] text-fg-subtle">
               {lastRound
                 ? `Waiting for ${room.host} to start a new race.`
                 : `${room.host} can skip the break.`}
@@ -222,5 +243,46 @@ export function Finished({ r }: { r: RoomState }) {
         </div>
       </motion.div>
     </div>
+  );
+}
+
+export function TournamentResults({ r }: { r: RoomState }) {
+  const room = r.room!;
+  return (
+    <main className="relative h-full overflow-y-auto px-4 py-8 sm:px-6 sm:py-12">
+      <div aria-hidden className="backdrop-grid pointer-events-none absolute inset-0" />
+      <div className="relative mx-auto w-full max-w-4xl">
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="section-label">Tournament complete</p>
+            <h1 className="text-[24px] font-semibold tracking-[-0.02em] text-fg">Final standings</h1>
+          </div>
+          <Link className="btn btn-secondary btn-sm" to={`/room?id=${encodeURIComponent(r.roomId)}`}>
+            <Icon.arrowLeft size={14} /> Latest round
+          </Link>
+        </div>
+        <section className="panel mb-6 overflow-hidden">
+          <table className="w-full text-left text-[13px]">
+            <thead><tr className="border-b border-line text-fg-subtle"><th scope="col" className="px-4 py-3">#</th><th scope="col" className="px-4 py-3">Player</th><th scope="col" className="px-4 py-3 text-right">Points</th></tr></thead>
+            <tbody>
+              {room.standings.map((standing, index) => (
+                <tr key={standing.userId} className={`border-b border-line last:border-b-0 ${standing.userId === room.me.userId ? "bg-accent/[0.05]" : ""}`}>
+                  <td className="px-4 py-3 font-mono tabular-nums text-fg-subtle">{index + 1}</td>
+                  <td className="px-4 py-3 font-medium text-fg">{standing.name}{standing.userId === room.me.userId ? <span className="pill ml-2">You</span> : null}</td>
+                  <td className="px-4 py-3 text-right font-mono tabular-nums text-fg">{standing.points}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+        <section className="panel overflow-hidden">
+          <header className="flex items-center justify-between border-b border-line px-4 py-3">
+            <h2 className="text-[13px] font-medium text-fg">Latest round · {room.currentRound}</h2>
+            <span className="section-label">Code review retained</span>
+          </header>
+          <ResultsTable room={room} ownCode={r.code} onReview={(userId, name, code) => r.setReview({ userId, name, code })} isHost={r.isHost} onKick={r.kick} />
+        </section>
+      </div>
+    </main>
   );
 }

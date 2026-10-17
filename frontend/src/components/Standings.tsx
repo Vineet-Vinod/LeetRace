@@ -20,24 +20,35 @@ function StatusBadges({ player }: { player: Ranking }) {
   );
 }
 
-export function StandingsStrip({ room }: { room: RoomSnapshot }) {
+export function StandingsStrip({ room, isHost, onKick }: { room: RoomSnapshot; isHost: boolean; onKick: (userId: string) => void }) {
   return (
     <section aria-label="Live standings" className="flex-none px-2 py-1">
       <ol className="panel grid grid-cols-2 gap-1 p-1 sm:grid-cols-4 lg:grid-cols-8">
         {room.rankings.map((player) => (
           <li
-            key={player.name}
-            aria-current={player.name === room.me.name || undefined}
+            key={player.userId}
+            aria-current={player.userId === room.me.userId || undefined}
             title={player.name}
             className={cx(
-              "flex h-7 min-w-0 items-center gap-1.5 rounded-md border px-2",
-              player.name === room.me.name
+              "group flex h-7 min-w-0 items-center gap-1.5 rounded-md border px-2",
+              player.userId === room.me.userId
                 ? "border-accent/35 bg-accent/[0.07]"
                 : "border-line bg-surface",
             )}
           >
             <Avatar name={player.name} size={18} />
             <div className="flex min-w-0 flex-1 items-center gap-1.5">
+              {(() => {
+                const member = room.members.find((item) => item.userId === player.userId);
+                return (
+                  <span
+                    role="img"
+                    aria-label={member?.online ? "Online" : "Offline"}
+                    title={member?.online ? "Online" : "Offline"}
+                    className={`size-1.5 flex-none rounded-full ${member?.online ? "bg-ok" : "bg-bad"}`}
+                  />
+                );
+              })()}
               <p className="min-w-0 flex-1 truncate text-[12px] font-medium text-fg">{player.name}</p>
               {player.lockedAt !== null && (
                 <span role="img" aria-label="Locked" title="Score locked" className="flex-none text-warn">
@@ -58,6 +69,17 @@ export function StandingsStrip({ room }: { room: RoomSnapshot }) {
                   </>
                 ) : "Unsolved"}
               </p>
+              {isHost && player.userId !== room.me.userId && (
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-sm btn-icon kick-reveal -mr-1 rounded-full text-bad"
+                  onClick={() => onKick(player.userId)}
+                  aria-label={`Remove ${player.name} from room`}
+                  title={`Remove ${player.name}`}
+                >
+                  <Icon.x size={12} />
+                </button>
+              )}
             </div>
           </li>
         ))}
@@ -71,10 +93,14 @@ export function ResultsTable({
   room,
   ownCode,
   onReview,
+  isHost,
+  onKick,
 }: {
   room: RoomSnapshot;
   ownCode: string;
-  onReview: (name: string, code: string) => void;
+  onReview: (userId: string, name: string, code: string) => void;
+  isHost: boolean;
+  onKick: (userId: string) => void;
 }) {
   return (
     <div className="overflow-x-auto">
@@ -99,14 +125,14 @@ export function ResultsTable({
         </thead>
         <tbody>
           {room.rankings.map((player) => {
-            const me = player.name === room.me.name;
+            const me = player.userId === room.me.userId;
             const winner = player.position === 1 && player.solved;
             const code = player.code ?? (me ? ownCode : room.problem?.starterCode ?? "");
             return (
               <tr
-                key={player.name}
+                key={player.userId}
                 className={cx(
-                  "border-b border-line transition-colors last:border-b-0 hover:bg-white/[0.02]",
+                  "group border-b border-line transition-colors last:border-b-0 hover:bg-white/[0.02]",
                   me && "bg-accent/[0.04]",
                 )}
               >
@@ -150,13 +176,24 @@ export function ResultsTable({
                   <button
                     type="button"
                     className="btn btn-ghost btn-sm"
-                    onClick={() => onReview(player.name, code)}
+                    onClick={() => onReview(player.userId, player.name, code)}
                     aria-label={`View ${player.name}'s code`}
                     title={player.code === null && !me ? "View starter code. No submission." : undefined}
                   >
                     <Icon.eye size={14} />
                     View code
                   </button>
+                  {isHost && !me && (
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm btn-icon kick-reveal ml-1 rounded-full text-bad"
+                      onClick={() => onKick(player.userId)}
+                      aria-label={`Remove ${player.name} from room`}
+                      title={`Remove ${player.name}`}
+                    >
+                      <Icon.x size={13} />
+                    </button>
+                  )}
                 </td>
               </tr>
             );

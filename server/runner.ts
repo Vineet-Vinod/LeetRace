@@ -5,6 +5,7 @@ import { resolve as resolvePath } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { JsonValue, Problem } from './problems.js';
 import { decodeJsonValue, isJsonValue, jsonValueBytes, jsonValueSize } from './problem-values.js';
+import { buildRunnerCommand, RunnerIsolationError, runnerIsolationStatus } from './sandbox.js';
 
 export interface SubmissionResult {
   passed: number;
@@ -18,10 +19,21 @@ export interface SubmissionResult {
   stderr: string;
 }
 
-const MAX_CONCURRENT = 4;
+const MAX_CONCURRENT = 1;
+const MAX_ACCEPTED = 8;
+const QUEUE_TIMEOUT_MS = 30_000;
 const MIB = 1024 * 1024;
 let running = 0;
-const waiting: (() => void)[] = [];
+const waiting: { resolve: (accepted: boolean) => void; timer: ReturnType<typeof setTimeout> }[] = [];
+
+export class RunnerBusyError extends Error {
+  constructor(message = 'The submission runner is busy. Try again shortly.') {
+    super(message);
+    this.name = 'RunnerBusyError';
+  }
+}
+
+export { runnerIsolationStatus };
 
 function compare(actual: JsonValue, expected: JsonValue, comparison: Problem['comparison']): boolean {
   if (typeof actual === 'number' && Number.isSafeInteger(actual) && expected !== null
@@ -83,23 +95,51 @@ async function execute(code: string, problem: Problem): Promise<SubmissionResult
   } catch {
     return { ...result, error: 'Invalid compressed problem input or metadata.', timeMs: Math.round(performance.now() - started) };
   }
-  const caseOutputLimit = Math.min(64 * MIB, Math.max(MIB, largestExpected * 4 + 32_000));
-  const totalOutputLimit = Math.min(512 * MIB, Math.max(16 * MIB, expectedBytes * 4 + problem.tests.length * 12_000));
+  const caseOutputLimit = Math.min(32 * MIB, Math.max(MIB, largestExpected * 4 + 32_000));
+  const totalOutputLimit = Math.min(64 * MIB, Math.max(32 * MIB, expectedBytes * 4 + problem.tests.length * 12_000));
   const submissionTimeoutMs = Math.min(60_000, Math.max(8_000,
     problem.tests.length * 20, Math.ceil(expectedBytes / (6 * MIB)) * 1_000));
-  const memoryLimitMb = Math.min(512, Math.max(128,
+  const memoryLimitMb = Math.min(256, Math.max(128,
     Math.ceil((largestExpected * 16 + (inputBytes + largestInput) * 8) / MIB) + 64));
+  const production = process.env.NODE_ENV === 'production';
+  const python = production ? '/app/.venv/bin/python3'
+    : process.env.PYTHON_BIN ?? (existsSync('.venv/bin/python3') ? resolvePath('.venv/bin/python3') : 'python3');
+  let command;
+  try {
+    command = buildRunnerCommand({
+      production,
+      platform: process.platform,
+      pythonPath: python,
+      workerPath: worker,
+    });
+  } catch (error) {
+    if (error instanceof RunnerIsolationError) {
+      return { ...result, error: error.message, timeMs: Math.round(performance.now() - started) };
+    }
+    throw error;
+  }
   return new Promise((resolve) => {
-    const python = process.env.PYTHON_BIN ?? (existsSync('.venv/bin/python3') ? resolvePath('.venv/bin/python3') : 'python3');
-    const child = spawn(python, ['-I', '-X', 'utf8', worker], {
-      cwd: tmpdir(), env: { PATH: process.env.PATH }, stdio: ['pipe', 'pipe', 'pipe'],
+    const child = spawn(command.command, command.args, {
+      cwd: tmpdir(),
+      env: command.isolated ? { PATH: '/usr/bin:/bin', TMPDIR: '/tmp' } : { PATH: process.env.PATH ?? '' },
+      stdio: ['pipe', 'pipe', 'pipe'],
+      detached: true,
     });
     let pending = '';
     let received = 0;
     let outputBytes = 0;
+    let stopped = false;
     const stop = (message: string) => {
+      if (stopped) return;
+      stopped = true;
       result.error ??= message;
-      child.kill('SIGKILL');
+      if (child.pid !== undefined) {
+        try {
+          process.kill(-child.pid, 'SIGKILL');
+        } catch {
+          child.kill('SIGKILL');
+        }
+      }
     };
     const timer = setTimeout(() => stop('Submission time limit exceeded.'), submissionTimeoutMs);
     child.stdout.setEncoding('utf8');
@@ -180,18 +220,35 @@ async function execute(code: string, problem: Problem): Promise<SubmissionResult
       code, inputs, parameters: problem.parameters, entryPoint: problem.entryPoint,
       returnType: problem.returnType, adapter: problem.adapter,
       memoryLimitMb, cpuLimitSeconds: Math.ceil(submissionTimeoutMs / 1000), outputLimit: caseOutputLimit,
+      strictResourceLimits: production,
     }));
   });
 }
 
 export async function runCode(code: string, problem: Problem): Promise<SubmissionResult> {
-  if (running >= MAX_CONCURRENT) await new Promise<void>((resolve) => waiting.push(resolve));
-  else running += 1;
+  if (running >= MAX_CONCURRENT) {
+    if (waiting.length + running >= MAX_ACCEPTED) throw new RunnerBusyError();
+    const accepted = await new Promise<boolean>((resolve) => {
+      const entry = {
+        resolve,
+        timer: setTimeout(() => {
+          const index = waiting.indexOf(entry);
+          if (index !== -1) waiting.splice(index, 1);
+          resolve(false);
+        }, QUEUE_TIMEOUT_MS),
+      };
+      waiting.push(entry);
+    });
+    if (!accepted) throw new RunnerBusyError('The submission waited too long for the runner. Try again shortly.');
+  } else running += 1;
   try {
     return await execute(code, problem);
   } finally {
     const next = waiting.shift();
-    if (next) next();
+    if (next) {
+      clearTimeout(next.timer);
+      next.resolve(true);
+    }
     else running -= 1;
   }
 }
