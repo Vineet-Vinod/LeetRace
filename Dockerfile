@@ -36,4 +36,4 @@ COPY --from=build /app/frontend/dist/ frontend/dist/
 COPY problems/ problems/
 USER node
 EXPOSE 8000
-CMD ["node", "dist/server/index.js"]
+CMD ["node", "--max-old-space-size=256", "--max-semi-space-size=8", "dist/server/index.js"]

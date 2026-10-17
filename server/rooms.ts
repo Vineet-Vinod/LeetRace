@@ -297,7 +297,7 @@ export class RoomStore {
       charCount: entry.best?.solved ? entry.best.charCount : null,
       solveTime: entry.best?.solved ? entry.best.submitTime : null,
       testsPassed: entry.best?.passed ?? 0,
-      testsTotal: room.problem?.tests.length ?? 0,
+      testsTotal: room.problem ? room.problem.testCount ?? room.problem.tests.length : 0,
       lockedAt: entry.lockedAt,
       resigned: entry.resigned,
       away: this.away(entry),

@@ -1,7 +1,6 @@
-import { randomUUID } from 'node:crypto';
 import { createAppServer } from '../server/http.js';
 import { Persistence } from '../server/persistence.js';
-import type { Problem } from '../server/problems.js';
+import { ProblemRepository } from '../server/problems.js';
 import { createRouter } from '../server/router.js';
 import { RoomStore } from '../server/rooms.js';
 
@@ -9,25 +8,10 @@ if (process.env.NODE_ENV === 'production' || !process.env.CLERK_SECRET_KEY?.star
   throw new Error('Stress tests require Clerk development credentials.');
 }
 
-const runId = randomUUID();
-let problemNumber = 0;
-function problem(): Problem {
-  const offset = ++problemNumber;
-  return {
-    id: `stress-${runId}-${offset}`,
-    title: `Stress challenge ${offset}`,
-    difficulty: 'Easy',
-    statement: `Return value + ${offset}. This synthetic puzzle exercises the real submission judge.`,
-    starterCode: 'class Solution:\n    def solve(self, value: int) -> int:\n        pass\n',
-    entryPoint: 'Solution().solve',
-    parameters: [{ name: 'value', type: 'int' }],
-    returnType: 'int',
-    tests: Array.from({ length: 64 }, (_, index) => ({ input: [index - 32], expected: index - 32 + offset })),
-  };
-}
-
+const problems = new ProblemRepository();
+const summaryRanges = problems.get('summary-ranges');
 const persistence = new Persistence();
-const rooms = new RoomStore(problem, undefined, undefined, { onEvent: (event) => persistence.enqueue(event) });
+const rooms = new RoomStore(() => summaryRanges, undefined, undefined, { onEvent: (event) => persistence.enqueue(event) });
 const router = createRouter(rooms, undefined, () => persistence.flush());
 const server = createAppServer(router, undefined, { health: () => persistence.healthy });
 const ticker = setInterval(() => {

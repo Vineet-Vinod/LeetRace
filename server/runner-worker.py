@@ -11,6 +11,7 @@ import resource
 import signal
 import sys
 from collections import deque
+from types import CodeType
 from typing import Callable, Deque, Dict, List, Optional, Sequence, Set, TextIO, Union, cast
 
 JsonValue = Union[None, bool, int, float, str, List['JsonValue'], Dict[str, 'JsonValue']]
@@ -114,9 +115,13 @@ def revive(value: JsonValue) -> JsonValue:
     if isinstance(value, dict):
         if set(value) == {'$bigint'}:
             return int(cast(str, value['$bigint']))
-        return {key: revive(item) for key, item in value.items()}
+        for key, item in value.items():
+            value[key] = revive(item)
+        return value
     if isinstance(value, list):
-        return [revive(item) for item in value]
+        for index, item in enumerate(value):
+            value[index] = revive(item)
+        return value
     return value
 
 
@@ -206,8 +211,63 @@ class CapturedOutput(io.TextIOBase):
         return len(text)
 
 
+def run_case(raw_input: List[JsonValue], request: Dict[str, object], common: Dict[str, object], compiled: CodeType) -> Dict[str, str]:
+    parameters = cast(List[Dict[str, str]], request['parameters'])
+    entry_point = cast(str, request['entryPoint'])
+    adapter = cast(Optional[str], request.get('adapter'))
+    stdout = CapturedOutput()
+    stderr = CapturedOutput()
+    record: Dict[str, str] = {}
+    try:
+        signal.setitimer(signal.ITIMER_REAL, 5)
+        with contextlib.redirect_stdout(cast(TextIO, stdout)), contextlib.redirect_stderr(cast(TextIO, stderr)):
+            args = [argument(revive(value), parameter['type']) for value, parameter in zip(raw_input, parameters)]
+            if adapter == 'special-tree':
+                special_tree(cast(Optional[TreeNode], args[0]))
+            original = list_nodes(cast(Optional[ListNode], args[0])) if adapter in ('middle-list', 'reuse-list') else []
+            original_values = [node.val for node in original]
+            namespace = dict(common)
+            namespace.update({'stdout': stdout, 'stderr': stderr})
+            exec(compiled, namespace)
+            candidate = cast(Callable[..., object], eval(entry_point, namespace))
+            actual = candidate(*args)
+            return_type = cast(str, request['returnType'])
+            if 'ListNode' in return_type and actual is not None and not isinstance(actual, ListNode):
+                raise TypeError('Return a ListNode.')
+            if 'TreeNode' in return_type and actual is not None and not isinstance(actual, TreeNode):
+                raise TypeError('Return a TreeNode.')
+            if adapter == 'prefix':
+                length = cast(int, actual)
+                actual = [length, cast(List[object], args[0])[:length]]
+            elif adapter == 'middle-list':
+                expected_node = original[len(original) // 2] if original else None
+                if actual is not expected_node:
+                    raise ValueError('Return the original middle node.')
+            elif adapter == 'reuse-list':
+                k = cast(int, args[1])
+                expected_nodes: List[ListNode] = []
+                for index in range(0, len(original), k):
+                    group = original[index:index + k]
+                    expected_nodes.extend(reversed(group) if len(group) == k else group)
+                returned = list_nodes(cast(Optional[ListNode], actual))
+                if len(returned) != len(expected_nodes) or any(left is not right for left, right in zip(returned, expected_nodes)) \
+                        or [node.val for node in original] != original_values:
+                    raise ValueError('Reuse original nodes in the required group order without changing values.')
+            elif adapter == 'mutated-tree' and normalize(args[0]) != normalize(actual):
+                raise ValueError('Mutate the original tree.')
+            if actual is None and ('TreeNode' in return_type or 'ListNode' in return_type):
+                actual = []
+            record['output'] = json.dumps(normalize(actual), ensure_ascii=False, allow_nan=False, separators=(',', ':'))
+    except Exception as error:
+        record['error'] = 'Runtime error: ' + type(error).__name__ + ': ' + str(error)[:200]
+    finally:
+        signal.setitimer(signal.ITIMER_REAL, 0)
+    record.update({'stdout': stdout.value, 'stderr': stderr.value})
+    return record
+
+
 def main() -> None:
-    request = cast(Dict[str, object], json.load(sys.stdin))
+    request = cast(Dict[str, object], json.loads(sys.stdin.readline()))
     memory = cast(int, request['memoryLimitMb']) * 1024 * 1024
     cpu = cast(int, request['cpuLimitSeconds'])
     strict_limits = cast(bool, request.get('strictResourceLimits', False))
@@ -269,10 +329,6 @@ from sortedcontainers import *
         sys.stdout.write('{"probe":"ok"}\n')
         sys.stdout.flush()
         return
-    inputs = cast(List[List[JsonValue]], request['inputs'])
-    parameters = cast(List[Dict[str, str]], request['parameters'])
-    entry_point = cast(str, request['entryPoint'])
-    adapter = cast(Optional[str], request.get('adapter'))
     code = cast(str, request['code'])
     try:
         compiled = compile(code, 'submission.py', 'exec', flags=__future__.annotations.compiler_flag)
@@ -283,55 +339,10 @@ from sortedcontainers import *
         raise TimeoutError('Testcase time limit exceeded.')
 
     signal.signal(signal.SIGALRM, timeout)
-    for raw_input in inputs:
-        stdout = CapturedOutput()
-        stderr = CapturedOutput()
-        record: Dict[str, str] = {}
-        try:
-            signal.setitimer(signal.ITIMER_REAL, 5)
-            with contextlib.redirect_stdout(cast(TextIO, stdout)), contextlib.redirect_stderr(cast(TextIO, stderr)):
-                args = [argument(revive(value), parameter['type']) for value, parameter in zip(raw_input, parameters)]
-                if adapter == 'special-tree':
-                    special_tree(cast(Optional[TreeNode], args[0]))
-                original = list_nodes(cast(Optional[ListNode], args[0])) if adapter in ('middle-list', 'reuse-list') else []
-                original_values = [node.val for node in original]
-                namespace = dict(common)
-                namespace.update({'stdout': stdout, 'stderr': stderr})
-                exec(compiled, namespace)
-                candidate = cast(Callable[..., object], eval(entry_point, namespace))
-                actual = candidate(*args)
-                return_type = cast(str, request['returnType'])
-                if 'ListNode' in return_type and actual is not None and not isinstance(actual, ListNode):
-                    raise TypeError('Return a ListNode.')
-                if 'TreeNode' in return_type and actual is not None and not isinstance(actual, TreeNode):
-                    raise TypeError('Return a TreeNode.')
-                if adapter == 'prefix':
-                    length = cast(int, actual)
-                    actual = [length, cast(List[object], args[0])[:length]]
-                elif adapter == 'middle-list':
-                    expected_node = original[len(original) // 2] if original else None
-                    if actual is not expected_node:
-                        raise ValueError('Return the original middle node.')
-                elif adapter == 'reuse-list':
-                    k = cast(int, args[1])
-                    expected_nodes: List[ListNode] = []
-                    for index in range(0, len(original), k):
-                        group = original[index:index + k]
-                        expected_nodes.extend(reversed(group) if len(group) == k else group)
-                    returned = list_nodes(cast(Optional[ListNode], actual))
-                    if len(returned) != len(expected_nodes) or any(left is not right for left, right in zip(returned, expected_nodes)) \
-                            or [node.val for node in original] != original_values:
-                        raise ValueError('Reuse original nodes in the required group order without changing values.')
-                elif adapter == 'mutated-tree' and normalize(args[0]) != normalize(actual):
-                    raise ValueError('Mutate the original tree.')
-                if actual is None and ('TreeNode' in return_type or 'ListNode' in return_type):
-                    actual = []
-                record['output'] = json.dumps(normalize(actual), ensure_ascii=False, allow_nan=False, separators=(',', ':'))
-        except Exception as error:
-            record['error'] = 'Runtime error: ' + type(error).__name__ + ': ' + str(error)[:200]
-        finally:
-            signal.setitimer(signal.ITIMER_REAL, 0)
-        record.update({'stdout': stdout.value, 'stderr': stderr.value})
+    for line in sys.stdin:
+        raw_input = cast(List[JsonValue], json.loads(line))
+        record = run_case(raw_input, request, common, compiled)
+        del raw_input
         message = json.dumps(record, ensure_ascii=False, separators=(',', ':'))
         if len(message.encode('utf-8')) > cast(int, request['outputLimit']):
             sys.stdout.write(json.dumps({'error': 'Output limit exceeded.'}) + '\n')

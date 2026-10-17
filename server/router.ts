@@ -6,6 +6,7 @@ import { difficultySchema, ProblemRepository } from './problems.js';
 import { RoomStore } from './rooms.js';
 import { Persistence } from './persistence.js';
 import { RateLimit } from './rate-limit.js';
+import { RunnerShuttingDownError } from './runner-queue.js';
 
 export interface Context { token: string | undefined; ip?: string }
 const t = initTRPC.context<Context>().create({ sse: { ping: { enabled: true, intervalMs: 10_000 } } });
@@ -109,6 +110,9 @@ export function createRouter(store: RoomStore, accountService?: Accounts, flush 
           return await store.submit(input.roomId, ctx.identity.userId, input.code);
         } catch (error) {
           if (error instanceof TRPCError) throw error;
+          if (error instanceof RunnerShuttingDownError) {
+            throw new TRPCError({ code: 'SERVICE_UNAVAILABLE', message: 'The server is restarting. Submit again after reconnecting.' });
+          }
           throw new TRPCError({ code: 'TOO_MANY_REQUESTS', message: 'The judge is busy. Try again shortly.' });
         }
       }),

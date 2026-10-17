@@ -57,8 +57,8 @@ async function player(browser: Browser): Promise<Player> {
   return { account: selectedAccount, context, page };
 }
 
-function solution(round: number, padding: number, unicode = false) {
-  return `from time import sleep\nsleep(.01)\nclass Solution:\n    def solve(self, value: int) -> int:\n        return value + ${round}\n#${(unicode ? '🧪' : 'x').repeat(padding)}\n`;
+function solution(padding: number, unicode = false) {
+  return `from time import sleep\nclass Solution:\n    def summaryRanges(self, nums: list[int]) -> list[str]:\n        sleep(.002)\n        if not nums:\n            return []\n        ranges = []\n        start = previous = nums[0]\n        for value in nums[1:]:\n            if value == previous + 1:\n                previous = value\n                continue\n            ranges.append(str(start) if start == previous else f"{start}->{previous}")\n            start = previous = value\n        ranges.append(str(start) if start == previous else f"{start}->{previous}")\n        return ranges\n#${(unicode ? '🧪' : 'x').repeat(padding)}\n`;
 }
 
 async function edit(page: Page, code: string) {
@@ -199,16 +199,16 @@ test('eight real players submit concurrently and settle a three-round tournament
 
     await host.getByRole('button', { name: 'Start race' }).click();
     await Promise.all(players.map(({ page }) => expect(page.getByRole('timer')).toBeVisible()));
-    const codes1 = [10, 30, 50, 50, 50, 70, 90, 110].map((padding, index) => solution(1, padding, index === 7));
+    const codes1 = [10, 30, 50, 50, 50, 70, 90, 110].map((padding, index) => solution(padding, index === 7));
     const first = await submitBatch([...players.keys()], codes1);
     console.log('Round 1: all eight concurrent editor submissions passed.');
     expect(first.rankings.every((row) => row.code === null)).toBe(true);
     expect(first.problem).not.toHaveProperty('tests');
     expect(Array.from(codes1[7]!).length).toBeLessThan(codes1[7]!.length);
-    const wrong = await rpc(players[5]!.page, 'submit', { roomId, code: 'class Solution:\n    def solve(self, value):\n        return 0\n' }, true);
+    const wrong = await rpc(players[5]!.page, 'submit', { roomId, code: 'class Solution:\n    def summaryRanges(self, nums):\n        return []\n' }, true);
     expect(wrong.solved).toBe(false);
     await rpc(players[6]!.page, 'submit', { roomId, code: `${codes1[6]}# longer\n` }, true);
-    codes1[7] = solution(1, 100, true);
+    codes1[7] = solution(100, true);
     await rpc(players[7]!.page, 'submit', { roomId, code: codes1[7] }, true);
     const retained = await snapshot();
     for (const index of [5, 6, 7]) expect(retained.rankings.find((row) => row.userId === players[index]!.account.userId)?.charCount).toBe(Array.from(codes1[index]!).length);
@@ -222,7 +222,10 @@ test('eight real players submit concurrently and settle a three-round tournament
     expect(round1.rankings.find((row) => row.userId === players[7]!.account.userId)?.code).toBe(codes1[7]);
     scoreHistory.push(scores(round1, players));
     console.log('Round 1: character, lock ordering and exact points verified.');
-    expect((await profiles()).every((profile, index) => profile.rating === baseline[index]!.rating && profile.solvedProblems === baseline[index]!.solvedProblems + 1)).toBe(true);
+    const firstRoundProfiles = await profiles();
+    expect(firstRoundProfiles.every((profile, index) => profile.rating === baseline[index]!.rating
+      && profile.solvedProblems >= baseline[index]!.solvedProblems
+      && profile.solvedProblems <= baseline[index]!.solvedProblems + 1)).toBe(true);
     await players[1]!.page.getByRole('button', { name: `View ${players[0]!.account.username}'s code` }).click();
     await expect(players[1]!.page.getByRole('button', { name: 'Back to results' })).toBeVisible();
     await players[1]!.page.getByRole('button', { name: 'Back to results' }).click();
@@ -230,7 +233,7 @@ test('eight real players submit concurrently and settle a three-round tournament
     await Promise.all(players.map(({ page }) => expect(page.getByText('Round 2/3')).toBeVisible()));
     expect((await snapshot()).rankings.every((row) => row.code === null && !row.solved)).toBe(true);
 
-    const codes2 = [10, 10, 90, 110, 130, 150, 170, 190].map((padding) => solution(2, padding));
+    const codes2 = [10, 10, 90, 110, 130, 150, 170, 190].map((padding) => solution(padding));
     await submitBatch([...players.keys()], codes2);
     console.log('Round 2: all eight concurrent editor submissions passed.');
     await host.getByRole('button', { name: `Remove ${players[6]!.account.username} from room` }).click();
@@ -273,7 +276,7 @@ test('eight real players submit concurrently and settle a three-round tournament
     await host.getByRole('button', { name: 'Continue', exact: true }).click();
     const remaining = [0, 1, 2, 3, 4];
     await Promise.all(remaining.map((index) => expect(players[index]!.page.getByText('Round 3/3')).toBeVisible()));
-    const codes3 = [10, 50, 90, 130, 170].map((padding) => solution(3, padding));
+    const codes3 = [10, 50, 90, 130, 170].map((padding) => solution(padding));
     await submitBatch(remaining, codes3);
     console.log('Round 3: remaining five concurrent editor submissions passed.');
     for (const index of [4, 3, 2, 1, 0]) await players[index]!.page.getByRole('button', { name: 'Lock score' }).click();
@@ -287,7 +290,7 @@ test('eight real players submit concurrently and settle a three-round tournament
     for (const index of [5, 6, 7]) expect(finalProfiles[index]!.rating).toBe(afterDepartures[index]!.rating);
     for (const [index, profile] of finalProfiles.entries()) {
       expect(profile.careerPoints).toBeCloseTo(baseline[index]!.careerPoints + scoreHistory[2]![index]!, 8);
-      expect(profile.solvedProblems).toBe(baseline[index]!.solvedProblems + (index < 5 ? 3 : 2));
+      expect(profile.solvedProblems).toBe(firstRoundProfiles[index]!.solvedProblems);
       expect(profile.roundWins).toBe(baseline[index]!.roundWins + (index === 0 ? 2 : index === 1 ? 1 : 0));
       expect(profile.roundWinStreak).toBe(index === 0 ? 1 : 0);
       expect(profile.bestRoundWinStreak).toBe(Math.max(baseline[index]!.bestRoundWinStreak, index === 0 ? baseline[index]!.roundWinStreak + 1 : index === 1 ? 1 : 0));
@@ -345,9 +348,8 @@ test('eight on-time submissions drain through the round deadline without allowin
     await host.getByRole('button', { name: 'Start race' }).click();
     await Promise.all(players.map(({ page }) => expect(page.getByRole('timer')).toBeVisible()));
     const started = await rpc(host, 'room', { roomId });
-    const offset = Number(started.problem?.title.match(/\d+$/)?.[0]);
-    expect(Number.isFinite(offset)).toBe(true);
-    const codes = players.map((_, index) => solution(offset, index * 20).replace('sleep(.01)', 'sleep(.02)'));
+    expect(started.problem?.id).toBe('summary-ranges');
+    const codes = players.map((_, index) => solution(index * 20));
     await host.waitForTimeout(Math.max(0, started.endsAt! - started.serverNow - 2200));
     console.log('Deadline stress: eight submissions sent with 2.2 seconds remaining.');
     const burstStarted = performance.now();
@@ -372,7 +374,7 @@ test('eight on-time submissions drain through the round deadline without allowin
     const healthLatencyMs = performance.now() - healthStarted;
     expect(healthLatencyMs).toBeLessThan(3000);
     const completed = await submissions;
-    expect(completed.every(({ result }) => result.solved && result.passed === 64 && result.submitTime < 30)).toBe(true);
+    expect(completed.every(({ result }) => result.solved && result.passed === 600 && result.submitTime < 30)).toBe(true);
     const final = await rpc(host, 'room', { roomId });
     expect(final.state).toBe('finished');
     expect(final.rankings.every((row) => row.solved && row.lockedAt === null)).toBe(true);
@@ -382,7 +384,8 @@ test('eight on-time submissions drain through the round deadline without allowin
         : sum + 32 / 7 * ((index < opponentIndex ? 1 : 0) - 1 / (1 + 10 ** ((opponent.rating - baseline[index]!.rating) / 400))), 0);
       expect(profile.rating).toBeCloseTo(baseline[index]!.rating + delta, 8);
       expect(profile.careerPoints).toBeCloseTo(baseline[index]!.careerPoints + 200 / 3 * Array.from(codes[0]!).length / Array.from(codes[index]!).length, 8);
-      expect(profile.solvedProblems).toBe(baseline[index]!.solvedProblems + 1);
+      expect(profile.solvedProblems).toBeGreaterThanOrEqual(baseline[index]!.solvedProblems);
+      expect(profile.solvedProblems).toBeLessThanOrEqual(baseline[index]!.solvedProblems + 1);
       expect(profile.roundWins).toBe(baseline[index]!.roundWins + (index === 0 ? 1 : 0));
       expect(profile.tournamentWins).toBe(baseline[index]!.tournamentWins + (index === 0 ? 1 : 0));
     }

@@ -27,7 +27,7 @@ pnpm build
 pnpm start
 ```
 
-The TypeScript backend serves the React build and tRPC from http://localhost:8000. Python is used only to execute submissions. The Dockerfile includes both runtimes. The Fly configuration allocates 1 GB for large suites and submission workers. `/health` returns the server's health status.
+The TypeScript backend serves the React build and tRPC from http://localhost:8000. Python is used only to execute submissions. The Dockerfile includes both runtimes. The Fly configuration allocates 1 GB for large suites and submission workers. The production image caps the Node old-generation heap at 256 MiB and each young-generation semi-space at 8 MiB, leaving room for the single Python worker, whose address-space limit scales up to 512 MiB. `/health` returns the server's health status.
 
 ## Development
 
@@ -59,13 +59,13 @@ Statements support inline code and LaTeX. Use `$$x_{i}$$` for inline math and pu
 
 Tests contain data, not executable assertions. Saved reference solutions, generators, duplicate test functions, topic tags, repair logs, and older problem snapshots have been removed. Linked lists and trees are stored as JSON data and become `ListNode` and `TreeNode` objects when passed to Python solutions. The judge checks in-place mutations where required. Integers beyond JavaScript's safe range use a decimal `$bigint` tag in storage and ordinary Python integers in submissions.
 
-Large testcase values use a `$json` field containing base64-encoded zlib JSON, with a `bytes` field for the decoded size. This lossless encoding keeps large suites small on disk and lets the judge decode expected results one testcase at a time.
+Large testcase values use a `$json` field containing base64-encoded zlib JSON, with a `bytes` field for the decoded size. This lossless encoding keeps large suites small on disk and lets the judge decode inputs and expected results one testcase at a time. Rooms retain problem metadata and a test count. Hidden suites are shared through a weighted cache with a 128 MiB estimated budget, allowing one oversized entry up to 160 MiB. Queued submissions load their suite only after obtaining the runner slot.
 
 ## Submission judging
 
 Python submissions complete the supplied starter, usually a method on `Solution`. The judge preloads wildcard imports from `typing`, `string`, `re`, `datetime`, `collections`, `heapq`, `bisect`, `copy`, `math`, `random`, `statistics`, `itertools`, `functools`, `operator`, `io`, `sys`, `json`, `builtins`, and `sortedcontainers`, in that order. These imports do not count toward the score. The runner uses `.venv/bin/python3` when available, or `PYTHON_BIN` if set.
 
-The TypeScript judge runs code in a separate Python process, with a fresh namespace for every testcase. Expected outputs stay in the parent process. Feedback includes tests passed, runtime, bounded stdout and stderr, and the first failing input and output. Character counts include whitespace.
+The TypeScript judge runs code in a separate Python process, with a fresh namespace for every testcase. Inputs stream to Python one testcase at a time; expected outputs stay in the parent process. Output budgets scale with expected result sizes, so complete large suites can exceed 64 MiB of aggregate output while each record remains bounded. Feedback includes tests passed, runtime, bounded stdout and stderr, and the first failing input and output. Character counts include whitespace.
 
 The runner limits execution time, output, concurrency, and memory. Production additionally requires the Linux sandbox described below. Development execution is a plain subprocess and must remain on a trusted development machine.
 
@@ -89,9 +89,13 @@ pnpm test:e2e
 
 Playwright uses the real Clerk development instance and local API/Convex deployment. It creates clearly scoped test accounts; it does not modify existing users or use production keys. Reports and failure traces go under `/tmp/leetrace-playwright-*`. Test accounts remain available for inspecting results in Clerk. Unit tests use isolated in-process Convex state and never need credentials.
 
-`pnpm test:stress` builds the frontend and starts a separate test server on port 3011. It exercises eight isolated browser sessions with real Clerk authentication, Python judging, and Convex writes. Synthetic puzzles make character counts, lock ordering, deadline queues, and multi-round departure ratings repeatable without storing solutions to corpus problems. The normal development server stays running.
+`pnpm test:stress` builds the frontend and starts a separate test server on port 3011. It exercises eight isolated browser sessions with real Clerk authentication, Python judging, and Convex writes. Real corpus problems exercise character counts, lock ordering, deadline queues, and multi-round departure ratings. Developer reference implementations live in the tests; player code remains ephemeral. The normal development server stays running.
 
 The stress suite reuses nine accounts created by the browser suite, identified by the exact test display name and generated username format. Each run opens fresh sessions and checks changes against starting statistics. Run the browser suite first to seed those accounts. The stress suite does not create or delete users, so repeated runs do not consume more of Clerk's development-user quota.
+
+After building, run `node --max-old-space-size=256 --max-semi-space-size=8 scripts/validate-runtime.mjs` for a combined capacity check using 500 rooms and eight queued submissions against complete real corpus suites, including both large-problem regressions. The script prints result counts and memory measurements and needs no Clerk or Convex data. In the production image it exercises the actual Bubblewrap judge and startup sandbox probe. Mount the script into the image and run it from `/app`; use Docker `--init` to reap worker processes. Linux container limits and sandbox permissions still need validation on the target host.
+
+Shutdown stops accepting submissions and cancels queued jobs immediately. The active judge gets up to 20 seconds to finish, followed by a bounded cleanup wait and three seconds for stats persistence. HTTP connections then close. A 25-second hard deadline stays below Fly's configured 30-second stop budget. Deployments still end ephemeral rooms.
 
 ## Production on Fly
 
