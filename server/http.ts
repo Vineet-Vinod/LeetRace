@@ -5,6 +5,7 @@ import { extname, resolve, sep } from 'node:path';
 import { isIP } from 'node:net';
 import { allowedOrigins } from './accounts.js';
 import { createHTTPHandler } from '@trpc/server/adapters/standalone';
+import { TRPC_ERROR_CODES_BY_KEY } from '@trpc/server/rpc';
 import type { AppRouter } from './router.js';
 
 const contentTypes: Record<string, string> = {
@@ -34,8 +35,14 @@ export function createAppServer(router: AppRouter, directory = resolve('frontend
     if (process.env.NODE_ENV === 'production') response.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
     const origin = request.headers.origin;
     if (origin && !allowedOrigins().includes(origin)) {
-      response.writeHead(403);
-      response.end('Origin is not allowed.');
+      response.writeHead(403, { 'Content-Type': 'application/json' });
+      response.end(JSON.stringify({
+        error: {
+          message: 'Origin is not allowed. Open Terse using its configured address.',
+          code: TRPC_ERROR_CODES_BY_KEY.FORBIDDEN,
+          data: { code: 'FORBIDDEN', httpStatus: 403 },
+        },
+      }));
       return;
     }
     let pathname: string;

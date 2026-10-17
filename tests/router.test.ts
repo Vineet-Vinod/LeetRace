@@ -84,6 +84,14 @@ describe('authenticated tRPC transport', () => {
     expect(health.headers.get('cache-control')).toBe('no-store');
     const response = await fetch(`${url}/me`, { headers: { origin: 'https://evil.example', authorization: 'Bearer Dark' } });
     expect(response.status).toBe(403);
+    expect(response.headers.get('content-type')).toContain('application/json');
+    const rejectedClient = createTRPCClient<AppRouter>({ links: [httpBatchLink({
+      url, headers: { origin: 'https://evil.example', authorization: 'Bearer Dark' },
+    })] });
+    await expect(rejectedClient.me.query()).rejects.toMatchObject({
+      message: 'Origin is not allowed. Open Terse using its configured address.',
+      data: { code: 'FORBIDDEN', httpStatus: 403 },
+    });
   });
 
   it('sends an immediate personalized SSE snapshot then live changes', async () => {
