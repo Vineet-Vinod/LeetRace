@@ -82,7 +82,7 @@ export default function ProfilePage({ profile }: { profile: Profile }) {
             {metrics.filter((metric) => metric.key !== "rating").map((metric, index) => (
               <div key={metric.key} className={`flex items-center justify-between gap-4 px-5 py-4 sm:px-7 ${index % 2 === 0 ? "sm:border-r sm:border-line" : ""} ${index >= 2 ? "sm:border-t sm:border-line" : ""}`}>
                 <dt className="text-[13px] text-fg-muted">{metric.label}</dt>
-                <dd className="font-mono text-[15px] tabular-nums text-fg">{format(displayedProfile[metric.key])}</dd>
+                <dd className="font-mono text-[15px] tabular-nums text-fg">{format(displayedProfile[metric.key], metric.key === "careerPoints" ? 2 : 0)}</dd>
               </div>
             ))}
           </dl>
