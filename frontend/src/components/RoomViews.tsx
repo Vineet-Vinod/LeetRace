@@ -13,9 +13,6 @@ const enter = {
 export function Lobby({ r }: { r: RoomState }) {
   const room = r.room!;
   const members = room.members;
-  const players = members.length > 5
-    ? [...members.slice(0, 3), null, ...members.slice(-2)]
-    : members;
   return (
     <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto">
       <div aria-hidden className="backdrop-grid pointer-events-none absolute inset-0" />
@@ -82,16 +79,7 @@ export function Lobby({ r }: { r: RoomState }) {
               </span>
             </h2>
             <ul aria-label="Players" className="flex flex-wrap items-center justify-center gap-3">
-              {players.map((member) => member === null ? (
-                <li
-                  key="more"
-                  aria-label={`${members.length - 5} more players`}
-                  title={members.slice(3, -2).map((player) => player.name).join(", ")}
-                  className="text-[20px] text-fg-subtle"
-                >
-                  …
-                </li>
-              ) : (
+              {members.map((member) => (
                 <motion.li
                   key={`player:${member.userId}`}
                   layout

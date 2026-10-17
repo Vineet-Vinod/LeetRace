@@ -223,6 +223,21 @@ describe('game rooms', () => {
     expect(store.currentRoom(guest.userId)).toBeNull();
   });
 
+  it('allows the full thirty seconds after a known disconnect even when its heartbeat is older', () => {
+    let now = 0;
+    const store = new RoomStore(() => problem, async () => solved, () => now);
+    const host = createHost(store, { name: 'Dark', timeLimit: 30, difficulty: null, rounds: 1 });
+    const close = store.listen(host.roomId, host.userId, () => {});
+    now = 4000;
+    close();
+    now = 33_999;
+    store.tick();
+    expect(store.currentRoom(host.userId)).toBe(host.roomId);
+    now = 34_000;
+    store.tick();
+    expect(store.currentRoom(host.userId)).toBeNull();
+  });
+
   it('keeps a healthy room alive beyond its former idle lifetime', () => {
     let now = 0;
     const store = new RoomStore(() => problem, async () => solved, () => now);

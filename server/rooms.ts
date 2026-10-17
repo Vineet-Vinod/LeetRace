@@ -262,7 +262,7 @@ export class RoomStore {
 
   private away(player: Player): boolean {
     const disconnectedAt = player.offlineSince;
-    return this.now() - player.lastHeartbeat >= AWAY_AFTER_MS
+    return (player.streams > 0 && this.now() - player.lastHeartbeat >= AWAY_AFTER_MS)
       || (player.streams === 0 && disconnectedAt !== null && this.now() - disconnectedAt >= AWAY_AFTER_MS);
   }
 
