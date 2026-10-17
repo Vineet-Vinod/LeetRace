@@ -1,6 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const baseURL = process.env.E2E_BASE_URL ?? "http://127.0.0.1:3000";
+const stress = process.env.E2E_STRESS === "1";
+const baseURL = process.env.E2E_BASE_URL ?? `http://127.0.0.1:${stress ? 3011 : 3000}`;
 const publishableKey = process.env.CLERK_PUBLISHABLE_KEY;
 const secretKey = process.env.CLERK_SECRET_KEY;
 
@@ -28,6 +29,13 @@ export default defineConfig({
     screenshot: "only-on-failure",
     video: "retain-on-failure",
   },
+  webServer: stress ? {
+    command: "pnpm exec tsx --env-file-if-exists=.env --env-file-if-exists=.env.local e2e/stress-server.ts",
+    url: `${baseURL}/health`,
+    env: { APP_ORIGIN: baseURL, E2E_BASE_URL: baseURL },
+    timeout: 30_000,
+    reuseExistingServer: false,
+  } : undefined,
   projects: [
     {
       name: "clerk-setup",
@@ -36,8 +44,9 @@ export default defineConfig({
     },
     {
       name: "chromium",
-      testIgnore: /clerk\.setup\.ts/,
-      use: { ...devices["Desktop Chrome"] },
+      testIgnore: stress ? /clerk\.setup\.ts/ : /clerk\.setup\.ts|stress\.spec\.ts/,
+      testMatch: stress ? /stress\.spec\.ts/ : undefined,
+      use: stress ? { viewport: { width: 1280, height: 720 } } : { ...devices["Desktop Chrome"] },
       dependencies: ["clerk-setup"],
     },
   ],

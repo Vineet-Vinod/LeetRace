@@ -89,6 +89,10 @@ pnpm test:e2e
 
 Playwright uses the real Clerk development instance and local API/Convex deployment. It creates clearly scoped test accounts; it does not modify existing users or use production keys. Reports and failure traces go under `/tmp/leetrace-playwright-*`. Test accounts remain available for inspecting results in Clerk. Unit tests use isolated in-process Convex state and never need credentials.
 
+`pnpm test:stress` builds the frontend and starts a separate test server on port 3011. It exercises eight isolated browser sessions with real Clerk authentication, Python judging, and Convex writes. Synthetic puzzles make character counts, lock ordering, deadline queues, and multi-round departure ratings repeatable without storing solutions to corpus problems. The normal development server stays running.
+
+The stress suite reuses nine accounts created by the browser suite, identified by the exact test display name and generated username format. Each run opens fresh sessions and checks changes against starting statistics. Run the browser suite first to seed those accounts. The stress suite does not create or delete users, so repeated runs do not consume more of Clerk's development-user quota.
+
 ## Production on Fly
 
 Production setup is separate from local development. No Fly runtime validation is performed by the local test suite.

@@ -19,6 +19,7 @@
     "ci": "pnpm typecheck && pnpm lint && pnpm test && pnpm build",
     "dev:database": "convex dev",
     "test:e2e": "node --env-file-if-exists=.env --env-file-if-exists=.env.local node_modules/@playwright/test/cli.js test",
+    "test:stress": "pnpm build && E2E_STRESS=1 node --env-file-if-exists=.env --env-file-if-exists=.env.local node_modules/@playwright/test/cli.js test",
     "setup:dev": "convex dev --once && node --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/configure-local.mjs"
   },
   "dependencies": {
